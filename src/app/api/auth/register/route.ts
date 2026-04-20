@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +27,35 @@ export async function POST(request: NextRequest) {
       INSERT INTO users (id, email, password, company_name, kvk_number, contact_person, phone, address, city, postal_code, country)
       VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.companyName}, ${body.kvkNumber}, ${body.contactPerson}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'})
     `;
+
+    // Send welcome email
+    try {
+      await sendEmail({
+        to: body.email,
+        subject: 'Welkom bij LabFix - Uw account is aangemaakt',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height: 50px;" />
+            </div>
+            <h2 style="color: #1e40af;">Welkom bij LabFix!</h2>
+            <p>Beste ${body.contactPerson},</p>
+            <p>Uw account is succesvol aangemaakt. U kunt nu inloggen en producten bestellen.</p>
+            <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin: 20px 0;">
+              <p style="margin: 0;"><strong>Bedrijf:</strong> ${body.companyName}</p>
+              <p style="margin: 8px 0 0;"><strong>KVK:</strong> ${body.kvkNumber}</p>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://stellar-brioche-27fb7f.netlify.app/account/login" style="background: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block;">Inloggen</a>
+            </div>
+            <p>Heeft u vragen? Neem contact met ons op via <a href="mailto:info@labfix.nl">info@labfix.nl</a></p>
+            <p>Met vriendelijke groet,<br/>Het LabFix Team</p>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Welcome email failed:', emailErr);
+    }
 
     return NextResponse.json({ success: true, message: 'Account aangemaakt' });
   } catch (error: any) {

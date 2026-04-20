@@ -34,7 +34,7 @@ export default function AdminPage() {
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter'>('products');
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -201,10 +201,68 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Weet u zeker dat u deze klant wilt verwijderen? Alle bestellingen van deze klant worden ook verwijderd.')) return;
+    try {
+      const res = await fetch(`/api/users?id=${userId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setUsers(users.filter(u => u.id !== userId));
+        alert('Klant verwijderd');
+      } else {
+        alert('Verwijderen mislukt');
+      }
+    } catch {
+      alert('Verwijderen mislukt');
+    }
+  };
+
+  const [subscribers, setSubscribers] = useState<{id: string, email: string, company_name: string, subscribed_at: string}[]>([]);
+  const [newsletterSubject, setNewsletterSubject] = useState('');
+  const [newsletterBody, setNewsletterBody] = useState('');
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+
+  const loadSubscribers = async () => {
+    try {
+      const res = await fetch('/api/newsletter');
+      if (res.ok) {
+        const data = await res.json();
+        setSubscribers(data);
+      }
+    } catch {
+      console.error('Failed to load subscribers');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'newsletter') {
+      loadSubscribers();
+    }
+  }, [activeTab]);
+
+  const handleSendNewsletter = async () => {
+    if (!newsletterSubject.trim() || !newsletterBody.trim()) {
+      alert('Vul onderwerp en bericht in');
+      return;
+    }
+    setSendingNewsletter(true);
+    try {
+      for (const sub of subscribers) {
+        await sendEmailApi(sub.email, newsletterSubject, newsletterBody);
+      }
+      alert(`Nieuwsbrief verstuurd naar ${subscribers.length} abonnees!`);
+      setNewsletterSubject('');
+      setNewsletterBody('');
+    } catch {
+      alert('Nieuwsbrief versturen mislukt');
+    } finally {
+      setSendingNewsletter(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 animate-fade-in">
       {/* Admin header */}
-      <div className="bg-primary-600 text-white">
+      <div className="bg-primary-600 text-white animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <img src="/logo.png" alt="LabFix" className="h-8 w-auto brightness-0 invert" />
@@ -236,12 +294,15 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('customers')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'customers' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Users size={16} /> Klanten ({users.length})
             </button>
+            <button onClick={() => setActiveTab('newsletter')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'newsletter' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <Mail size={16} /> Nieuwsbrief
+            </button>
           </div>
         </div>
       </div>
 
       {/* Stats bar */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 animate-fade-in-up delay-100">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
             <Package className="text-primary-500" size={24} />
@@ -274,7 +335,7 @@ export default function AdminPage() {
         </div>
 
         {/* ============= PRODUCTS TAB ============= */}
-        {activeTab === 'products' && (<>
+        {activeTab === 'products' && (<div className="animate-fade-in-up">
         {/* Product Form */}
         {(editing || creating) && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
@@ -454,11 +515,11 @@ export default function AdminPage() {
             )}
           </div>
         </div>
-        </>)}
+        </div>)}
 
         {/* ============= ORDERS TAB ============= */}
         {activeTab === 'orders' && (
-          <div>
+          <div className="animate-fade-in-up">
             {selectedOrder ? (
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -631,7 +692,7 @@ export default function AdminPage() {
 
         {/* ============= CUSTOMERS TAB ============= */}
         {activeTab === 'customers' && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in-up">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -642,6 +703,7 @@ export default function AdminPage() {
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">E-mail</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Locatie</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Geregistreerd</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actie</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -653,6 +715,11 @@ export default function AdminPage() {
                       <td className="px-4 py-3 text-sm text-primary-500">{u.email}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{u.city}, {u.country}</td>
                       <td className="px-4 py-3 text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString('nl-NL')}</td>
+                      <td className="px-4 py-3">
+                        <button onClick={() => handleDeleteUser(u.id)} className="text-red-500 hover:text-red-700 p-1">
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -660,6 +727,68 @@ export default function AdminPage() {
               {users.length === 0 && (
                 <div className="p-8 text-center text-gray-400">Nog geen klanten geregistreerd</div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Newsletter Tab */}
+        {activeTab === 'newsletter' && (
+          <div className="max-w-7xl mx-auto px-4 animate-fade-in-up">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Nieuwsbrief</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Subscribers list */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h3 className="font-semibold text-gray-700 mb-4">Abonnees ({subscribers.length})</h3>
+                <div className="overflow-y-auto max-h-96">
+                  {subscribers.map((sub) => (
+                    <div key={sub.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                      <div>
+                        <p className="font-medium text-sm">{sub.email}</p>
+                        <p className="text-xs text-gray-500">{sub.company_name}</p>
+                      </div>
+                      <span className="text-xs text-gray-400">{new Date(sub.subscribed_at).toLocaleDateString('nl-NL')}</span>
+                    </div>
+                  ))}
+                  {subscribers.length === 0 && (
+                    <p className="text-gray-400 text-center py-4">Nog geen abonnees</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Send newsletter form */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h3 className="font-semibold text-gray-700 mb-4">Nieuwsbrief versturen</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Onderwerp</label>
+                    <input
+                      type="text"
+                      value={newsletterSubject}
+                      onChange={(e) => setNewsletterSubject(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
+                      placeholder="Nieuwe producten beschikbaar!"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bericht (HTML)</label>
+                    <textarea
+                      value={newsletterBody}
+                      onChange={(e) => setNewsletterBody(e.target.value)}
+                      rows={8}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
+                      placeholder="<h1>Hallo!</h1><p>We hebben nieuwe producten...</p>"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSendNewsletter}
+                    disabled={sendingNewsletter || subscribers.length === 0}
+                    className="w-full bg-primary-500 text-white py-2 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <Send size={18} />
+                    {sendingNewsletter ? 'Versturen...' : `Versturen naar ${subscribers.length} abonnees`}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

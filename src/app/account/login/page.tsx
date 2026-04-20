@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center py-12 px-4">
+    <div className="min-h-[60vh] flex items-center justify-center py-12 px-4 animate-fade-in-up">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-scale-in">
           <div className="text-center mb-8">
@@ -69,7 +69,12 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('auth.password')}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-semibold text-gray-700">{t('auth.password')}</label>
+                <Link href="/account/forgot-password" className="text-xs text-primary-500 hover:underline">
+                  Wachtwoord vergeten?
+                </Link>
+              </div>
               <input
                 type="password"
                 required

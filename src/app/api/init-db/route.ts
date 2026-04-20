@@ -80,6 +80,29 @@ export async function POST() {
       )
     `;
 
+    // Newsletter subscribers table
+    await sql`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id TEXT PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        company_name TEXT DEFAULT '',
+        subscribed_at TIMESTAMP DEFAULT NOW(),
+        is_active BOOLEAN DEFAULT true
+      )
+    `;
+
+    // Password reset tokens table
+    await sql`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token TEXT UNIQUE NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     // Seed default categories
     const existingCats = await sql`SELECT COUNT(*) as count FROM categories`;
     if (Number(existingCats[0].count) === 0) {

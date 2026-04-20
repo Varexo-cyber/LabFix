@@ -98,6 +98,15 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
   return transporter.sendMail(mailOptions);
 }
 
+export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  return transporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER || 'info@labfix.nl'}>`,
+    to,
+    subject,
+    html,
+  });
+}
+
 export async function sendAdminEmail(to: string, subject: string, message: string) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">

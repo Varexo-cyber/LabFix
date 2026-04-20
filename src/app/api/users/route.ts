@@ -1,5 +1,5 @@
 import { getDb } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -23,5 +23,28 @@ export async function GET() {
     return NextResponse.json(mapped);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const sql = getDb();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: 'User ID required' }, { status: 400 });
+    }
+
+    // Delete user's orders first (cascade would handle this but let's be explicit)
+    await sql`DELETE FROM orders WHERE user_id = ${id}`;
+    
+    // Delete user
+    await sql`DELETE FROM users WHERE id = ${id}`;
+
+    return NextResponse.json({ success: true, message: 'User deleted successfully' });
+  } catch (error: any) {
+    console.error('Delete user error:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

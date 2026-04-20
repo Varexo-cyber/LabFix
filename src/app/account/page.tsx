@@ -40,7 +40,7 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <div className="md:w-64 flex-shrink-0">
@@ -76,7 +76,7 @@ export default function AccountPage() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1">
+        <div className="flex-1 animate-fade-in-right delay-100">
           {activeTab === 'orders' && (
             <div>
               <h1 className="text-2xl font-bold text-gray-800 mb-6">{t('account.orders')}</h1>

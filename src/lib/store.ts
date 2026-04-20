@@ -225,7 +225,7 @@ export function logoutUser(): void {
 
 // ==================== ADMIN AUTH ====================
 
-const ADMIN_PASSWORD = 'labfix2024admin';
+const ADMIN_PASSWORD = 'labfix2026admin';
 
 export function isAdminAuthenticated(): boolean {
   if (typeof window === 'undefined') return false;

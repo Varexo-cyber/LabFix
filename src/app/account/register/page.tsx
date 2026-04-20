@@ -79,7 +79,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center py-12 px-4">
+    <div className="min-h-[60vh] flex items-center justify-center py-12 px-4 animate-fade-in-up">
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-scale-in">
           <div className="text-center mb-8">
