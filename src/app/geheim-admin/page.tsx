@@ -40,6 +40,10 @@ export default function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [emailMessage, setEmailMessage] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [subscribers, setSubscribers] = useState<{id: string, email: string, company_name: string, subscribed_at: string}[]>([]);
+  const [newsletterSubject, setNewsletterSubject] = useState('');
+  const [newsletterBody, setNewsletterBody] = useState('');
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
   useEffect(() => {
     setAuthenticated(isAdminAuthenticated());
@@ -215,11 +219,6 @@ export default function AdminPage() {
       alert('Verwijderen mislukt');
     }
   };
-
-  const [subscribers, setSubscribers] = useState<{id: string, email: string, company_name: string, subscribed_at: string}[]>([]);
-  const [newsletterSubject, setNewsletterSubject] = useState('');
-  const [newsletterBody, setNewsletterBody] = useState('');
-  const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
   const loadSubscribers = async () => {
     try {
