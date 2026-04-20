@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, Phone, Mail, Truck } from 'lucide-react';
 
 export default function Header() {
   const { t, locale, setLocale, cartCount, user, logout } = useApp();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -141,10 +143,10 @@ export default function Header() {
         {/* Navigation bar */}
         <nav className="bg-primary-500 text-white">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden md:flex items-center">
               <Link
                 href="/products"
-                className="px-4 py-3 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1"
+                className={`px-4 py-3 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' || pathname.startsWith('/products/') ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 <Menu size={16} />
                 {t('nav.allProducts')}
@@ -153,20 +155,20 @@ export default function Header() {
                 <Link
                   key={cat.href}
                   href={cat.href}
-                  className="px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium"
+                  className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === cat.href || pathname.startsWith(cat.href) ? 'bg-primary-600' : ''}`}
                 >
                   {cat.name}
                 </Link>
               ))}
               <Link
                 href="/about"
-                className="px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium"
+                className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/about' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 {t('nav.about')}
               </Link>
               <Link
                 href="/contact"
-                className="px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium"
+                className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/contact' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 {t('nav.contact')}
               </Link>
