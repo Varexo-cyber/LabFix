@@ -1,13 +1,11 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, Lock, CheckCircle } from 'lucide-react';
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   
@@ -96,7 +94,7 @@ export default function ResetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-scale-in">
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="LabFix" className="h-14 w-auto mx-auto mb-4" />
+            <img src="/logo.png" alt="LabFix" className="h-20 w-auto mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-800">Nieuw wachtwoord</h1>
           </div>
 
@@ -169,5 +167,20 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[60vh] flex items-center justify-center py-12 px-4 animate-fade-in">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
+          <p className="mt-4 text-gray-500">Laden...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
