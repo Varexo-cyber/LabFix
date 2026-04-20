@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database } from 'lucide-react';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
@@ -44,11 +44,21 @@ export default function AdminPage() {
   const [newsletterSubject, setNewsletterSubject] = useState('');
   const [newsletterBody, setNewsletterBody] = useState('');
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     setAuthenticated(isAdminAuthenticated());
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'newsletter') {
+      fetch('/api/newsletter')
+        .then(res => res.ok ? res.json() : [])
+        .then(data => setSubscribers(data))
+        .catch(() => console.error('Failed to load subscribers'));
+    }
+  }, [activeTab]);
 
   const loadData = async () => {
     try {
@@ -220,24 +230,6 @@ export default function AdminPage() {
     }
   };
 
-  const loadSubscribers = async () => {
-    try {
-      const res = await fetch('/api/newsletter');
-      if (res.ok) {
-        const data = await res.json();
-        setSubscribers(data);
-      }
-    } catch {
-      console.error('Failed to load subscribers');
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'newsletter') {
-      loadSubscribers();
-    }
-  }, [activeTab]);
-
   const handleSendNewsletter = async () => {
     if (!newsletterSubject.trim() || !newsletterBody.trim()) {
       alert('Vul onderwerp en bericht in');
@@ -400,11 +392,47 @@ export default function AdminPage() {
                     className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="iPhone 15 Pro" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Afbeelding URL</label>
-                  <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="https://..." />
+                  <label className="block text-sm font-semibold mb-1">Afbeelding</label>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors cursor-pointer">
+                      <Upload size={16} />
+                      <span>{uploadingImage ? 'Uploaden...' : 'Bestand kiezen'}</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingImage(true);
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          try {
+                            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                            const data = await res.json();
+                            if (data.success) {
+                              setFormData(prev => ({ ...prev, image: data.url }));
+                            } else {
+                              alert('Upload mislukt: ' + data.error);
+                            }
+                          } catch {
+                            alert('Upload mislukt');
+                          } finally {
+                            setUploadingImage(false);
+                          }
+                        }}
+                      />
+                    </label>
+                    <input 
+                      type="text" 
+                      value={formData.image} 
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" 
+                      placeholder="Of plak een URL..." 
+                    />
+                  </div>
                   {formData.image && (
-                    <img src={formData.image} alt="Preview" className="mt-2 w-20 h-20 object-cover rounded-lg" />
+                    <img src={formData.image} alt="Preview" className="mt-3 w-32 h-32 object-cover rounded-lg border" />
                   )}
                 </div>
                 <div className="flex items-center gap-6">

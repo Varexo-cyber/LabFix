@@ -30,7 +30,7 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header className="relative">
       {/* Top bar */}
       <div className="bg-primary-600 text-white text-sm">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
@@ -81,12 +81,12 @@ export default function Header() {
       </div>
 
       {/* Main header */}
-      <div className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="LabFix" className="h-20 w-auto" />
+              <img src="/logo.png" alt="LabFix" className="h-14 w-auto" />
             </Link>
 
             {/* Search Bar */}
@@ -146,7 +146,7 @@ export default function Header() {
             <div className="hidden md:flex items-center">
               <Link
                 href="/products"
-                className={`px-4 py-3 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' || pathname.startsWith('/products/') ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                className={`px-4 py-2 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' || pathname.startsWith('/products/') ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 <Menu size={16} />
                 {t('nav.allProducts')}
@@ -155,20 +155,20 @@ export default function Header() {
                 <Link
                   key={cat.href}
                   href={cat.href}
-                  className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === cat.href || pathname.startsWith(cat.href) ? 'bg-primary-600' : ''}`}
+                  className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === cat.href || pathname.startsWith(cat.href) ? 'bg-primary-600' : ''}`}
                 >
                   {cat.name}
                 </Link>
               ))}
               <Link
                 href="/about"
-                className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/about' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/about' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 {t('nav.about')}
               </Link>
               <Link
                 href="/contact"
-                className={`px-3 py-3 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/contact' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/contact' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 {t('nav.contact')}
               </Link>
