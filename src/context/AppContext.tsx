@@ -4,9 +4,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Locale, translations } from '@/lib/translations';
 import { CartItem, Product, User, getCart, addToCart as storeAddToCart, removeFromCart as storeRemoveFromCart, updateCartQuantity as storeUpdateCartQuantity, getCartCount, getCartTotal, getCurrentUser, logoutUser as storeLogoutUser, saveCart } from '@/lib/store';
 
+type Currency = 'EUR' | 'USD' | 'GBP';
+
 interface AppContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
+  formatPrice: (price: number) => string;
   t: (key: string) => string;
   cart: CartItem[];
   cartCount: number;
@@ -25,13 +30,18 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('nl');
+  const [currency, setCurrencyState] = useState<Currency>('EUR');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUserState] = useState<User | null>(null);
 
   useEffect(() => {
     const savedLocale = localStorage.getItem('labfix_locale') as Locale;
+    const savedCurrency = localStorage.getItem('labfix_currency') as Currency;
     if (savedLocale && (savedLocale === 'nl' || savedLocale === 'en')) {
       setLocaleState(savedLocale);
+    }
+    if (savedCurrency && ['EUR', 'USD', 'GBP'].includes(savedCurrency)) {
+      setCurrencyState(savedCurrency);
     }
     setCart(getCart());
     setUserState(getCurrentUser());
@@ -41,6 +51,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
     localStorage.setItem('labfix_locale', newLocale);
   };
+
+  const setCurrency = (newCurrency: Currency) => {
+    setCurrencyState(newCurrency);
+    localStorage.setItem('labfix_currency', newCurrency);
+  };
+
+  const formatPrice = useCallback((price: number): string => {
+    const rates: Record<Currency, number> = {
+      EUR: 1,
+      USD: 1.1,
+      GBP: 0.85
+    };
+    const symbols: Record<Currency, string> = {
+      EUR: '€',
+      USD: '$',
+      GBP: '£'
+    };
+    const converted = price * rates[currency];
+    const symbol = symbols[currency];
+    return `${symbol}${converted.toFixed(2)}`;
+  }, [currency]);
 
   const t = useCallback((key: string): string => {
     return translations[locale][key] || key;
@@ -84,6 +115,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       value={{
         locale,
         setLocale,
+        currency,
+        setCurrency,
+        formatPrice,
         t,
         cart,
         cartCount: getCartCount(cart),

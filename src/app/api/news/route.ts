@@ -15,6 +15,7 @@ export async function GET() {
       content: a.content,
       contentEn: a.content_en,
       image: a.image,
+      images: a.images || [],
       published: a.published,
       createdAt: a.created_at,
       updatedAt: a.updated_at,
@@ -33,8 +34,8 @@ export async function POST(request: NextRequest) {
     const id = crypto.randomUUID();
 
     await sql`
-      INSERT INTO news_articles (id, title, title_en, summary, summary_en, content, content_en, image, published)
-      VALUES (${id}, ${body.title}, ${body.titleEn || ''}, ${body.summary || ''}, ${body.summaryEn || ''}, ${body.content || ''}, ${body.contentEn || ''}, ${body.image || ''}, ${body.published ?? true})
+      INSERT INTO news_articles (id, title, title_en, summary, summary_en, content, content_en, image, images, published)
+      VALUES (${id}, ${body.title}, ${body.titleEn || ''}, ${body.summary || ''}, ${body.summaryEn || ''}, ${body.content || ''}, ${body.contentEn || ''}, ${body.image || ''}, ${JSON.stringify(body.images || [])}, ${body.published ?? true})
     `;
 
     return NextResponse.json({ success: true, id });
@@ -57,6 +58,7 @@ export async function PUT(request: NextRequest) {
         content = ${body.content || ''},
         content_en = ${body.contentEn || ''},
         image = ${body.image || ''},
+        images = ${JSON.stringify(body.images || [])},
         published = ${body.published ?? true},
         updated_at = NOW()
       WHERE id = ${body.id}

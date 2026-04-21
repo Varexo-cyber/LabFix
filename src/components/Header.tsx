@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Truck } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Truck, Wrench } from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
 export default function Header() {
@@ -126,6 +126,10 @@ export default function Header() {
                   <span className="text-xs">{t('auth.login')}</span>
                 </Link>
               )}
+              <Link href="/repair" className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary-500">
+                <Wrench size={22} />
+                <span className="text-xs">{locale === 'nl' ? 'Reparatie' : 'Repair'}</span>
+              </Link>
               <Link href="/cart" className="flex flex-col items-center text-gray-600 hover:text-primary-500 relative">
                 <ShoppingCart size={22} />
                 {cartCount > 0 && (

@@ -3,11 +3,35 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { Mail, Phone, MessageCircle, HelpCircle, MapPinIcon } from 'lucide-react';
+import { Mail, Phone, MessageCircle, HelpCircle, MapPinIcon, Send, CheckCircle } from 'lucide-react';
 
 export default function Footer() {
-  const { t, locale, setLocale } = useApp();
-  const [currency, setCurrency] = useState('EUR');
+  const { t, locale, setLocale, currency, setCurrency } = useApp();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail })
+      });
+      
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+        setTimeout(() => setNewsletterStatus('idle'), 3000);
+      } else {
+        setNewsletterStatus('error');
+      }
+    } catch {
+      setNewsletterStatus('error');
+    }
+  };
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -17,7 +41,9 @@ export default function Footer() {
           {/* Logo + Selectors + Shipping */}
           <div className="lg:col-span-1">
             <div className="mb-5">
-              <img src="/logo.png" alt="LabFix" className="h-24 w-auto brightness-0 invert" />
+              <div className="bg-white rounded-lg p-0.2 inline-block">
+                <img src="/logo.png" alt="LabFix" className="h-[60px] w-[125px] object-contain" />
+              </div>
             </div>
 
             {/* Language + Currency Selectors */}
@@ -32,7 +58,7 @@ export default function Footer() {
               </select>
               <select
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
+                onChange={(e) => setCurrency(e.target.value as 'EUR' | 'USD' | 'GBP')}
                 className="bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-primary-500 cursor-pointer w-20"
               >
                 <option value="EUR">EUR</option>
@@ -73,8 +99,8 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-white transition-colors">{t('nav.about')}</Link></li>
               <li><Link href="/quality" className="hover:text-white transition-colors">{locale === 'nl' ? 'Kwaliteitsstandaarden' : 'Quality Standards'}</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">{t('footer.returns')}</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">{t('footer.privacy')}</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">{t('footer.terms')}</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-white transition-colors">{locale === 'nl' ? 'Privacy Policy' : 'Privacy Policy'}</Link></li>
+              <li><Link href="/algemene-voorwaarden" className="hover:text-white transition-colors">{locale === 'nl' ? 'Algemene Voorwaarden' : 'Terms & Conditions'}</Link></li>
               <li><Link href="/shipping" className="hover:text-white transition-colors">{t('footer.shipping')}</Link></li>
               <li><Link href="/payment-methods" className="hover:text-white transition-colors">{locale === 'nl' ? 'Betaalmethoden' : 'Payment Methods'}</Link></li>
             </ul>
@@ -93,7 +119,7 @@ export default function Footer() {
 
           {/* Our Brands */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">{locale === 'nl' ? 'Merken' : 'Our Brands'}</h3>
+            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">{locale === 'nl' ? 'Meer' : 'More'}</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/products?brand=apple" className="hover:text-white transition-colors">Apple</Link></li>
               <li><Link href="/products?brand=samsung" className="hover:text-white transition-colors">Samsung</Link></li>
@@ -105,10 +131,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Support + Newsletter */}
           <div>
             <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">{locale === 'nl' ? 'Klantenservice' : 'Support'}</h3>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-3 text-sm mb-6">
               <li>
                 <Link href="/contact" className="flex items-center gap-2 hover:text-white transition-colors">
                   <MapPinIcon size={15} className="text-gray-400" />
@@ -140,6 +166,41 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+            
+            {/* Newsletter Signup */}
+            <div className="border-t border-gray-700 pt-4">
+              <h4 className="text-white font-semibold text-sm mb-3">
+                {locale === 'nl' ? 'Nieuwsbrief' : 'Newsletter'}
+              </h4>
+              {newsletterStatus === 'success' ? (
+                <div className="flex items-center gap-2 text-green-400 text-sm">
+                  <CheckCircle size={16} />
+                  {locale === 'nl' ? 'Bedankt voor je aanmelding!' : 'Thanks for subscribing!'}
+                </div>
+              ) : (
+                <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2">
+                  <input
+                    type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder={locale === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
+                    className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-primary-500"
+                  />
+                  <button
+                    type="submit"
+                    className="flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
+                  >
+                    <Send size={14} />
+                    {locale === 'nl' ? 'Aanmelden' : 'Subscribe'}
+                  </button>
+                  {newsletterStatus === 'error' && (
+                    <span className="text-red-400 text-xs">
+                      {locale === 'nl' ? 'Er ging iets mis. Probeer opnieuw.' : 'Something went wrong. Try again.'}
+                    </span>
+                  )}
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

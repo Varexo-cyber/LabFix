@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive } from 'lucide-react';
+import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment } from '@/lib/store';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench } from 'lucide-react';
+import ImageSlideshow from '@/components/ImageSlideshow';
 import Link from 'next/link';
 import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
 
@@ -36,11 +37,12 @@ export default function AdminPage() {
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact'>('products');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [creatingNews, setCreatingNews] = useState(false);
-  const [newsForm, setNewsForm] = useState({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', published: true });
+  const [newsForm, setNewsForm] = useState({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', images: [] as string[], published: true });
+  const [uploadingNewsImage, setUploadingNewsImage] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -55,6 +57,20 @@ export default function AdminPage() {
   const [contactFilter, setContactFilter] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [messageNotes, setMessageNotes] = useState('');
+  
+  // Repair appointments state
+  const [repairAppointments, setRepairAppointments] = useState<RepairAppointment[]>([]);
+  const [repairFilter, setRepairFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'completed'>('all');
+  const [selectedRepair, setSelectedRepair] = useState<RepairAppointment | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [repairStatus, setRepairStatus] = useState<RepairStatus>('pending');
+
+  const loadRepairAppointments = async () => {
+    const result = await fetchRepairAppointments(repairFilter === 'all' ? undefined : repairFilter);
+    if (result.success) {
+      setRepairAppointments(result.appointments);
+    }
+  };
 
   useEffect(() => {
     setAuthenticated(isAdminAuthenticated());
@@ -70,6 +86,9 @@ export default function AdminPage() {
     }
     if (activeTab === 'contact') {
       loadContactMessages();
+    }
+    if (activeTab === 'repairs') {
+      loadRepairAppointments();
     }
   }, [activeTab]);
 
@@ -299,6 +318,9 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('products')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'products' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Package size={16} /> Producten
             </button>
+            <button onClick={() => setActiveTab('repairs')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'repairs' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <Wrench size={16} /> Reparaties
+            </button>
             <button onClick={() => setActiveTab('orders')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'orders' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <ClipboardList size={16} /> Bestellingen ({orders.length})
             </button>
@@ -321,14 +343,14 @@ export default function AdminPage() {
       {/* Stats bar */}
       <div className="max-w-7xl mx-auto px-4 py-6 animate-fade-in-up delay-100">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
+          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3 transition-all duration-500 ease-in-out">
             <Package className="text-primary-500" size={24} />
             <div>
               <p className="text-2xl font-bold">{products.length}</p>
               <p className="text-sm text-gray-500">Producten</p>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
+          <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3 transition-all duration-500 ease-in-out">
             <ClipboardList className="text-orange-500" size={24} />
             <div>
               <p className="text-2xl font-bold">{orders.length}</p>
@@ -447,11 +469,25 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Afbeelding</label>
-                  <div className="flex items-center gap-3">
+                  <label className="block text-sm font-semibold mb-1">Product Foto's</label>
+                  
+                  {/* Slideshow Preview */}
+                  {formData.images && formData.images.length > 0 && (
+                    <div className="mb-4">
+                      <ImageSlideshow 
+                        images={formData.images} 
+                        alt={formData.name}
+                        className="h-64 w-full"
+                        showThumbnails={true}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Upload Button */}
+                  <div className="flex items-center gap-3 mb-3">
                     <label className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors cursor-pointer">
                       <Upload size={16} />
-                      <span>{uploadingImage ? 'Uploaden...' : 'Bestand kiezen'}</span>
+                      <span>{uploadingImage ? 'Uploaden...' : 'Foto toevoegen'}</span>
                       <input 
                         type="file" 
                         accept="image/*" 
@@ -466,28 +502,73 @@ export default function AdminPage() {
                             const res = await fetch('/api/upload', { method: 'POST', body: formData });
                             const data = await res.json();
                             if (data.success) {
-                              setFormData(prev => ({ ...prev, image: data.url }));
+                              // Add new image to images array
+                              setFormData(prev => ({
+                                ...prev,
+                                images: [...(prev.images || []), data.url]
+                              }));
                             } else {
                               alert('Upload mislukt: ' + data.error);
                             }
                           } catch {
-                            alert('Upload mislukt');
+                            alert('Upload mislukt - Controleer of de upload map bestaat');
                           } finally {
                             setUploadingImage(false);
                           }
                         }}
                       />
                     </label>
+                    <span className="text-sm text-gray-500">PNG, JPG, GIF (max 5MB)</span>
+                  </div>
+                  
+                  {/* Manual URL Input */}
+                  <div className="flex gap-2">
                     <input 
                       type="text" 
-                      value={formData.image} 
+                      value={formData.image || ''}
                       onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" 
+                      className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 text-sm" 
                       placeholder="Of plak een URL..." 
                     />
+                    <button
+                      onClick={() => {
+                        if (formData.image) {
+                          setFormData(prev => ({
+                            ...prev,
+                            images: [...(prev.images || []), prev.image || ''],
+                            image: ''
+                          }));
+                        }
+                      }}
+                      className="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm transition-colors"
+                    >
+                      Toevoegen
+                    </button>
                   </div>
-                  {formData.image && (
-                    <img src={formData.image} alt="Preview" className="mt-3 w-32 h-32 object-cover rounded-lg border" />
+                  
+                  {/* Thumbnail Grid */}
+                  {formData.images && formData.images.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">{formData.images.length} foto(s)</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {formData.images.map((img, idx) => (
+                          <div key={idx} className="relative group">
+                            <img src={img} alt={`Foto ${idx + 1}`} className="w-20 h-20 object-cover rounded-lg border" />
+                            <button
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  images: prev.images?.filter((_, i) => i !== idx) || []
+                                }));
+                              }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-6">
@@ -791,15 +872,29 @@ export default function AdminPage() {
                 <tbody className="divide-y">
                   {users.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-semibold text-sm">{u.companyName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.kvkNumber}</td>
-                      <td className="px-4 py-3 text-sm">{u.contactPerson}</td>
-                      <td className="px-4 py-3 text-sm text-primary-500">{u.email}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{u.city}, {u.country}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString('nl-NL')}</td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => handleDeleteUser(u.id)} className="text-red-500 hover:text-red-700 p-1">
-                          <Trash2 size={18} />
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {u.customerType === 'business' ? (
+                          <>
+                            {u.companyName}
+                            <div className="text-xs text-gray-500">{u.contactPerson}</div>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">Zakelijk</span>
+                          </>
+                        ) : (
+                          <>
+                            {u.firstName} {u.lastName}
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mt-1">Particulier</span>
+                          </>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{u.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{u.kvkNumber || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{u.phone || '-'}</td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Verwijderen
                         </button>
                       </td>
                     </tr>
@@ -881,7 +976,7 @@ export default function AdminPage() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Nieuwsartikelen</h2>
               <button
-                onClick={() => { setCreatingNews(true); setEditingNews(null); setNewsForm({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', published: true }); }}
+                onClick={() => { setCreatingNews(true); setEditingNews(null); setNewsForm({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', images: [], published: true }); }}
                 className="bg-primary-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-600"
               >
                 <Plus size={18} /> Nieuw Artikel
@@ -1008,7 +1103,9 @@ export default function AdminPage() {
                               title: article.title, titleEn: article.titleEn,
                               summary: article.summary, summaryEn: article.summaryEn,
                               content: article.content, contentEn: article.contentEn,
-                              image: article.image, published: article.published,
+                              image: article.image || '', 
+                              images: (article as any).images || [],
+                              published: article.published,
                             });
                           }}
                           className="text-primary-500 hover:text-primary-700 mr-2"
@@ -1031,6 +1128,157 @@ export default function AdminPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* REPAIRS TAB */}
+        {activeTab === 'repairs' && (
+          <div className="max-w-7xl mx-auto px-4 pb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Wrench className="text-primary-600" /> Reparatie Afspraken
+              </h2>
+              <div className="flex gap-2">
+                {(['all', 'pending', 'approved', 'rejected', 'completed'] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setRepairFilter(filter)}
+                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                      repairFilter === filter
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {filter === 'all' ? 'Alle' : 
+                     filter === 'pending' ? 'Nieuw' :
+                     filter === 'approved' ? 'Goedgekeurd' :
+                     filter === 'rejected' ? 'Afgewezen' : 'Afgerond'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Repairs Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Datum</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Klant</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Apparaat</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Foto's</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acties</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {repairAppointments
+                    .filter(r => repairFilter === 'all' || r.status === repairFilter)
+                    .map((repair) => (
+                    <tr key={repair.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-medium text-gray-900">
+                          {new Date(repair.appointmentDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </div>
+                        <div className="text-xs text-gray-500">{repair.appointmentTime}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-medium text-gray-900">{repair.name}</div>
+                        <div className="text-xs text-gray-500">{repair.email}</div>
+                        <div className="text-xs text-gray-400">{repair.phone}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-900">{repair.deviceType} {repair.deviceModel}</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[200px]">{repair.problemDescription}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {repair.attachments && repair.attachments.length > 0 ? (
+                          <div className="flex gap-1">
+                            {repair.attachments.slice(0, 3).map((url, idx) => (
+                              <a 
+                                key={idx}
+                                href={url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="relative"
+                              >
+                                <img 
+                                  src={url} 
+                                  alt={`Attachment ${idx + 1}`}
+                                  className="w-10 h-10 object-cover rounded border hover:opacity-80 transition-opacity"
+                                />
+                              </a>
+                            ))}
+                            {repair.attachments.length > 3 && (
+                              <span className="text-xs text-gray-500 flex items-center">
+                                +{repair.attachments.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                          repair.serviceType === 'bring_in' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {repair.serviceType === 'bring_in' ? 'Langs brengen' : 'Opsturen'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                          repair.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          repair.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          repair.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {repair.status === 'pending' ? 'Nieuw' :
+                           repair.status === 'approved' ? 'Goedgekeurd' :
+                           repair.status === 'rejected' ? 'Afgewezen' : 'Afgerond'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleApproveRepair(repair.id)}
+                            disabled={repair.status !== 'pending'}
+                            className="p-1 text-green-600 hover:bg-green-50 rounded disabled:text-gray-300 disabled:cursor-not-allowed"
+                            title="Goedkeuren"
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleRejectRepair(repair.id)}
+                            disabled={repair.status !== 'pending'}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded disabled:text-gray-300 disabled:cursor-not-allowed"
+                            title="Afkeuren"
+                          >
+                            <X size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRepair(repair.id)}
+                            className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                            title="Verwijderen"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {repairAppointments.filter(r => repairFilter === 'all' || r.status === repairFilter).length === 0 && (
+                <div className="text-center py-12 text-gray-500">
+                  <Wrench size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p>Geen reparatie afspraken gevonden</p>
+                </div>
+              )}
             </div>
           </div>
         )}

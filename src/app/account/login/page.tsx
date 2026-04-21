@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { loginUserApi, setCurrentUser } from '@/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, Building2, AlertCircle } from 'lucide-react';
+import { Lock, User, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const { t, setUser } = useApp();
@@ -44,8 +44,8 @@ export default function LoginPage() {
             <img src="/logo.png" alt="LabFix" className="h-14 w-auto mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-800">{t('auth.loginTitle')}</h1>
             <div className="flex items-center justify-center gap-2 mt-2 text-sm text-gray-500">
-              <Building2 size={14} />
-              <span>{t('auth.b2bOnly')}</span>
+              <User size={14} />
+              <span>{t('auth.loginSubtitle')}</span>
             </div>
           </div>
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500 transition-colors"
-                placeholder="info@uwbedrijf.nl"
+                placeholder="jouw@email.nl"
               />
             </div>
             <div>

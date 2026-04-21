@@ -9,7 +9,7 @@ import { ShoppingCart, ArrowLeft, Truck, Shield, Check, Minus, Plus } from 'luci
 import ProductCard from '@/components/ProductCard';
 
 export default function ProductDetailPage() {
-  const { t, locale, addToCart } = useApp();
+  const { t, locale, formatPrice, addToCart } = useApp();
   const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -80,12 +80,12 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="mb-6">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-primary-500">€{product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-primary-500">{formatPrice(product.price)}</span>
               {product.comparePrice && (
-                <span className="text-lg text-gray-400 line-through">€{product.comparePrice.toFixed(2)}</span>
+                <span className="text-lg text-gray-400 line-through">{formatPrice(product.comparePrice)}</span>
               )}
             </div>
-            <p className="text-sm text-gray-400">{t('general.exclVat')}</p>
+            <p className="text-sm text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
           </div>
 
           {/* Stock */}
@@ -97,6 +97,14 @@ export default function ProductDetailPage() {
             ) : (
               <span className="text-red-500 font-semibold">{t('products.outOfStock')}</span>
             )}
+          </div>
+
+          {/* Description */}
+          <div className="mt-6 pt-4 border-t">
+            <h4 className="font-semibold text-sm mb-2">{t('products.price')}</h4>
+            <p className="text-xs text-gray-500">
+              {locale === 'nl' ? 'Alle prijzen zijn incl. BTW' : 'All prices are incl. VAT'}
+            </p>
           </div>
 
           {/* Description */}

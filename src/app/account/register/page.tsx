@@ -5,17 +5,20 @@ import { useApp } from '@/context/AppContext';
 import { registerUserApi } from '@/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UserPlus, Building2, AlertCircle, CheckCircle } from 'lucide-react';
+import { UserPlus, Building2, AlertCircle, CheckCircle, User, Briefcase } from 'lucide-react';
 
 export default function RegisterPage() {
   const { t } = useApp();
   const router = useRouter();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [customerType, setCustomerType] = useState<'individual' | 'business'>('individual');
   const [form, setForm] = useState({
     email: '',
     password: '',
     confirmPassword: '',
+    firstName: '',
+    lastName: '',
     companyName: '',
     kvkNumber: '',
     contactPerson: '',
@@ -24,6 +27,8 @@ export default function RegisterPage() {
     city: '',
     postalCode: '',
     country: 'Nederland',
+    agreeTerms: false,
+    newsletter: false,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,8 +50,13 @@ export default function RegisterPage() {
       setError('Wachtwoord moet minimaal 6 tekens zijn');
       return;
     }
-    if (form.kvkNumber.length < 8) {
+    if (customerType === 'business' && form.kvkNumber.length < 8) {
       setError('KVK nummer moet 8 cijfers bevatten');
+      return;
+    }
+
+    if (!form.agreeTerms) {
+      setError('Je moet akkoord gaan met de algemene voorwaarden en privacy policy');
       return;
     }
 
@@ -55,15 +65,28 @@ export default function RegisterPage() {
       const result = await registerUserApi({
         email: form.email,
         password: form.password,
-        companyName: form.companyName,
-        kvkNumber: form.kvkNumber,
-        contactPerson: form.contactPerson,
+        customerType,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        companyName: customerType === 'business' ? form.companyName : undefined,
+        kvkNumber: customerType === 'business' ? form.kvkNumber : undefined,
+        contactPerson: customerType === 'business' ? form.contactPerson : undefined,
         phone: form.phone,
         address: form.address,
         city: form.city,
         postalCode: form.postalCode,
         country: form.country,
+        newsletter: form.newsletter,
       });
+
+      // If newsletter is checked, also subscribe to newsletter
+      if (form.newsletter && result.success) {
+        fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email })
+        }).catch(() => {});
+      }
 
       if (result.success) {
         setSuccess(t('auth.registerSuccess'));
@@ -85,10 +108,7 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <img src="/logo.png" alt="LabFix" className="h-14 w-auto mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-800">{t('auth.registerTitle')}</h1>
-            <div className="flex items-center justify-center gap-2 mt-2 text-sm text-gray-500">
-              <Building2 size={14} />
-              <span>{t('auth.b2bOnly')}</span>
-            </div>
+            <p className="text-gray-500 text-center mt-2">Maak een account aan</p>
           </div>
 
           {error && (
@@ -105,27 +125,78 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Customer Type Toggle */}
             <div className="border-b pb-5">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('account.company')}</h2>
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">Account Type</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setCustomerType('individual')}
+                  className={`flex items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    customerType === 'individual'
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <User size={20} />
+                  <span className="font-medium">Particulier</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomerType('business')}
+                  className={`flex items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                    customerType === 'business'
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <Briefcase size={20} />
+                  <span className="font-medium">Zakelijk</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Personal/Business Info */}
+            <div className="border-b pb-5">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                {customerType === 'business' ? 'Bedrijfsgegevens' : 'Persoonlijke gegevens'}
+              </h2>
               <div className="grid md:grid-cols-2 gap-4">
+                {customerType === 'individual' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Voornaam *</label>
+                      <input type="text" name="firstName" required value={form.firstName} onChange={handleChange}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Achternaam *</label>
+                      <input type="text" name="lastName" required value={form.lastName} onChange={handleChange}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Bedrijfsnaam *</label>
+                      <input type="text" name="companyName" required value={form.companyName} onChange={handleChange}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">KVK Nummer *</label>
+                      <input type="text" name="kvkNumber" required value={form.kvkNumber} onChange={handleChange}
+                          placeholder="12345678" maxLength={8}
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Contactpersoon *</label>
+                      <input type="text" name="contactPerson" required value={form.contactPerson} onChange={handleChange}
+                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
+                    </div>
+                  </>
+                )}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('auth.companyName')} *</label>
-                  <input type="text" name="companyName" required value={form.companyName} onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('auth.kvkNumber')} *</label>
-                  <input type="text" name="kvkNumber" required value={form.kvkNumber} onChange={handleChange}
-                    placeholder="12345678" maxLength={8}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('auth.contactPerson')} *</label>
-                  <input type="text" name="contactPerson" required value={form.contactPerson} onChange={handleChange}
-                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">{t('auth.phone')} *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Telefoonnummer *</label>
                   <input type="tel" name="phone" required value={form.phone} onChange={handleChange}
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
                 </div>
@@ -178,6 +249,41 @@ export default function RegisterPage() {
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors" />
                 </div>
               </div>
+            </div>
+
+            {/* Terms and Newsletter Checkboxes */}
+            <div className="space-y-3 border-t border-gray-200 pt-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.agreeTerms}
+                  onChange={(e) => setForm({ ...form, agreeTerms: e.target.checked })}
+                  className="mt-1 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-600">
+                  Ik ga akkoord met de{' '}
+                  <Link href="/algemene-voorwaarden" className="text-primary-600 hover:underline" target="_blank">
+                    Algemene Voorwaarden
+                  </Link>{' '}
+                  en{' '}
+                  <Link href="/privacy-policy" className="text-primary-600 hover:underline" target="_blank">
+                    Privacy Policy
+                  </Link>
+                  <span className="text-red-500">*</span>
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.newsletter}
+                  onChange={(e) => setForm({ ...form, newsletter: e.target.checked })}
+                  className="mt-1 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-600">
+                  Ik wil me aanmelden voor de nieuwsbrief met updates en aanbiedingen
+                </span>
+              </label>
             </div>
 
             <button

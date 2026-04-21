@@ -36,10 +36,10 @@ export interface Category {
 export interface User {
   id: string;
   email: string;
-  customerType?: 'individual' | 'business';
-  companyName: string;
-  kvkNumber: string;
-  contactPerson: string;
+  customerType: 'individual' | 'business';
+  companyName?: string;
+  kvkNumber?: string;
+  contactPerson?: string;
   firstName?: string;
   lastName?: string;
   phone: string;
@@ -48,6 +48,28 @@ export interface User {
   postalCode: string;
   country: string;
   createdAt: string;
+}
+
+export type RepairStatus = 'pending' | 'approved' | 'rejected' | 'completed' | 'cancelled';
+
+export interface RepairAppointment {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  deviceType: string;
+  deviceModel: string;
+  problemDescription: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  serviceType: 'bring_in' | 'shipping';
+  shippingAddress?: string;
+  status: RepairStatus;
+  rejectionReason?: string;
+  adminNotes?: string;
+  attachments?: string[]; // Array of image URLs
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
@@ -89,6 +111,7 @@ export interface NewsArticle {
   content: string;
   contentEn: string;
   image: string;
+  images: string[];
   published: boolean;
   createdAt: string;
   updatedAt: string;
@@ -289,6 +312,52 @@ export function getCartTotal(cart: CartItem[]): number {
 
 export function getCartCount(cart: CartItem[]): number {
   return cart.reduce((count, item) => count + item.quantity, 0);
+}
+
+// Repair Appointments API
+export async function createRepairAppointment(
+  appointment: Omit<RepairAppointment, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'rejectionReason' | 'adminNotes'> | FormData
+): Promise<{ success: boolean; message?: string; id?: string; error?: string; attachments?: string[] }> {
+  try {
+    const isFormData = appointment instanceof FormData;
+    
+    const response = await fetch('/api/repair', {
+      method: 'POST',
+      headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+      body: isFormData ? appointment : JSON.stringify(appointment),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create appointment');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating repair appointment:', error);
+    return { success: false, error: 'Failed to create appointment' };
+  }
+}
+
+export async function fetchRepairAppointments(status?: string): Promise<{ success: boolean; appointments: RepairAppointment[] }> {
+  const url = status ? `/api/repair?status=${status}` : '/api/repair';
+  const response = await fetch(url);
+  return response.json();
+}
+
+export async function updateRepairAppointment(id: string, data: { status: RepairStatus; rejectionReason?: string; adminNotes?: string }): Promise<{ success: boolean; message: string; appointment?: RepairAppointment }> {
+  const response = await fetch(`/api/repair/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return response.json();
+}
+
+export async function deleteRepairAppointment(id: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`/api/repair/${id}`, {
+    method: 'DELETE',
+  });
+  return response.json();
 }
 
 // ==================== USER SESSION (client-side) ====================

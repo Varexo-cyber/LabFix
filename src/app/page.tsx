@@ -35,34 +35,19 @@ export default function HomePage() {
   const featuredProducts = products.filter((p) => p.featured);
   const newProducts = products.filter((p) => p.isNew);
 
-  const brandIcons: Record<string, React.ReactNode> = {
-    apple: <Smartphone size={36} />,
-    samsung: <Smartphone size={36} />,
-    google: <Smartphone size={36} />,
-    huawei: <Smartphone size={36} />,
-    xiaomi: <Smartphone size={36} />,
-    motorola: <Smartphone size={36} />,
-    oneplus: <Smartphone size={36} />,
-    oppo: <Smartphone size={36} />,
-    nokia: <Smartphone size={36} />,
-    sony: <Smartphone size={36} />,
-    lg: <Smartphone size={36} />,
-    honor: <Smartphone size={36} />,
-    nothing: <Smartphone size={36} />,
-    realme: <Smartphone size={36} />,
-    vivo: <Smartphone size={36} />,
-    tcl: <Smartphone size={36} />,
-    zte: <Smartphone size={36} />,
-    asus: <Laptop size={36} />,
-    lenovo: <Laptop size={36} />,
-    microsoft: <Monitor size={36} />,
-    hp: <Laptop size={36} />,
-    dell: <Laptop size={36} />,
-    acer: <Laptop size={36} />,
-    amazon: <Package size={36} />,
-    infinix: <Smartphone size={36} />,
-    tools: <Wrench size={36} />,
-    accessories: <Package size={36} />,
+  const brandLogos: Record<string, string> = {
+    apple: '/images/logos/brands/apple.svg',
+    samsung: '/images/logos/brands/samsung.svg',
+    google: '/images/logos/brands/google.svg',
+    huawei: '/images/logos/brands/huawei.svg',
+    xiaomi: '/images/logos/brands/xiaomi.svg',
+    nokia: '/images/logos/brands/nokia.svg',
+    honor: '/images/logos/brands/honor.svg',
+    nothing: '/images/logos/brands/nothing.webp',
+    realme: '/images/logos/brands/realme.svg',
+    vivo: '/images/logos/brands/vivo.svg',
+    asus: '/images/logos/brands/asus.svg',
+    lenovo: '/images/logos/brands/lenovo.png',
   };
 
   // Show top brands - mix of phones and computers
@@ -222,24 +207,35 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {homeBrands.map((brand, i) => (
-            <Link
-              key={brand.slug}
-              href={`/products?brand=${brand.slug}`}
-              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
-              style={{ animationDelay: `${(i + 1) * 0.05}s` }}
-            >
-              <div className="w-16 h-16 mx-auto mb-4 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-500 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">
-                {brandIcons[brand.slug] || <Package size={32} />}
-              </div>
-              <h3 className="font-bold text-gray-800 text-sm group-hover:text-primary-600 transition-colors">
-                {locale === 'en' ? brand.nameEn : brand.name}
-              </h3>
-              <p className="text-xs text-gray-400 mt-1">
-                {brand.subcategories.length} {locale === 'nl' ? 'subcategorieën' : 'subcategories'}
-              </p>
-            </Link>
-          ))}
+          {homeBrands.map((brand, i) => {
+            const logoPath = brandLogos[brand.slug];
+            return (
+              <Link
+                key={brand.slug}
+                href={`/products?brand=${brand.slug}`}
+                className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
+                style={{ animationDelay: `${(i + 1) * 0.05}s` }}
+              >
+                <div className="w-16 h-16 mx-auto mb-4 bg-primary-50 rounded-2xl flex items-center justify-center p-3 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">
+                  {logoPath ? (
+                    <img
+                      src={logoPath}
+                      alt={`${brand.name} logo`}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <Package size={32} className="text-primary-500" />
+                  )}
+                </div>
+                <h3 className="font-bold text-gray-800 text-sm group-hover:text-primary-600 transition-colors">
+                  {locale === 'en' ? brand.nameEn : brand.name}
+                </h3>
+                <p className="text-xs text-gray-400 mt-1">
+                  {brand.subcategories.length} {locale === 'nl' ? 'subcategorieën' : 'subcategories'}
+                </p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -394,45 +390,45 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">
-              {locale === 'nl' ? 'Waarom LabFix B2B?' : 'Why LabFix B2B?'}
+              {locale === 'nl' ? 'Waarom LabFix?' : 'Why LabFix?'}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
               {locale === 'nl' 
-                ? 'De Partner voor uw Reparatiebedrijf' 
-                : 'The Partner for Your Repair Business'}
+                ? 'Uw Specialist in Reparatie & Onderdelen' 
+                : 'Your Repair & Parts Specialist'}
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               {locale === 'nl'
-                ? 'Professionele groothandel in telefoon en laptop onderdelen. Betrouwbare leverancier voor reparatiebedrijven.'
-                : 'Professional wholesale supplier of phone and laptop parts. Reliable partner for repair businesses.'}
+                ? 'Professionele reparatie en onderdelen voor smartphones, tablets en laptops. Voor particulieren en bedrijven.'
+                : 'Professional repair and parts for smartphones, tablets and laptops. For individuals and businesses.'}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {[
               { 
-                icon: <Package size={40} />, 
+                icon: <Wrench size={40} />, 
                 stat: '15+', 
                 title: locale === 'nl' ? 'Merken' : 'Brands',
-                desc: locale === 'nl' ? 'Alle grote telefoon en laptop merken' : 'All major phone and laptop brands'
+                desc: locale === 'nl' ? 'Reparatie voor alle grote merken' : 'Repair for all major brands'
               },
               { 
                 icon: <Clock size={40} />, 
-                stat: '24h', 
-                title: locale === 'nl' ? 'Snelle Levering' : 'Fast Delivery',
-                desc: locale === 'nl' ? 'Voor 16:00 besteld, morgen in huis' : 'Order before 4 PM, delivered tomorrow'
+                stat: '30m', 
+                title: locale === 'nl' ? 'Snelle Reparatie' : 'Fast Repair',
+                desc: locale === 'nl' ? 'De meeste reparaties binnen 30 minuten' : 'Most repairs within 30 minutes'
               },
               { 
                 icon: <ShieldCheck size={40} />, 
-                stat: '12m', 
+                stat: 'Lifetime', 
                 title: locale === 'nl' ? 'Garantie' : 'Warranty',
-                desc: locale === 'nl' ? 'Tot 12 maanden garantie op alle onderdelen' : 'Up to 12 months warranty on all parts'
+                desc: locale === 'nl' ? 'Levenslange garantie op reparaties' : 'Lifetime warranty on repairs'
               },
               { 
                 icon: <Headphones size={40} />, 
                 stat: '09-17', 
-                title: locale === 'nl' ? 'Support' : 'Support',
-                desc: locale === 'nl' ? 'Ma-Vr telefonisch bereikbaar' : 'Mon-Fri phone support'
+                title: locale === 'nl' ? 'Service' : 'Service',
+                desc: locale === 'nl' ? 'Loop-in reparatie of afspraak' : 'Walk-in repair or appointment'
               },
             ].map((item, i) => (
               <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">
@@ -448,13 +444,13 @@ export default function HomePage() {
           <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 text-center text-white">
             <h3 className="text-2xl md:text-3xl font-bold mb-4">
               {locale === 'nl' 
-                ? 'Start vandaag nog met groothandel prijzen!' 
-                : 'Start today with wholesale prices!'}
+                ? 'Laat uw toestel vakkundig repareren!' 
+                : 'Get your device repaired by experts!'}
             </h3>
             <p className="text-white/80 mb-8 max-w-xl mx-auto">
               {locale === 'nl'
-                ? 'Registreer uw bedrijf en ontvang direct toegang tot onze B2B prijzen. Geen minimale afname, geen verborgen kosten.'
-                : 'Register your business and get instant access to our B2B prices. No minimum order, no hidden fees.'}
+                ? 'Van schermreparaties tot batterijvervanging. Ons ervaren team helpt u snel en vakkundig. Ook voor onderdelen zelf repareren!'
+                : 'From screen repairs to battery replacement. Our experienced team helps you quickly and professionally. Also for DIY parts!'}
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link 
@@ -506,12 +502,12 @@ export default function HomePage() {
         </div>
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {locale === 'nl' ? 'Klaar om te bestellen?' : 'Ready to order?'}
+            {locale === 'nl' ? 'Klaar om te repareren?' : 'Ready to repair?'}
           </h2>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
             {locale === 'nl'
-              ? 'Registreer vandaag nog en krijg toegang tot ons complete assortiment tegen groothandelsprijzen.'
-              : 'Register today and get access to our complete range at wholesale prices.'}
+              ? 'Maak vandaag nog een afspraak voor reparatie of bestel onderdelen voor zelf repareren. Snelle service, garantie inbegrepen!'
+              : 'Make an appointment for repair today or order parts for DIY repair. Fast service, warranty included!'}
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
@@ -585,21 +581,27 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
             {[
-              { name: 'Apple', icon: <Smartphone size={28} /> },
-              { name: 'Samsung', icon: <Smartphone size={28} /> },
-              { name: 'Google', icon: <Smartphone size={28} /> },
-              { name: 'Huawei', icon: <Smartphone size={28} /> },
-              { name: 'Xiaomi', icon: <Smartphone size={28} /> },
-              { name: 'OnePlus', icon: <Smartphone size={28} /> },
-              { name: 'Motorola', icon: <Smartphone size={28} /> },
-              { name: 'ASUS', icon: <Laptop size={28} /> },
-              { name: 'Lenovo', icon: <Laptop size={28} /> },
-              { name: 'HP', icon: <Laptop size={28} /> },
-              { name: 'Dell', icon: <Laptop size={28} /> },
-              { name: 'Microsoft', icon: <Monitor size={28} /> },
+              { name: 'Apple', logo: '/images/logos/brands/apple.svg' },
+              { name: 'Samsung', logo: '/images/logos/brands/samsung.svg' },
+              { name: 'Google', logo: '/images/logos/brands/google.svg' },
+              { name: 'Huawei', logo: '/images/logos/brands/huawei.svg' },
+              { name: 'Xiaomi', logo: '/images/logos/brands/xiaomi.svg' },
+              { name: 'OnePlus', logo: '/images/logos/brands/oneplus.png' },
+              { name: 'Motorola', logo: '/images/logos/brands/motorola.svg' },
+              { name: 'ASUS', logo: '/images/logos/brands/asus.svg' },
+              { name: 'Lenovo', logo: '/images/logos/brands/lenovo.png' },
+              { name: 'HP', logo: '/images/logos/brands/hp.svg' },
+              { name: 'Dell', logo: '/images/logos/brands/dell.svg' },
+              { name: 'Microsoft', logo: '/images/logos/brands/microsoft.svg' },
             ].map((brand, i) => (
               <div key={brand.name} className="text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default group">
-                <div className="mx-auto mb-1 group-hover:scale-110 transition-transform">{brand.icon}</div>
+                <div className="mx-auto mb-2 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <img
+                    src={brand.logo}
+                    alt={`${brand.name} logo`}
+                    className="w-full h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                  />
+                </div>
                 <p className="font-medium text-xs">{brand.name}</p>
               </div>
             ))}

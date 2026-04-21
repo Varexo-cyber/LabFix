@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   keywords: 'telefoon onderdelen, iPhone scherm, Samsung onderdelen, iPad reparatie, MacBook onderdelen, Europa',
   icons: {
     icon: [
+      { url: '/logo.png', sizes: '64x64', type: 'image/png' },
+      { url: '/logo.png', sizes: '48x48', type: 'image/png' },
       { url: '/logo.png', sizes: '32x32', type: 'image/png' },
       { url: '/logo.png', sizes: '16x16', type: 'image/png' },
       { url: '/logo.png', sizes: '192x192', type: 'image/png' },
@@ -35,7 +37,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl">
-      <body className={`${inter.className} bg-gray-50`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preload" href="/logo.png" as="image" type="image/png" />
+      </head>
+      <body className={`${inter.className} bg-gray-50 antialiased`}>
         <AppProvider>
           <div className="flex flex-col min-h-screen">
             <Header />

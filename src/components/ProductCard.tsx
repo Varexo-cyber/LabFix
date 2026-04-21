@@ -11,7 +11,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { t, locale, addToCart } = useApp();
+  const { t, locale, formatPrice, addToCart } = useApp();
 
   const name = locale === 'nl' ? product.name : product.nameEn;
   const description = locale === 'nl' ? product.description : product.descriptionEn;
@@ -53,11 +53,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="text-gray-500 text-xs mt-1 line-clamp-1">{product.sku}</p>
         <div className="flex items-center justify-between mt-3">
           <div>
-            <span className="text-lg font-bold text-primary-500">€{product.price.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary-500">{formatPrice(product.price)}</span>
             {product.comparePrice && (
-              <span className="text-sm text-gray-400 line-through ml-2">€{product.comparePrice.toFixed(2)}</span>
+              <span className="text-sm text-gray-400 line-through ml-2">{formatPrice(product.comparePrice)}</span>
             )}
-            <p className="text-xs text-gray-400">{t('general.exclVat')}</p>
+            <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
           </div>
           <button
             onClick={(e) => {

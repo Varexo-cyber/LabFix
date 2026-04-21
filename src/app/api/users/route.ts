@@ -4,14 +4,17 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET() {
   try {
     const sql = getDb();
-    const users = await sql`SELECT id, email, company_name, kvk_number, contact_person, phone, address, city, postal_code, country, created_at FROM users ORDER BY created_at DESC`;
+    const users = await sql`SELECT id, email, customer_type, company_name, kvk_number, contact_person, first_name, last_name, phone, address, city, postal_code, country, created_at FROM users ORDER BY created_at DESC`;
 
     const mapped = users.map((u: any) => ({
       id: u.id,
       email: u.email,
+      customerType: u.customer_type || 'individual',
       companyName: u.company_name,
       kvkNumber: u.kvk_number,
       contactPerson: u.contact_person,
+      firstName: u.first_name,
+      lastName: u.last_name,
       phone: u.phone,
       address: u.address,
       city: u.city,

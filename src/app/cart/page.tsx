@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft, Truck } from 'lucide-react';
 
 export default function CartPage() {
-  const { t, locale, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
+  const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -46,7 +46,7 @@ export default function CartPage() {
                       </h3>
                     </Link>
                     <p className="text-sm text-gray-500">{item.product.sku}</p>
-                    <p className="text-primary-500 font-bold mt-1">€{item.product.price.toFixed(2)}</p>
+                    <p className="text-primary-500 font-bold mt-1">{formatPrice(item.product.price)}</p>
                   </div>
                   <div className="flex flex-col items-end justify-between">
                     <button
@@ -71,7 +71,7 @@ export default function CartPage() {
                       </button>
                     </div>
                     <p className="font-bold text-gray-800">
-                      €{(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity)}
                     </p>
                   </div>
                 </div>
@@ -87,14 +87,14 @@ export default function CartPage() {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.subtotal')}</span>
-                  <span className="font-semibold">€{cartTotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formatPrice(cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.shipping')}</span>
                   <span className="font-semibold">
                     {cartTotal >= 150
                       ? (locale === 'nl' ? 'Gratis' : 'Free')
-                      : '€14.95'}
+                      : formatPrice(14.95)}
                   </span>
                 </div>
                 {cartTotal < 150 && (
@@ -109,10 +109,10 @@ export default function CartPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
                   <span className="text-primary-500">
-                    €{(cartTotal + (cartTotal >= 150 ? 0 : 14.95)).toFixed(2)}
+                    {formatPrice(cartTotal + (cartTotal >= 150 ? 0 : 14.95))}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">{t('general.exclVat')}</p>
+                <p className="text-xs text-gray-400 mt-1">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
               </div>
 
               <Link href={user ? '/checkout' : '/account/login'} className="block w-full bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors text-center">
