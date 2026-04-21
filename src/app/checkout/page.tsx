@@ -20,7 +20,6 @@ export default function CheckoutPage() {
   const [useAccountAddress, setUseAccountAddress] = useState(true);
   
   // Guest checkout fields
-  const [isGuest, setIsGuest] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
@@ -36,11 +35,11 @@ export default function CheckoutPage() {
       setShippingPostalCode(user.postalCode);
       setShippingCountry(user.country);
     }
-    setIsGuest(!user);
   }, [user, cart, router, orderPlaced]);
 
   const shippingCost = cartTotal >= 150 ? 0 : 14.95;
   const total = cartTotal + shippingCost;
+  const isGuest = !user;
 
   const handleUseAccountAddress = (checked: boolean) => {
     setUseAccountAddress(checked);
@@ -128,8 +127,9 @@ export default function CheckoutPage() {
           {/* Shipping details */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                {/* Guest or User Info */}
+              <h2 className="text-xl font-bold mb-4">Verzending</h2>
+              
+              {/* Guest or User Info */}
                 {!user && !orderPlaced && (
                   <div className="bg-white rounded-lg border p-6 mb-4">
                     <h3 className="text-lg font-semibold mb-4">Contactgegevens</h3>
