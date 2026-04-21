@@ -5,17 +5,31 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
 import { fetchProducts, Product, fetchNews, NewsArticle } from '@/lib/store';
-import { Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, Package, ChevronRight, Newspaper, Laptop, Monitor } from 'lucide-react';
+import { 
+  Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, 
+  Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock, 
+  CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles, 
+  ShieldCheck 
+} from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
 export default function HomePage() {
   const { t, locale } = useApp();
   const [products, setProducts] = useState<Product[]>([]);
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
     fetchProducts().then(setProducts);
     fetchNews().then(articles => setNewsArticles(articles.filter(a => a.published)));
+  }, []);
+
+  // Auto-rotate banner
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(timer);
   }, []);
 
   const featuredProducts = products.filter((p) => p.featured);
@@ -25,123 +39,200 @@ export default function HomePage() {
     apple: <Smartphone size={36} />,
     samsung: <Smartphone size={36} />,
     google: <Smartphone size={36} />,
-    motorola: <Smartphone size={36} />,
     huawei: <Smartphone size={36} />,
     xiaomi: <Smartphone size={36} />,
+    motorola: <Smartphone size={36} />,
     oneplus: <Smartphone size={36} />,
     oppo: <Smartphone size={36} />,
+    nokia: <Smartphone size={36} />,
+    sony: <Smartphone size={36} />,
+    lg: <Smartphone size={36} />,
+    honor: <Smartphone size={36} />,
+    nothing: <Smartphone size={36} />,
+    realme: <Smartphone size={36} />,
+    vivo: <Smartphone size={36} />,
+    tcl: <Smartphone size={36} />,
+    zte: <Smartphone size={36} />,
+    asus: <Laptop size={36} />,
+    lenovo: <Laptop size={36} />,
+    microsoft: <Monitor size={36} />,
+    hp: <Laptop size={36} />,
+    dell: <Laptop size={36} />,
+    acer: <Laptop size={36} />,
+    amazon: <Package size={36} />,
+    infinix: <Smartphone size={36} />,
     tools: <Wrench size={36} />,
     accessories: <Package size={36} />,
   };
 
-  const homeBrands = brandCategories.filter(b => ['apple', 'samsung', 'google', 'huawei', 'xiaomi', 'tools', 'accessories', 'other-brands'].includes(b.slug));
+  // Show top brands - mix of phones and computers
+  const homeBrands = brandCategories.filter(b => 
+    ['apple', 'samsung', 'google', 'huawei', 'xiaomi', 'nokia', 'honor', 'nothing', 'realme', 'vivo', 
+     'asus', 'lenovo', 'microsoft', 'hp', 'dell', 'tools', 'accessories'].includes(b.slug)
+  ).slice(0, 12);
+
+  // MobileSentrix style hero slides - white/gray background with clean product images
+  const heroSlides = [
+    {
+      badge: 'Pre-owned Devices',
+      badgeIcon: '📱',
+      title: locale === 'nl' ? 'Grotere Marges met Sealed Apple Inventory' : 'Unlock Bigger Margins with Sealed Apple Inventory',
+      subtitle: locale === 'nl' ? 'iPhone Air • iPad 11 & Mini 7 • Watch 11, SE3, 10, & Ultra 2' : 'iPhone Air • iPad 11 & Mini 7 • Watch 11, SE3, 10, & Ultra 2',
+      features: [
+        { label: locale === 'nl' ? 'Volledig Getest' : 'Fully Tested', sub: locale === 'nl' ? '& Functioneel' : '& Functional' },
+        { label: locale === 'nl' ? 'Resale' : 'Resale', sub: locale === 'nl' ? 'Klaar' : 'Ready' },
+        { label: locale === 'nl' ? '60-Dagen' : '60-Day', sub: locale === 'nl' ? 'Retouren' : 'Returns' }
+      ],
+      cta: locale === 'nl' ? 'Pre-order Sealed Apple Deals' : 'Pre-order Sealed Apple Deals',
+      link: '/products?brand=apple',
+      image: '/images/banners/phones-hero.jpg'
+    },
+    {
+      badge: 'iPhone Parts',
+      badgeIcon: '🔧',
+      title: locale === 'nl' ? 'Premium iPhone Onderdelen' : 'Premium iPhone Parts & Components',
+      subtitle: locale === 'nl' ? 'OEM Schermen • Batterijen • Camera\'s • Back Covers' : 'OEM Screens • Batteries • Cameras • Back Covers',
+      features: [
+        { label: 'OEM', sub: 'Quality' },
+        { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
+        { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: '12 Months' }
+      ],
+      cta: locale === 'nl' ? 'Bekijk iPhone Onderdelen' : 'Shop iPhone Parts',
+      link: '/products?brand=apple',
+      image: '/images/banners/iphone-parts.jpg'
+    },
+    {
+      badge: 'Repair Tools',
+      badgeIcon: '🛠️',
+      title: locale === 'nl' ? 'Professionele Reparatie Tools' : 'Professional Repair Tools & Equipment',
+      subtitle: locale === 'nl' ? 'Screwdrivers • Heat Guns • Suction Cups • Opening Tools' : 'Screwdrivers • Heat Guns • Suction Cups • Opening Tools',
+      features: [
+        { label: locale === 'nl' ? 'Professioneel' : 'Pro', sub: 'Grade' },
+        { label: locale === 'nl' ? 'Duurzaam' : 'Durable', sub: 'Quality' },
+        { label: locale === 'nl' ? 'Compleet' : 'Complete', sub: 'Sets' }
+      ],
+      cta: locale === 'nl' ? 'Bekijk Gereedschap' : 'Shop Tools',
+      link: '/products?brand=tools',
+      image: '/images/banners/tools.jpg'
+    }
+  ];
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-800 via-primary-700 to-primary-900 text-white overflow-hidden min-h-[520px] md:min-h-[600px] flex items-center">
-        {/* Animated background orbs */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary-400/15 rounded-full blur-[80px] animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-accent-500/10 rounded-full blur-[100px]" style={{ animation: 'float 4s ease-in-out 1s infinite' }}></div>
-          <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-blue-400/10 rounded-full blur-[60px]" style={{ animation: 'float 5s ease-in-out 0.5s infinite' }}></div>
-          <div className="absolute -bottom-10 left-1/2 w-80 h-80 bg-primary-300/10 rounded-full blur-[90px]" style={{ animation: 'float 3.5s ease-in-out 1.5s infinite' }}></div>
-        </div>
-
-        {/* Grid dots pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-
-        <div className="max-w-7xl mx-auto px-4 py-20 md:py-28 relative z-10 w-full">
-          <div className="text-center max-w-3xl mx-auto">
-            <div className="animate-fade-in-up">
-              <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-blue-200 text-sm font-medium px-5 py-2 rounded-full mb-8 border border-white/15">
-                <Truck size={14} />
-                {locale === 'nl' ? 'B2B Groothandel • Levering heel Europa' : 'B2B Wholesale • Delivery across Europe'}
-              </span>
-            </div>
-            <h1 className="animate-fade-in-up delay-100 text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              {t('hero.title')}
-            </h1>
-            <p className="animate-fade-in-up delay-200 text-lg md:text-xl mb-10 text-blue-200/80 leading-relaxed max-w-2xl mx-auto">
-              {t('hero.subtitle')}
-            </p>
-            <div className="animate-fade-in-up delay-300 flex flex-wrap gap-4 justify-center">
-              <Link
-                href="/products"
-                className="bg-accent-500 text-white px-8 py-4 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:shadow-xl hover:shadow-accent-500/25 hover:-translate-y-0.5 inline-flex items-center gap-2 text-lg"
+    <div className="bg-gray-50">
+      {/* MobileSentrix Style Hero - White Background with Product Images */}
+      <section className="bg-gradient-to-br from-gray-100 via-white to-gray-100 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden relative">
+            {heroSlides.map((slide, index) => (
+              <div
+                key={index}
+                className={`grid md:grid-cols-2 gap-0 absolute inset-0 transition-all duration-700 ease-in-out ${
+                  index === activeSlide ? 'opacity-100 translate-x-0 z-10' : 'opacity-0 translate-x-full z-0 pointer-events-none'
+                } ${index < activeSlide ? '-translate-x-full' : ''}`}
               >
-                {t('hero.cta')} <ArrowRight size={20} />
-              </Link>
-              <Link
-                href="/contact"
-                className="bg-white/10 border border-white/20 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-primary-700 transition-all text-lg backdrop-blur-sm"
-              >
-                {t('hero.secondary')}
-              </Link>
-            </div>
-
-            {/* Floating icon pills */}
-            <div className="animate-fade-in-up delay-500 mt-14 flex flex-wrap justify-center gap-4">
-              {[
-                { icon: <Shield size={18} />, label: locale === 'nl' ? 'Hoge Kwaliteit' : 'High Quality' },
-                { icon: <Headphones size={18} />, label: locale === 'nl' ? 'Professionele Ondersteuning' : 'Professional Support' },
-                { icon: <CreditCard size={18} />, label: locale === 'nl' ? 'Veilig Betalen' : 'Secure Payment' },
-                { icon: <Truck size={18} />, label: locale === 'nl' ? 'Verzending Europa' : 'European Shipping' },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 bg-white/[0.08] backdrop-blur-sm border border-white/10 text-blue-200 text-sm px-4 py-2.5 rounded-full"
-                  style={{ animation: `float ${3 + i * 0.5}s ease-in-out ${i * 0.3}s infinite` }}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
+                {/* Left Content */}
+                <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-medium mb-4">
+                    <span className="text-lg">{slide.badgeIcon}</span>
+                    <span className="uppercase tracking-wider">{slide.badge}</span>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                    {slide.title}
+                  </h1>
+                  <p className="text-gray-600 text-lg mb-6">
+                    {slide.subtitle}
+                  </p>
+                  
+                  {/* Features */}
+                  <div className="flex flex-wrap gap-6 mb-8">
+                    {slide.features.map((feature, i) => (
+                      <div key={i} className="text-center">
+                        <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
+                        <p className="text-xs text-gray-500">{feature.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <Link
+                    href={slide.link}
+                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-all w-fit"
+                  >
+                    {slide.cta} <ArrowRight size={18} />
+                  </Link>
                 </div>
+                
+                {/* Right Image - Full coverage */}
+                <div className="relative h-full min-h-[400px] md:min-h-[500px]">
+                  <img 
+                    src={slide.image} 
+                    alt={slide.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            ))}
+            
+            {/* Empty space for absolute slides */}
+            <div className="h-[500px] md:h-[550px]"></div>
+            
+            {/* Slide Indicators */}
+            <div className="flex justify-center gap-2 pb-6 relative z-20">
+              {heroSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActiveSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === activeSlide ? 'bg-gray-900 w-6' : 'bg-gray-300'
+                  }`}
+                />
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Bar */}
-      <section className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Trust Bar */}
+      <section className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
             {[
-              { icon: <Truck className="text-primary-500" size={24} />, title: t('features.shipping'), desc: t('features.shippingDesc') },
-              { icon: <Shield className="text-primary-500" size={24} />, title: t('features.quality'), desc: t('features.qualityDesc') },
-              { icon: <Headphones className="text-primary-500" size={24} />, title: t('features.support'), desc: t('features.supportDesc') },
-              { icon: <CreditCard className="text-primary-500" size={24} />, title: t('features.secure'), desc: t('features.secureDesc') },
-            ].map((feat, i) => (
-              <div key={i} className={`flex items-center gap-3 animate-fade-in-up delay-${(i + 1) * 100}`}>
-                <div className="p-2.5 bg-primary-50 rounded-xl">{feat.icon}</div>
-                <div>
-                  <p className="font-semibold text-gray-800 text-sm">{feat.title}</p>
-                  <p className="text-gray-500 text-xs">{feat.desc}</p>
-                </div>
+              { icon: <BadgeCheck size={20} />, text: locale === 'nl' ? 'Kwaliteitsgarantie' : 'Quality Guarantee' },
+              { icon: <Clock size={20} />, text: locale === 'nl' ? 'Snelle levering 1-3 dagen' : 'Fast delivery 1-3 days' },
+              { icon: <HeartHandshake size={20} />, text: locale === 'nl' ? 'Klantenservice 09:00-17:00' : 'Customer service 09:00-17:00' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-gray-600">
+                <span className="text-primary-500">{item.icon}</span>
+                <span className="text-sm font-medium">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Categories Grid */}
       <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center mb-10 animate-fade-in-up">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">{t('cat.title')}</h2>
-          <p className="text-gray-500">{t('cat.subtitle')}</p>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+            {locale === 'nl' ? 'Onze Categorieën' : 'Our Categories'}
+          </h2>
+          <p className="text-gray-500 max-w-2xl mx-auto">
+            {locale === 'nl' 
+              ? 'Vind de onderdelen die u nodig heeft voor alle grote merken smartphones, tablets en laptops.' 
+              : 'Find the parts you need for all major brands of smartphones, tablets and laptops.'}
+          </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {homeBrands.map((brand, i) => (
             <Link
               key={brand.slug}
               href={`/products?brand=${brand.slug}`}
-              className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 text-center group border border-gray-100 hover:border-primary-200 hover:-translate-y-1 animate-fade-in-up`}
-              style={{ animationDelay: `${(i + 1) * 0.1}s` }}
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
+              style={{ animationDelay: `${(i + 1) * 0.05}s` }}
             >
-              <div className="text-primary-500 mb-3 flex justify-center group-hover:scale-110 transition-transform duration-300">
-                {brandIcons[brand.slug] || <Package size={36} />}
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary-50 rounded-2xl flex items-center justify-center text-primary-500 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">
+                {brandIcons[brand.slug] || <Package size={32} />}
               </div>
-              <h3 className="font-semibold text-gray-800 text-sm group-hover:text-primary-500 transition-colors">
+              <h3 className="font-bold text-gray-800 text-sm group-hover:text-primary-600 transition-colors">
                 {locale === 'en' ? brand.nameEn : brand.name}
               </h3>
               <p className="text-xs text-gray-400 mt-1">
@@ -152,131 +243,364 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Quality Standards Section - Exact MobileSentrix Style */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-0">
+              {/* Left Content */}
+              <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                <div className="mb-6">
+                  {/* Colored Dots */}
+                  <div className="flex items-center gap-1 mb-4">
+                    <div className="flex gap-1">
+                      <span className="w-3 h-3 rounded-full bg-orange-400"></span>
+                      <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                      <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                    </div>
+                    <div className="flex gap-1 ml-1">
+                      <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+                      <span className="w-3 h-3 rounded-full bg-gray-600"></span>
+                      <span className="w-3 h-3 rounded-full bg-teal-400"></span>
+                    </div>
+                  </div>
+                  <p className="text-gray-500 text-sm mb-2">{locale === 'nl' ? 'Ontdek Onze' : 'Discover Our'}</p>
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                    {locale === 'nl' ? 'Kwaliteitsnormen' : 'Quality Standards'}
+                  </h2>
+                </div>
+                <Link href="/products" className="inline-block text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors">
+                  {locale === 'nl' 
+                    ? 'Ontdek alle kwaliteiten die ons onderscheiden →' 
+                    : 'Discover all the qualities that set us apart →'}
+                </Link>
+                
+                {/* LABFIX Technology Badge */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-cyan-500 font-bold text-lg tracking-wider">AQ7</span>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-800 font-bold text-lg tracking-wider">TECHNOLOGY</span>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-1">
+                    {locale === 'nl' ? 'Ongeëvenaarde Kwaliteit en Betrouwbaarheid' : 'Unmatched Quality and Reliability'}
+                  </p>
+                  <p className="text-gray-500 text-xs">
+                    {locale === 'nl' 
+                      ? 'Topklasse materialen en strenge kwaliteitscontrole voor betrouwbare prestaties.'
+                      : 'Top-tier materials and rigorous Quality control for reliable performance.'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Right - Product Images Grid */}
+              <div className="bg-gray-50 p-8 md:p-12 flex items-center justify-center">
+                <img 
+                  src="/images/products/iphone-screen.jpg" 
+                  alt="iPhone Parts"
+                  className="rounded-2xl shadow-xl w-full max-w-md object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
-        <section className="bg-white py-16">
+        <section className="py-20">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center mb-8 animate-fade-in-up">
-              <h2 className="text-3xl font-bold text-gray-800">{t('products.featured')}</h2>
-              <Link href="/products" className="text-primary-500 hover:text-primary-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+            <div className="flex justify-between items-end mb-10">
+              <div>
+                <span className="text-primary-500 font-semibold text-sm uppercase tracking-wider">
+                  {locale === 'nl' ? 'Aanbevolen' : 'Featured'}
+                </span>
+                <h2 className="text-3xl font-bold text-gray-800 mt-1">{t('products.featured')}</h2>
+              </div>
+              <Link href="/products" className="text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
                 {t('nav.allProducts')} <ChevronRight size={18} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
               {featuredProducts.slice(0, 5).map((product, i) => (
-                <div key={product.id} className={`animate-fade-in-up delay-${(i + 1) * 100}`}>
-                  <ProductCard product={product} />
-                </div>
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Banner */}
-      <section className="bg-gradient-to-r from-accent-600 via-accent-500 to-accent-600 text-white py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+      {/* Feature Cards - MobileSentrix Style */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {locale === 'nl' ? 'Waarom LabFix?' : 'Why LabFix?'}
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              {locale === 'nl' 
+                ? 'De beste onderdelen voor professionele reparatiebedrijven' 
+                : 'The best parts for professional repair businesses'}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Shield size={32} />,
+                title: locale === 'nl' ? 'Lifetime Garantie' : 'Lifetime Warranty',
+                desc: locale === 'nl' ? 'Op al onze reparatieonderdelen. Geen zorgen, altijd vervanging.' : 'On all our repair parts. No worries, always replacement.',
+                image: '/images/products/iphone-screen.jpg',
+                bg: 'bg-gradient-to-br from-blue-500 to-blue-600'
+              },
+              {
+                icon: <Package size={32} />,
+                title: locale === 'nl' ? 'Retail Ready' : 'Retail Ready',
+                desc: locale === 'nl' ? 'Accessoires en onderdelen klaar voor verkoop in uw winkel.' : 'Accessories and parts ready for sale in your store.',
+                image: '/images/banners/iphone-parts.jpg',
+                bg: 'bg-gradient-to-br from-rose-500 to-pink-600'
+              },
+              {
+                icon: <Wrench size={32} />,
+                title: locale === 'nl' ? 'Tools & Supplies' : 'Tools & Supplies',
+                desc: locale === 'nl' ? 'Professioneel gereedschap voor elke reparatie.' : 'Professional tools for every repair.',
+                image: '/images/banners/repair-tools.jpg',
+                bg: 'bg-gradient-to-br from-emerald-500 to-green-600'
+              }
+            ].map((card, i) => (
+              <div key={i} className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={card.image} 
+                    alt={card.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/20"></div>
+                </div>
+                <div className="p-6">
+                  <div className={`w-14 h-14 ${card.bg} rounded-2xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
+                    {card.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{card.title}</h3>
+                  <p className="text-gray-600 text-sm">{card.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 text-center relative z-10 animate-fade-in-up">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {locale === 'nl' ? 'Professionele Reparatieonderdelen' : 'Professional Repair Parts'}
-          </h2>
-          <p className="text-lg mb-8 text-red-100 max-w-2xl mx-auto">
-            {locale === 'nl'
-              ? 'Kwalitatieve onderdelen voor uw reparatiebedrijf. Levering door heel Europa.'
-              : 'Quality parts for your repair business. Delivery across Europe.'}
-          </p>
-          <Link
-            href="/products"
-            className="bg-white text-accent-500 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 transition-all hover:shadow-xl hover:-translate-y-0.5 inline-flex items-center gap-2 text-lg"
-          >
-            {t('hero.cta')} <ArrowRight size={20} />
-          </Link>
+      </section>
+
+      {/* B2B Commercial Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">
+              {locale === 'nl' ? 'Waarom LabFix B2B?' : 'Why LabFix B2B?'}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">
+              {locale === 'nl' 
+                ? 'De Partner voor uw Reparatiebedrijf' 
+                : 'The Partner for Your Repair Business'}
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              {locale === 'nl'
+                ? 'Professionele groothandel in telefoon en laptop onderdelen. Betrouwbare leverancier voor reparatiebedrijven.'
+                : 'Professional wholesale supplier of phone and laptop parts. Reliable partner for repair businesses.'}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {[
+              { 
+                icon: <Package size={40} />, 
+                stat: '15+', 
+                title: locale === 'nl' ? 'Merken' : 'Brands',
+                desc: locale === 'nl' ? 'Alle grote telefoon en laptop merken' : 'All major phone and laptop brands'
+              },
+              { 
+                icon: <Clock size={40} />, 
+                stat: '24h', 
+                title: locale === 'nl' ? 'Snelle Levering' : 'Fast Delivery',
+                desc: locale === 'nl' ? 'Voor 16:00 besteld, morgen in huis' : 'Order before 4 PM, delivered tomorrow'
+              },
+              { 
+                icon: <ShieldCheck size={40} />, 
+                stat: '12m', 
+                title: locale === 'nl' ? 'Garantie' : 'Warranty',
+                desc: locale === 'nl' ? 'Tot 12 maanden garantie op alle onderdelen' : 'Up to 12 months warranty on all parts'
+              },
+              { 
+                icon: <Headphones size={40} />, 
+                stat: '09-17', 
+                title: locale === 'nl' ? 'Support' : 'Support',
+                desc: locale === 'nl' ? 'Ma-Vr telefonisch bereikbaar' : 'Mon-Fri phone support'
+              },
+            ].map((item, i) => (
+              <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">
+                <div className="text-primary-600 mb-4 flex justify-center">{item.icon}</div>
+                <p className="text-4xl font-bold text-gray-900 mb-2">{item.stat}</p>
+                <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                <p className="text-sm text-gray-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Commercial Banner */}
+          <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 text-center text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              {locale === 'nl' 
+                ? 'Start vandaag nog met groothandel prijzen!' 
+                : 'Start today with wholesale prices!'}
+            </h3>
+            <p className="text-white/80 mb-8 max-w-xl mx-auto">
+              {locale === 'nl'
+                ? 'Registreer uw bedrijf en ontvang direct toegang tot onze B2B prijzen. Geen minimale afname, geen verborgen kosten.'
+                : 'Register your business and get instant access to our B2B prices. No minimum order, no hidden fees.'}
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link 
+                href="/account/register" 
+                className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all inline-flex items-center gap-2"
+              >
+                {locale === 'nl' ? 'Gratis Account Aanmaken' : 'Create Free Account'} <ArrowRight size={18} />
+              </Link>
+              <Link 
+                href="/products" 
+                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-all"
+              >
+                {locale === 'nl' ? 'Bekijk Assortiment' : 'View Products'}
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* New Arrivals */}
       {newProducts.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-16">
-          <div className="flex justify-between items-center mb-8 animate-fade-in-up">
-            <h2 className="text-3xl font-bold text-gray-800">{t('products.new')}</h2>
-            <Link href="/products" className="text-primary-500 hover:text-primary-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-              {t('nav.allProducts')} <ChevronRight size={18} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {newProducts.slice(0, 5).map((product, i) => (
-              <div key={product.id} className={`animate-fade-in-up delay-${(i + 1) * 100}`}>
-                <ProductCard product={product} />
+        <section className="py-20 bg-gray-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-end mb-10">
+              <div>
+                <span className="text-accent-500 font-semibold text-sm uppercase tracking-wider">
+                  {locale === 'nl' ? 'Net Binnen' : 'Just Arrived'}
+                </span>
+                <h2 className="text-3xl font-bold text-gray-800 mt-1">{t('products.new')}</h2>
               </div>
-            ))}
+              <Link href="/products" className="text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                {t('nav.allProducts')} <ChevronRight size={18} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+              {newProducts.slice(0, 5).map((product, i) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
         </section>
       )}
 
+      {/* CTA Banner */}
+      <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-400 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+        </div>
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            {locale === 'nl' ? 'Klaar om te bestellen?' : 'Ready to order?'}
+          </h2>
+          <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto">
+            {locale === 'nl'
+              ? 'Registreer vandaag nog en krijg toegang tot ons complete assortiment tegen groothandelsprijzen.'
+              : 'Register today and get access to our complete range at wholesale prices.'}
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              href="/account/register"
+              className="bg-white text-primary-700 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all hover:shadow-xl inline-flex items-center gap-2"
+            >
+              {locale === 'nl' ? 'Gratis Registreren' : 'Register Free'} <ArrowRight size={20} />
+            </Link>
+            <Link
+              href="/products"
+              className="bg-white/10 border border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all"
+            >
+              {t('nav.allProducts')}
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Latest News */}
       {newsArticles.length > 0 && (
-        <section className="py-12 bg-white border-t">
+        <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex justify-between items-center mb-8 animate-fade-in-up">
-              <div className="flex items-center gap-3">
-                <Newspaper size={24} className="text-primary-500" />
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {locale === 'nl' ? 'Laatste Nieuws' : 'Latest News'}
-                </h2>
-              </div>
+            <div className="text-center mb-12">
+              <span className="text-primary-500 font-semibold text-sm uppercase tracking-wider">
+                {locale === 'nl' ? 'Nieuws & Updates' : 'News & Updates'}
+              </span>
+              <h2 className="text-3xl font-bold text-gray-800 mt-2">
+                {locale === 'nl' ? 'Laatste Nieuws' : 'Latest News'}
+              </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {newsArticles.slice(0, 3).map((article, i) => (
-                <div key={article.id} className={`bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow animate-fade-in-up delay-${(i + 1) * 100}`}>
+                <article key={article.id} className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group">
                   {article.image && (
-                    <img src={article.image} alt="" className="w-full h-44 object-cover" />
+                    <div className="overflow-hidden">
+                      <img 
+                        src={article.image} 
+                        alt="" 
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
+                      />
+                    </div>
                   )}
-                  <div className="p-5">
+                  <div className="p-6">
                     <p className="text-xs text-primary-500 font-medium mb-2">
                       {new Date(article.createdAt).toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                    <h3 className="font-bold text-gray-800 mb-2">
+                    <h3 className="font-bold text-gray-800 mb-2 line-clamp-2">
                       {locale === 'nl' ? article.title : (article.titleEn || article.title)}
                     </h3>
                     <p className="text-sm text-gray-500 line-clamp-3">
                       {locale === 'nl' ? article.summary : (article.summaryEn || article.summary)}
                     </p>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Brands / Trust */}
-      <section className="bg-white py-16 border-t">
+      {/* Brands Trust */}
+      <section className="py-16 bg-gray-50 border-t">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-10 animate-fade-in-up">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          <div className="text-center mb-10">
+            <p className="text-gray-500 text-sm uppercase tracking-wider mb-2">
               {locale === 'nl' ? 'Wij leveren onderdelen voor' : 'We supply parts for'}
+            </p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {locale === 'nl' ? 'Alle Grote Merken' : 'All Major Brands'}
             </h2>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
             {[
-              { name: 'Apple', icon: <Smartphone size={32} /> },
-              { name: 'Samsung', icon: <Smartphone size={32} /> },
-              { name: 'Google', icon: <Smartphone size={32} /> },
-              { name: 'Huawei', icon: <Smartphone size={32} /> },
-              { name: 'Xiaomi', icon: <Smartphone size={32} /> },
-              { name: 'OnePlus', icon: <Smartphone size={32} /> },
-              { name: 'Motorola', icon: <Smartphone size={32} /> },
-              { name: 'ASUS', icon: <Laptop size={32} /> },
-              { name: 'Lenovo', icon: <Laptop size={32} /> },
-              { name: 'HP', icon: <Laptop size={32} /> },
-              { name: 'Dell', icon: <Laptop size={32} /> },
-              { name: 'Microsoft', icon: <Monitor size={32} /> },
+              { name: 'Apple', icon: <Smartphone size={28} /> },
+              { name: 'Samsung', icon: <Smartphone size={28} /> },
+              { name: 'Google', icon: <Smartphone size={28} /> },
+              { name: 'Huawei', icon: <Smartphone size={28} /> },
+              { name: 'Xiaomi', icon: <Smartphone size={28} /> },
+              { name: 'OnePlus', icon: <Smartphone size={28} /> },
+              { name: 'Motorola', icon: <Smartphone size={28} /> },
+              { name: 'ASUS', icon: <Laptop size={28} /> },
+              { name: 'Lenovo', icon: <Laptop size={28} /> },
+              { name: 'HP', icon: <Laptop size={28} /> },
+              { name: 'Dell', icon: <Laptop size={28} /> },
+              { name: 'Microsoft', icon: <Monitor size={28} /> },
             ].map((brand, i) => (
-              <div key={brand.name} className={`text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default animate-fade-in-up delay-${(i + 1) * 100}`}>
-                <div className="mx-auto mb-1.5">{brand.icon}</div>
-                <p className="font-semibold text-sm">{brand.name}</p>
+              <div key={brand.name} className="text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default group">
+                <div className="mx-auto mb-1 group-hover:scale-110 transition-transform">{brand.icon}</div>
+                <p className="font-medium text-xs">{brand.name}</p>
               </div>
             ))}
           </div>

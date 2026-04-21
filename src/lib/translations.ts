@@ -83,7 +83,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'footer.contact': 'Contact',
     'footer.address': 'Nederland',
     'footer.email': 'info@labfix.nl',
-    'footer.phone': '+31 (0) 85 000 0000',
+    'footer.phone': '+31 6 5113 1133',
     'footer.newsletter': 'Nieuwsbrief',
     'footer.newsletterText': 'Schrijf u in voor onze nieuwsbrief',
     'footer.subscribe': 'Inschrijven',
@@ -243,7 +243,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'cart.continue': 'Continue Shopping',
     'cart.remove': 'Remove',
     'cart.quantity': 'Quantity',
-    'cart.freeShipping': 'Free shipping on orders over €250',
+    'cart.freeShipping': 'Free shipping on orders over €150',
 
     // Footer
     'footer.about': 'About LabFix',
@@ -257,7 +257,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'footer.contact': 'Contact',
     'footer.address': 'The Netherlands',
     'footer.email': 'info@labfix.nl',
-    'footer.phone': '+31 (0) 85 000 0000',
+    'footer.phone': '+31 6 5113 1133',
     'footer.newsletter': 'Newsletter',
     'footer.newsletterText': 'Subscribe to our newsletter',
     'footer.subscribe': 'Subscribe',

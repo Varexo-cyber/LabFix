@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper } from 'lucide-react';
+import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage } from '@/lib/store';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive } from 'lucide-react';
 import Link from 'next/link';
 import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
 
@@ -36,7 +36,7 @@ export default function AdminPage() {
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter' | 'news'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact'>('products');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [creatingNews, setCreatingNews] = useState(false);
@@ -51,6 +51,10 @@ export default function AdminPage() {
   const [newsletterBody, setNewsletterBody] = useState('');
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
+  const [contactFilter, setContactFilter] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
+  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [messageNotes, setMessageNotes] = useState('');
 
   useEffect(() => {
     setAuthenticated(isAdminAuthenticated());
@@ -64,7 +68,15 @@ export default function AdminPage() {
         .then(data => setSubscribers(data))
         .catch(() => console.error('Failed to load subscribers'));
     }
+    if (activeTab === 'contact') {
+      loadContactMessages();
+    }
   }, [activeTab]);
+
+  const loadContactMessages = async () => {
+    const result = await fetchContactMessages(contactFilter === 'all' ? undefined : contactFilter);
+    setContactMessages(result.data);
+  };
 
   const loadData = async () => {
     try {
@@ -298,6 +310,9 @@ export default function AdminPage() {
             </button>
             <button onClick={() => setActiveTab('news')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'news' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Newspaper size={16} /> Nieuws ({newsArticles.length})
+            </button>
+            <button onClick={() => setActiveTab('contact')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'contact' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <MessageCircle size={16} /> Contact ({contactMessages.filter(m => m.status === 'unread').length})
             </button>
           </div>
         </div>
@@ -1017,6 +1032,170 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* CONTACT MESSAGES TAB */}
+        {activeTab === 'contact' && (
+          <div className="max-w-7xl mx-auto px-4 pb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Contact Berichten</h2>
+              <div className="flex gap-2">
+                {(['all', 'unread', 'read', 'replied'] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => { setContactFilter(filter); loadContactMessages(); }}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      contactFilter === filter 
+                        ? 'bg-primary-500 text-white' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {filter === 'all' ? 'Alle' : filter === 'unread' ? 'Ongelezen' : filter === 'read' ? 'Gelezen' : 'Beantwoord'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {selectedMessage ? (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-bold text-lg">{selectedMessage.subject}</h3>
+                    <p className="text-sm text-gray-500">
+                      Van: {selectedMessage.name} ({selectedMessage.email})
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(selectedMessage.created_at).toLocaleString('nl-NL')}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      selectedMessage.status === 'unread' ? 'bg-red-100 text-red-700' :
+                      selectedMessage.status === 'read' ? 'bg-blue-100 text-blue-700' :
+                      selectedMessage.status === 'replied' ? 'bg-green-100 text-green-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {selectedMessage.status === 'unread' ? 'Ongelezen' :
+                       selectedMessage.status === 'read' ? 'Gelezen' :
+                       selectedMessage.status === 'replied' ? 'Beantwoord' : 'Gearchiveerd'}
+                    </span>
+                    <button onClick={() => setSelectedMessage(null)} className="text-gray-400 hover:text-gray-600">
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedMessage.message}</p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold mb-2">Admin Notities</label>
+                  <textarea
+                    value={messageNotes}
+                    onChange={(e) => setMessageNotes(e.target.value)}
+                    rows={3}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
+                    placeholder="Interne notities over dit bericht..."
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={async () => {
+                      await updateContactMessage(selectedMessage.id, { status: 'read', admin_notes: messageNotes });
+                      loadContactMessages();
+                      setSelectedMessage(null);
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                  >
+                    <CheckCircle size={16} /> Markeer als gelezen
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await updateContactMessage(selectedMessage.id, { status: 'replied', admin_notes: messageNotes });
+                      loadContactMessages();
+                      setSelectedMessage(null);
+                    }}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center gap-2"
+                  >
+                    <Mail size={16} /> Markeer als beantwoord
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await updateContactMessage(selectedMessage.id, { status: 'archived', admin_notes: messageNotes });
+                      loadContactMessages();
+                      setSelectedMessage(null);
+                    }}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2"
+                  >
+                    <Archive size={16} /> Archiveer
+                  </button>
+                  <a
+                    href={`mailto:${selectedMessage.email}?subject=Re: ${selectedMessage.subject}`}
+                    className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 flex items-center gap-2"
+                  >
+                    <Mail size={16} /> Beantwoord via email
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Naam</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Onderwerp</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Bericht</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Datum</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Acties</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {contactMessages.length === 0 ? (
+                      <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Geen contact berichten.</td></tr>
+                    ) : contactMessages.map((message) => (
+                      <tr 
+                        key={message.id} 
+                        className={`hover:bg-gray-50 cursor-pointer ${message.status === 'unread' ? 'bg-red-50/50' : ''}`}
+                        onClick={() => { setSelectedMessage(message); setMessageNotes(message.admin_notes || ''); }}
+                      >
+                        <td className="px-4 py-3">
+                          <span className={`inline-block w-2 h-2 rounded-full ${
+                            message.status === 'unread' ? 'bg-red-500' :
+                            message.status === 'read' ? 'bg-blue-500' :
+                            message.status === 'replied' ? 'bg-green-500' :
+                            'bg-gray-400'
+                          }`}></span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-sm">{message.name}</p>
+                          <p className="text-xs text-gray-500">{message.email}</p>
+                        </td>
+                        <td className="px-4 py-3 text-sm">{message.subject}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{message.message}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{new Date(message.created_at).toLocaleDateString('nl-NL')}</td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (!confirm('Weet je zeker dat je dit bericht wilt verwijderen?')) return;
+                              await deleteContactMessage(message.id);
+                              loadContactMessages();
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

@@ -38,7 +38,7 @@ export default function CheckoutPage() {
 
   if (!user) return null;
 
-  const shippingCost = cartTotal >= 250 ? 0 : 12.95;
+  const shippingCost = cartTotal >= 150 ? 0 : 14.95;
   const total = cartTotal + shippingCost;
 
   const handleUseAccountAddress = (checked: boolean) => {

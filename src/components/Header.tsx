@@ -46,49 +46,41 @@ export default function Header() {
     <header className="relative">
       {/* Top bar */}
       <div className="bg-primary-600 text-white text-sm">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Truck size={14} />
-              {t('cart.freeShipping')}
-            </span>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="mailto:info@labfix.nl" className="flex items-center gap-1 hover:text-gray-200">
-              <Mail size={14} />
-              info@labfix.nl
-            </a>
-            <a href="tel:+31850000000" className="hidden sm:flex items-center gap-1 hover:text-gray-200">
-              <Phone size={14} />
-              +31 (0) 85 000 0000
-            </a>
-            {/* Language Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setShowLangDropdown(!showLangDropdown)}
-                className="flex items-center gap-1 hover:text-gray-200"
-              >
-                <Globe size={14} />
-                {locale === 'nl' ? 'NL' : 'EN'}
-                <ChevronDown size={12} />
-              </button>
-              {showLangDropdown && (
-                <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-[120px] z-50">
-                  <button
-                    onClick={() => { setLocale('nl'); setShowLangDropdown(false); }}
-                    className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${locale === 'nl' ? 'font-bold text-primary-500' : ''}`}
-                  >
-                    🇳🇱 Nederlands
-                  </button>
-                  <button
-                    onClick={() => { setLocale('en'); setShowLangDropdown(false); }}
-                    className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${locale === 'en' ? 'font-bold text-primary-500' : ''}`}
-                  >
-                    🇬🇧 English
-                  </button>
-                </div>
-              )}
-            </div>
+        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-end items-center gap-4">
+          <a href="mailto:info@labfix.nl" className="flex items-center gap-1 hover:text-gray-200">
+            <Mail size={14} />
+            info@labfix.nl
+          </a>
+          <a href="tel:+31651131133" className="hidden sm:flex items-center gap-1 hover:text-gray-200">
+            <Phone size={14} />
+            +31 6 5113 1133
+          </a>
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setShowLangDropdown(!showLangDropdown)}
+              className="flex items-center gap-1 hover:text-gray-200"
+            >
+              <Globe size={14} />
+              {locale === 'nl' ? 'NL' : 'EN'}
+              <ChevronDown size={12} />
+            </button>
+            {showLangDropdown && (
+              <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-[120px] z-50">
+                <button
+                  onClick={() => { setLocale('nl'); setShowLangDropdown(false); }}
+                  className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${locale === 'nl' ? 'font-bold text-primary-500' : ''}`}
+                >
+                  🇳🇱 Nederlands
+                </button>
+                <button
+                  onClick={() => { setLocale('en'); setShowLangDropdown(false); }}
+                  className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${locale === 'en' ? 'font-bold text-primary-500' : ''}`}
+                >
+                  🇬🇧 English
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -99,7 +91,7 @@ export default function Header() {
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="LabFix" className="h-20 w-auto" />
+              <img src="/logo.png" alt="LabFix" className="h-24 w-auto" />
             </Link>
 
             {/* Search Bar */}

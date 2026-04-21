@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import { fetchNews, NewsArticle } from '@/lib/store';
@@ -18,11 +18,19 @@ import {
   Bot,
 } from 'lucide-react';
 
+// WhatsApp icon component
+const WhatsAppIcon = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+);
+
 type WidgetTab = 'home' | 'bot' | 'help' | 'news';
 
 interface BotMessage {
   role: 'user' | 'bot';
   text: string;
+  isTyping?: boolean;
 }
 
 function getLabFixAnswer(question: string, nl: boolean): string {
@@ -82,8 +90,8 @@ function getLabFixAnswer(question: string, nl: boolean): string {
   }
   if (/contact|email|telefoon|phone|bel/.test(q)) {
     return nl
-      ? 'Je kunt ons bereiken via: E-mail: info@labfix.nl | Telefoon: +31 (0) 85 000 0000 | WhatsApp: +31 85 000 0000 | Ma-Vr 09:00-17:00.'
-      : 'You can reach us via: Email: info@labfix.nl | Phone: +31 (0) 85 000 0000 | WhatsApp: +31 85 000 0000 | Mon-Fri 09:00-17:00.';
+      ? 'Je kunt ons bereiken via: E-mail: info@labfix.nl | Telefoon/WhatsApp: +31 6 5113 1133 | Ma-Vr 09:00-17:00.'
+      : 'You can reach us via: Email: info@labfix.nl | Phone/WhatsApp: +31 6 5113 1133 | Mon-Fri 09:00-17:00.';
   }
   if (/wie|what|wat is labfix|about/.test(q)) {
     return nl
@@ -118,8 +126,11 @@ export default function HelpWidget() {
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
   const [botInput, setBotInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typedText, setTypedText] = useState('');
   const widgetRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const nl = locale === 'nl';
 
@@ -139,21 +150,83 @@ export default function HelpWidget() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [botMessages]);
+  }, [botMessages, typedText, isTyping]);
+
+  // Clear typing interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleClose = () => {
     setIsOpen(false);
   };
 
   const handleBotSend = () => {
-    if (!botInput.trim()) return;
+    if (!botInput.trim() || isTyping) return;
     const userMsg = botInput.trim();
     setBotInput('');
     setBotMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    
+    // Show typing indicator after 400ms delay (natural feel)
     setTimeout(() => {
+      setIsTyping(true);
+      
+      // Get the answer
       const answer = getLabFixAnswer(userMsg, nl);
-      setBotMessages(prev => [...prev, { role: 'bot', text: answer }]);
-    }, 600);
+      
+      // Simulate "thinking" time with loading dots (1-2 seconds)
+      const thinkingTime = 1000 + Math.random() * 1000; // 1-2 seconds
+      
+      setTimeout(() => {
+        setIsTyping(false);
+        
+        // Start typing effect - character by character
+        let charIndex = 0;
+        setTypedText('');
+        
+        // Add empty bot message first
+        setBotMessages(prev => [...prev, { role: 'bot', text: '', isTyping: true }]);
+        
+        // Type out characters smoothly
+        typingIntervalRef.current = setInterval(() => {
+          if (charIndex <= answer.length) {
+            const currentText = answer.slice(0, charIndex);
+            setTypedText(currentText);
+            setBotMessages(prev => {
+              const newMessages = [...prev];
+              const lastMsg = newMessages[newMessages.length - 1];
+              if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text = currentText;
+              }
+              return newMessages;
+            });
+            charIndex++;
+          } else {
+            // Done typing
+            if (typingIntervalRef.current) {
+              clearInterval(typingIntervalRef.current);
+              typingIntervalRef.current = null;
+            }
+            setBotMessages(prev => {
+              const newMessages = [...prev];
+              const lastMsg = newMessages[newMessages.length - 1];
+              if (lastMsg && lastMsg.role === 'bot') {
+                lastMsg.text = answer;
+                lastMsg.isTyping = false;
+              }
+              return newMessages;
+            });
+            setTypedText('');
+          }
+        }, 25); // 25ms per character for smooth typing effect
+        
+      }, thinkingTime);
+      
+    }, 400);
   };
 
   return (
@@ -168,7 +241,7 @@ export default function HelpWidget() {
         <div className="bg-gray-900 text-white px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="LabFix" className="h-8 w-auto brightness-0 invert" />
+              <img src="/logo.png" alt="LabFix" className="h-8 w-auto" />
             </div>
             <button
               onClick={handleClose}
@@ -194,7 +267,7 @@ export default function HelpWidget() {
               <div className="mx-4 mb-3">
                 <button
                   onClick={() => setActiveTab('bot')}
-                  className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
+                  className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -207,6 +280,27 @@ export default function HelpWidget() {
                   </div>
                   <ChevronRight size={18} className="text-gray-400" />
                 </button>
+              </div>
+
+              {/* WhatsApp Direct */}
+              <div className="mx-4 mb-3">
+                <a
+                  href="https://wa.me/31651131133"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-between bg-[#25D366]/10 border border-[#25D366]/30 rounded-xl p-4 hover:bg-[#25D366]/20 hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center">
+                      <WhatsAppIcon size={22} className="text-white" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-800 text-sm">WhatsApp</p>
+                      <p className="text-xs text-gray-500">{nl ? 'Direct chatten via WhatsApp' : 'Chat directly on WhatsApp'}</p>
+                    </div>
+                  </div>
+                  <ExternalLink size={16} className="text-[#25D366]" />
+                </a>
               </div>
 
               {/* News articles */}
@@ -267,16 +361,29 @@ export default function HelpWidget() {
                   </div>
                 )}
                 {botMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                     <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
                       msg.role === 'user'
                         ? 'bg-primary-600 text-white rounded-br-md'
                         : 'bg-gray-100 text-gray-800 rounded-bl-md'
                     }`}>
                       {msg.text}
+                      {msg.isTyping && (
+                        <span className="inline-block w-2 h-4 ml-0.5 bg-gray-500 animate-pulse" />
+                      )}
                     </div>
                   </div>
                 ))}
+                {/* Typing indicator with animated dots */}
+                {isTyping && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                )}
                 <div ref={chatEndRef} />
               </div>
               <div className="border-t p-3 flex gap-2">
@@ -284,15 +391,23 @@ export default function HelpWidget() {
                   type="text"
                   value={botInput}
                   onChange={(e) => setBotInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleBotSend()}
-                  placeholder={nl ? 'Typ je vraag...' : 'Type your question...'}
-                  className="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-primary-500"
+                  onKeyDown={(e) => e.key === 'Enter' && !isTyping && handleBotSend()}
+                  placeholder={isTyping ? (nl ? 'AI typt...' : 'AI is typing...') : (nl ? 'Typ je vraag...' : 'Type your question...')}
+                  disabled={isTyping}
+                  className={`flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-primary-500 transition-all duration-300 ${
+                    isTyping ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''
+                  }`}
                 />
                 <button
                   onClick={handleBotSend}
-                  className="w-9 h-9 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors flex-shrink-0"
+                  disabled={isTyping || !botInput.trim()}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+                    isTyping || !botInput.trim()
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 active:scale-95'
+                  }`}
                 >
-                  <Send size={16} />
+                  <Send size={16} className={`transition-transform duration-300 ${isTyping ? '' : 'hover:translate-x-0.5'}`} />
                 </button>
               </div>
             </div>
@@ -306,19 +421,19 @@ export default function HelpWidget() {
               </div>
 
               {/* Phone */}
-              <a href="tel:+31850000000" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+              <a href="tel:+31651131133" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
                   <Phone size={20} className="text-blue-600" />
                 </div>
                 <div className="flex-1">
                   <span className="font-medium text-gray-800 text-sm">{nl ? 'Telefoon' : 'Phone'}</span>
-                  <p className="text-xs text-gray-500">+31 (0) 85 000 0000</p>
+                  <p className="text-xs text-gray-500">+31 6 5113 1133</p>
                 </div>
                 <ExternalLink size={14} className="text-gray-400" />
               </a>
 
               {/* WhatsApp */}
-              <a href="https://wa.me/31850000000" target="_blank" rel="noopener noreferrer"
+              <a href="https://wa.me/31651131133" target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center flex-shrink-0">
                   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="#25D366">

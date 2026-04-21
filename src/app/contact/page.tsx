@@ -2,16 +2,41 @@
 
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
+import { createContactMessage } from '@/lib/store';
 
 export default function ContactPage() {
   const { t, locale } = useApp();
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
-    setTimeout(() => setSent(false), 3000);
+    setLoading(true);
+    setError('');
+
+    const result = await createContactMessage(formData);
+    
+    setLoading(false);
+    
+    if (result.success) {
+      setSent(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setSent(false), 5000);
+    } else {
+      setError(result.error || 'Er is iets misgegaan');
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
@@ -22,19 +47,69 @@ export default function ContactPage() {
         <div>
           <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-8 space-y-6 animate-fade-in-left delay-200">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.name')}</label>
-              <input type="text" required className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500" />
+              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.name')} *</label>
+              <input 
+                type="text" 
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required 
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500" 
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.email')}</label>
-              <input type="email" required className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500" />
+              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.email')} *</label>
+              <input 
+                type="email" 
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required 
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500" 
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.message')}</label>
-              <textarea rows={5} required className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500 resize-none"></textarea>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                {locale === 'nl' ? 'Onderwerp' : 'Subject'}
+              </label>
+              <input 
+                type="text" 
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500" 
+              />
             </div>
-            <button type="submit" className="w-full bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors flex items-center justify-center gap-2">
-              {sent ? <><CheckCircle size={18} /> {t('contact.success')}</> : <><Send size={18} /> {t('contact.send')}</>}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">{t('contact.message')} *</label>
+              <textarea 
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                rows={5} 
+                required 
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500 resize-none"
+              ></textarea>
+            </div>
+            
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <><Loader2 size={18} className="animate-spin" /> {locale === 'nl' ? 'Versturen...' : 'Sending...'}</>
+              ) : sent ? (
+                <><CheckCircle size={18} /> {t('contact.success')}</>
+              ) : (
+                <><Send size={18} /> {t('contact.send')}</>
+              )}
             </button>
           </form>
         </div>
@@ -56,7 +131,7 @@ export default function ContactPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="text-accent-500 flex-shrink-0" size={20} />
-                <a href="tel:+31850000000" className="text-primary-500 hover:underline">+31 (0) 85 000 0000</a>
+                <a href="tel:+31651131133" className="text-primary-500 hover:underline">+31 6 5113 1133</a>
               </div>
             </div>
           </div>

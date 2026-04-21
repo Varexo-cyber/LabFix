@@ -92,12 +92,12 @@ export default function CartPage() {
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.shipping')}</span>
                   <span className="font-semibold">
-                    {cartTotal >= 250
+                    {cartTotal >= 150
                       ? (locale === 'nl' ? 'Gratis' : 'Free')
                       : '€14.95'}
                   </span>
                 </div>
-                {cartTotal < 250 && (
+                {cartTotal < 150 && (
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Truck size={14} />
                     {t('cart.freeShipping')}
@@ -109,7 +109,7 @@ export default function CartPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
                   <span className="text-primary-500">
-                    €{(cartTotal + (cartTotal >= 250 ? 0 : 14.95)).toFixed(2)}
+                    €{(cartTotal + (cartTotal >= 150 ? 0 : 14.95)).toFixed(2)}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">{t('general.exclVat')}</p>

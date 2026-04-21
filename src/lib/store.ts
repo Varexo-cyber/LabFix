@@ -36,9 +36,11 @@ export interface Category {
 export interface User {
   id: string;
   email: string;
-  companyName: string;
-  kvkNumber: string;
-  contactPerson: string;
+  customerType: 'individual' | 'business';
+  companyName?: string;
+  kvkNumber?: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   address: string;
   city: string;
@@ -89,6 +91,20 @@ export interface NewsArticle {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// ==================== CONTACT MESSAGES ====================
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'read' | 'replied' | 'archived';
+  created_at: string;
+  updated_at: string;
+  admin_notes?: string;
 }
 
 // ==================== API HELPERS ====================
@@ -186,6 +202,38 @@ export async function updateNews(article: NewsArticle): Promise<{ success: boole
 
 export async function deleteNews(id: string): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/api/news?id=${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+// ==================== CONTACT MESSAGES ====================
+
+export async function fetchContactMessages(status?: string): Promise<{ data: ContactMessage[]; counts: { total: number; unread: number } }> {
+  const qs = status ? `?status=${status}` : '';
+  const res = await fetch(`${API_BASE}/api/contact${qs}`);
+  if (!res.ok) return { data: [], counts: { total: 0, unread: 0 } };
+  return res.json();
+}
+
+export async function createContactMessage(message: { name: string; email: string; subject: string; message: string }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/contact`, { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(message) 
+  });
+  return res.json();
+}
+
+export async function updateContactMessage(id: string, updates: { status?: string; admin_notes?: string }): Promise<{ success: boolean; message?: string; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/contact/${id}`, { 
+    method: 'PUT', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(updates) 
+  });
+  return res.json();
+}
+
+export async function deleteContactMessage(id: string): Promise<{ success: boolean; message?: string; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/contact/${id}`, { method: 'DELETE' });
   return res.json();
 }
 
