@@ -36,12 +36,9 @@ export default function CheckoutPage() {
       setShippingPostalCode(user.postalCode);
       setShippingCountry(user.country);
     }
+    setIsGuest(!user);
   }, [user, cart, router, orderPlaced]);
 
-  // Set guest mode if not logged in
-  useEffect(() => {
-    setIsGuest(!user);
-  }, [user]);
   const shippingCost = cartTotal >= 150 ? 0 : 14.95;
   const total = cartTotal + shippingCost;
 
