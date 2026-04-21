@@ -4,30 +4,35 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
-import { fetchProducts, fetchCategories, Product, Category } from '@/lib/store';
-import { Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Tablet, Laptop, Wrench, Package, ChevronRight } from 'lucide-react';
+import { fetchProducts, Product } from '@/lib/store';
+import { Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, Package, ChevronRight } from 'lucide-react';
+import { brandCategories } from '@/lib/categories';
 
 export default function HomePage() {
   const { t, locale } = useApp();
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     fetchProducts().then(setProducts);
-    fetchCategories().then(setCategories);
   }, []);
 
   const featuredProducts = products.filter((p) => p.featured);
   const newProducts = products.filter((p) => p.isNew);
 
-  const categoryIcons: Record<string, React.ReactNode> = {
-    iphone: <Smartphone size={40} />,
-    samsung: <Smartphone size={40} />,
-    ipad: <Tablet size={40} />,
-    macbook: <Laptop size={40} />,
-    tools: <Wrench size={40} />,
-    accessories: <Package size={40} />,
+  const brandIcons: Record<string, React.ReactNode> = {
+    apple: <Smartphone size={36} />,
+    samsung: <Smartphone size={36} />,
+    google: <Smartphone size={36} />,
+    motorola: <Smartphone size={36} />,
+    huawei: <Smartphone size={36} />,
+    xiaomi: <Smartphone size={36} />,
+    oneplus: <Smartphone size={36} />,
+    oppo: <Smartphone size={36} />,
+    tools: <Wrench size={36} />,
+    accessories: <Package size={36} />,
   };
+
+  const homeBrands = brandCategories.filter(b => ['apple', 'samsung', 'google', 'huawei', 'xiaomi', 'tools', 'accessories', 'other-brands'].includes(b.slug));
 
   return (
     <div>
@@ -123,21 +128,22 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">{t('cat.title')}</h2>
           <p className="text-gray-500">{t('cat.subtitle')}</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {categories.map((cat, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+          {homeBrands.map((brand, i) => (
             <Link
-              key={cat.id}
-              href={`/products?category=${cat.slug}`}
-              className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 text-center group border border-gray-100 hover:border-primary-200 hover:-translate-y-1 animate-fade-in-up delay-${(i + 1) * 100}`}
+              key={brand.slug}
+              href={`/products?brand=${brand.slug}`}
+              className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 text-center group border border-gray-100 hover:border-primary-200 hover:-translate-y-1 animate-fade-in-up`}
+              style={{ animationDelay: `${(i + 1) * 0.1}s` }}
             >
               <div className="text-primary-500 mb-3 flex justify-center group-hover:scale-110 transition-transform duration-300">
-                {categoryIcons[cat.id] || <Package size={40} />}
+                {brandIcons[brand.slug] || <Package size={36} />}
               </div>
               <h3 className="font-semibold text-gray-800 text-sm group-hover:text-primary-500 transition-colors">
-                {locale === 'nl' ? cat.name : cat.nameEn}
+                {locale === 'en' ? brand.nameEn : brand.name}
               </h3>
-              <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-                {locale === 'nl' ? cat.description : cat.descriptionEn}
+              <p className="text-xs text-gray-400 mt-1">
+                {brand.subcategories.length} {locale === 'nl' ? 'subcategorieën' : 'subcategories'}
               </p>
             </Link>
           ))}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase } from '@/lib/store';
 import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   name: '',
@@ -370,13 +371,31 @@ export default function AdminPage() {
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Categorie</label>
-                    <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    <label className="block text-sm font-semibold mb-1">Merk *</label>
+                    <select 
+                      value={formData.category.split('/')[0] || formData.category} 
+                      onChange={(e) => {
+                        const brand = e.target.value;
+                        const firstSub = brandCategories.find(b => b.slug === brand)?.subcategories[0]?.slug || '';
+                        setFormData({ ...formData, category: brand, subcategory: firstSub });
+                      }}
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                      {brandCategories.map((brand) => (
+                        <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Subcategorie *</label>
+                    <select 
+                      value={formData.subcategory || ''} 
+                      onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                      <option value="">-- Kies subcategorie --</option>
+                      {(brandCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category))?.subcategories || []).map((sub) => (
+                        <option key={sub.slug} value={sub.slug}>{sub.name}</option>
                       ))}
                     </select>
                   </div>
@@ -385,11 +404,6 @@ export default function AdminPage() {
                     <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="LF-IP15P-OLED-001" />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Subcategorie</label>
-                  <input type="text" value={formData.subcategory} onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="iPhone 15 Pro" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Afbeelding</label>

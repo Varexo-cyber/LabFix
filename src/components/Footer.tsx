@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
 
 export default function Footer() {
-  const { t } = useApp();
+  const { t, locale } = useApp();
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -37,11 +37,12 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">{t('footer.links')}</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/products" className="hover:text-white transition-colors">{t('nav.products')}</Link></li>
-              <li><Link href="/products?category=iphone" className="hover:text-white transition-colors">{t('nav.iphone')}</Link></li>
-              <li><Link href="/products?category=samsung" className="hover:text-white transition-colors">{t('nav.samsung')}</Link></li>
-              <li><Link href="/products?category=ipad" className="hover:text-white transition-colors">{t('nav.ipad')}</Link></li>
-              <li><Link href="/products?category=macbook" className="hover:text-white transition-colors">{t('nav.macbook')}</Link></li>
-              <li><Link href="/products?category=tools" className="hover:text-white transition-colors">{t('nav.tools')}</Link></li>
+              <li><Link href="/products?brand=apple" className="hover:text-white transition-colors">Apple</Link></li>
+              <li><Link href="/products?brand=samsung" className="hover:text-white transition-colors">Samsung</Link></li>
+              <li><Link href="/products?brand=google" className="hover:text-white transition-colors">Google</Link></li>
+              <li><Link href="/products?brand=huawei" className="hover:text-white transition-colors">Huawei</Link></li>
+              <li><Link href="/products?brand=tools" className="hover:text-white transition-colors">{locale === 'nl' ? 'Gereedschap' : 'Tools'}</Link></li>
+              <li><Link href="/products?brand=accessories" className="hover:text-white transition-colors">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</Link></li>
             </ul>
           </div>
 
@@ -89,6 +90,46 @@ export default function Footer() {
                 <button className="bg-accent-500 text-white px-4 py-2 rounded-r text-sm hover:bg-accent-600 transition-colors">
                   {t('footer.subscribe')}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Shipping & Payment */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Shipping Partners */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3 uppercase tracking-wider">{locale === 'nl' ? 'Verzendpartners' : 'Shipping Partners'}</h4>
+              <div className="flex flex-wrap items-center gap-3">
+                {['DHL', 'FedEx', 'UPS', 'PostNL', 'DPD', 'GLS'].map((carrier) => (
+                  <div key={carrier} className="bg-white rounded-md px-3 py-1.5 text-xs font-bold text-gray-700 min-w-[60px] text-center">
+                    {carrier}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Payment Methods */}
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3 uppercase tracking-wider">{locale === 'nl' ? 'Betaalmethoden' : 'Payment Methods'}</h4>
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { name: 'Visa', bg: 'bg-[#1A1F71]', text: 'text-white' },
+                  { name: 'Mastercard', bg: 'bg-[#EB001B]', text: 'text-white' },
+                  { name: 'PayPal', bg: 'bg-[#003087]', text: 'text-white' },
+                  { name: 'iDEAL', bg: 'bg-[#CC0066]', text: 'text-white' },
+                  { name: 'Apple Pay', bg: 'bg-black', text: 'text-white' },
+                  { name: 'Google Pay', bg: 'bg-white', text: 'text-gray-800' },
+                  { name: 'Bancontact', bg: 'bg-[#005498]', text: 'text-white' },
+                  { name: 'SEPA', bg: 'bg-[#2B6CB0]', text: 'text-white' },
+                  { name: 'Bank Transfer', bg: 'bg-gray-600', text: 'text-white' },
+                ].map((method) => (
+                  <div key={method.name} className={`${method.bg} ${method.text} rounded-md px-2.5 py-1.5 text-xs font-bold min-w-[55px] text-center`}>
+                    {method.name}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

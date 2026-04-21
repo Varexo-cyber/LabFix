@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, Phone, Mail, Truck } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Truck } from 'lucide-react';
+import { brandCategories } from '@/lib/categories';
 
 export default function Header() {
   const { t, locale, setLocale, cartCount, user, logout } = useApp();
@@ -12,15 +13,25 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mobileOpenBrand, setMobileOpenBrand] = useState<string | null>(null);
+  const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const categories = [
-    { name: t('nav.iphone'), href: '/products?category=iphone' },
-    { name: t('nav.samsung'), href: '/products?category=samsung' },
-    { name: t('nav.ipad'), href: '/products?category=ipad' },
-    { name: t('nav.macbook'), href: '/products?category=macbook' },
-    { name: t('nav.tools'), href: '/products?category=tools' },
-    { name: t('nav.accessories'), href: '/products?category=accessories' },
-  ];
+  const navBrands = brandCategories.slice(0, 8);
+  const moreBrands = brandCategories.slice(8);
+
+  const handleDropdownEnter = (slug: string) => {
+    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+    setOpenDropdown(slug);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeout.current = setTimeout(() => setOpenDropdown(null), 200);
+  };
+
+  useEffect(() => {
+    return () => { if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current); };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,28 +152,83 @@ export default function Header() {
         </div>
 
         {/* Navigation bar */}
-        <nav className="bg-primary-500 text-white">
+        <nav className="bg-primary-500 text-white relative">
           <div className="max-w-7xl mx-auto px-4">
             <div className="hidden md:flex items-center">
               <Link
                 href="/products"
-                className={`px-4 py-2 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' || pathname.startsWith('/products/') ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                className={`px-4 py-2 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 <Menu size={16} />
                 {t('nav.allProducts')}
               </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.href}
-                  href={cat.href}
-                  className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === cat.href || pathname.startsWith(cat.href) ? 'bg-primary-600' : ''}`}
+              {navBrands.map((brand) => (
+                <div
+                  key={brand.slug}
+                  className="relative"
+                  onMouseEnter={() => handleDropdownEnter(brand.slug)}
+                  onMouseLeave={handleDropdownLeave}
                 >
-                  {cat.name}
-                </Link>
+                  <Link
+                    href={`/products?brand=${brand.slug}`}
+                    className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-1 ${pathname.includes(brand.slug) ? 'bg-primary-600' : ''}`}
+                  >
+                    {locale === 'en' ? brand.nameEn : brand.name}
+                    <ChevronDown size={12} />
+                  </Link>
+                  {openDropdown === brand.slug && (
+                    <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl py-2 min-w-[220px] z-50 border-t-2 border-accent-500">
+                      <Link
+                        href={`/products?brand=${brand.slug}`}
+                        className="block px-4 py-2 text-sm font-semibold text-primary-600 hover:bg-gray-50 border-b"
+                        onClick={() => setOpenDropdown(null)}
+                      >
+                        {locale === 'nl' ? `Alle ${brand.name}` : `All ${brand.nameEn}`}
+                      </Link>
+                      {brand.subcategories.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/products?brand=${brand.slug}&sub=${sub.slug}`}
+                          className="block px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary-600 transition-colors"
+                          onClick={() => setOpenDropdown(null)}
+                        >
+                          {locale === 'en' ? sub.nameEn : sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
+              {moreBrands.length > 0 && (
+                <div
+                  className="relative"
+                  onMouseEnter={() => handleDropdownEnter('more')}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  <button className="px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-1">
+                    {locale === 'nl' ? 'Meer' : 'More'}
+                    <ChevronDown size={12} />
+                  </button>
+                  {openDropdown === 'more' && (
+                    <div className="absolute top-full right-0 bg-white text-gray-800 rounded-b-lg shadow-xl py-2 min-w-[220px] z-50 border-t-2 border-accent-500">
+                      {moreBrands.map((brand) => (
+                        <Link
+                          key={brand.slug}
+                          href={`/products?brand=${brand.slug}`}
+                          className="block px-4 py-2 text-sm hover:bg-gray-50 hover:text-primary-600 transition-colors flex items-center justify-between"
+                          onClick={() => setOpenDropdown(null)}
+                        >
+                          {locale === 'en' ? brand.nameEn : brand.name}
+                          <ChevronRight size={14} className="text-gray-400" />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               <Link
                 href="/about"
-                className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ${pathname === '/about' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                className={`px-3 py-2 hover:bg-primary-600 transition-colors text-sm font-medium whitespace-nowrap ml-auto ${pathname === '/about' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
               >
                 {t('nav.about')}
               </Link>
@@ -178,7 +244,7 @@ export default function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t animate-slide-down">
+          <div className="md:hidden bg-white border-t animate-slide-down max-h-[80vh] overflow-y-auto">
             <form onSubmit={handleSearch} className="p-4">
               <div className="flex">
                 <input
@@ -197,15 +263,37 @@ export default function Header() {
               <Link href="/products" className="block px-4 py-3 hover:bg-gray-50 font-semibold" onClick={() => setMobileMenuOpen(false)}>
                 {t('nav.allProducts')}
               </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat.href}
-                  href={cat.href}
-                  className="block px-4 py-3 hover:bg-gray-50 border-t"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {cat.name}
-                </Link>
+              {brandCategories.map((brand) => (
+                <div key={brand.slug} className="border-t">
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 font-medium text-left"
+                    onClick={() => setMobileOpenBrand(mobileOpenBrand === brand.slug ? null : brand.slug)}
+                  >
+                    {locale === 'en' ? brand.nameEn : brand.name}
+                    <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === brand.slug ? 'rotate-180' : ''}`} />
+                  </button>
+                  {mobileOpenBrand === brand.slug && (
+                    <div className="bg-gray-50">
+                      <Link
+                        href={`/products?brand=${brand.slug}`}
+                        className="block px-8 py-2 text-sm font-semibold text-primary-600 hover:bg-gray-100"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {locale === 'nl' ? `Alle ${brand.name}` : `All ${brand.nameEn}`}
+                      </Link>
+                      {brand.subcategories.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/products?brand=${brand.slug}&sub=${sub.slug}`}
+                          className="block px-8 py-2 text-sm hover:bg-gray-100 text-gray-700"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {locale === 'en' ? sub.nameEn : sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
               <Link href="/about" className="block px-4 py-3 hover:bg-gray-50 border-t" onClick={() => setMobileMenuOpen(false)}>
                 {t('nav.about')}

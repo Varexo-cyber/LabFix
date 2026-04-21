@@ -4,38 +4,51 @@ import React, { Suspense, useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
-import { fetchProducts, fetchCategories, Product, Category } from '@/lib/store';
-import { Filter, Grid3X3, List, SlidersHorizontal } from 'lucide-react';
+import { fetchProducts, Product } from '@/lib/store';
+import { Filter, Grid3X3, List, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { brandCategories, getBrandName, getSubcategoryName } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale } = useApp();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedBrand, setSelectedBrand] = useState<string>('');
+  const [selectedSub, setSelectedSub] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProducts().then(setProducts);
-    fetchCategories().then(setCategories);
   }, []);
 
   useEffect(() => {
+    const brand = searchParams.get('brand');
+    const sub = searchParams.get('sub');
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
-    if (cat) setSelectedCategory(cat);
+    if (brand) { setSelectedBrand(brand); setExpandedBrands([brand]); }
+    if (sub) setSelectedSub(sub);
+    if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
   }, [searchParams]);
+
+  const toggleBrandExpand = (slug: string) => {
+    setExpandedBrands(prev => prev.includes(slug) ? prev.filter(b => b !== slug) : [...prev, slug]);
+  };
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
 
-    if (selectedCategory) {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
+    if (selectedBrand) {
+      filtered = filtered.filter((p) => p.category === selectedBrand);
+    }
+
+    if (selectedSub) {
+      filtered = filtered.filter((p) => p.subcategory === selectedSub);
     }
 
     if (searchQuery) {
@@ -67,9 +80,7 @@ function ProductsPageContent() {
     }
 
     return filtered;
-  }, [products, selectedCategory, searchQuery, sortBy, locale]);
-
-  const getCategoryName = (cat: Category) => locale === 'nl' ? cat.name : cat.nameEn;
+  }, [products, selectedBrand, selectedSub, searchQuery, sortBy, locale]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -77,15 +88,20 @@ function ProductsPageContent() {
       <nav className="text-sm text-gray-500 mb-6 animate-fade-in">
         <Link href="/" className="hover:text-primary-500">Home</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-800">{t('products.title')}</span>
-        {selectedCategory && (
+        <Link href="/products" className={`${!selectedBrand ? 'text-gray-800' : 'hover:text-primary-500'}`}>{t('products.title')}</Link>
+        {selectedBrand && (
           <>
             <span className="mx-2">/</span>
-            <span className="text-gray-800">
-              {categories.find((c) => c.slug === selectedCategory)
-                ? getCategoryName(categories.find((c) => c.slug === selectedCategory)!)
-                : selectedCategory}
+            <span className={`${!selectedSub ? 'text-gray-800' : 'hover:text-primary-500 cursor-pointer'}`}
+              onClick={() => setSelectedSub('')}>
+              {getBrandName(selectedBrand, locale)}
             </span>
+          </>
+        )}
+        {selectedSub && (
+          <>
+            <span className="mx-2">/</span>
+            <span className="text-gray-800">{getSubcategoryName(selectedBrand, selectedSub, locale)}</span>
           </>
         )}
       </nav>
@@ -93,31 +109,62 @@ function ProductsPageContent() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
         <aside className={`lg:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-          <div className="bg-white rounded-xl shadow-md p-6 animate-fade-in-left">
+          <div className="bg-white rounded-xl shadow-md p-5 animate-fade-in-left">
             <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
               <Filter size={18} />
-              {t('products.filterCategory')}
+              {locale === 'nl' ? 'Categorieën' : 'Categories'}
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <button
-                onClick={() => setSelectedCategory('')}
-                className={`block w-full text-left px-3 py-2 rounded transition-colors text-sm ${
-                  !selectedCategory ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
+                onClick={() => { setSelectedBrand(''); setSelectedSub(''); }}
+                className={`block w-full text-left px-3 py-2 rounded transition-colors text-sm font-medium ${
+                  !selectedBrand ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
                 }`}
               >
                 {t('products.all')} ({products.length})
               </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`block w-full text-left px-3 py-2 rounded transition-colors text-sm ${
-                    selectedCategory === cat.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
-                  }`}
-                >
-                  {getCategoryName(cat)} ({products.filter((p) => p.category === cat.slug).length})
-                </button>
-              ))}
+              {brandCategories.map((brand) => {
+                const brandCount = products.filter(p => p.category === brand.slug).length;
+                const isExpanded = expandedBrands.includes(brand.slug);
+                return (
+                  <div key={brand.slug}>
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(''); }}
+                        className={`flex-1 text-left px-3 py-2 rounded-l transition-colors text-sm font-medium ${
+                          selectedBrand === brand.slug && !selectedSub ? 'bg-primary-500 text-white' : selectedBrand === brand.slug ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        {locale === 'en' ? brand.nameEn : brand.name} {brandCount > 0 && <span className="text-xs opacity-70">({brandCount})</span>}
+                      </button>
+                      <button
+                        onClick={() => toggleBrandExpand(brand.slug)}
+                        className="px-2 py-2 hover:bg-gray-100 rounded-r transition-colors"
+                      >
+                        <ChevronDown size={14} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <div className="ml-3 border-l-2 border-gray-200 pl-2 space-y-0.5 mt-1 mb-1">
+                        {brand.subcategories.map((sub) => {
+                          const subCount = products.filter(p => p.category === brand.slug && p.subcategory === sub.slug).length;
+                          return (
+                            <button
+                              key={sub.slug}
+                              onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); }}
+                              className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-xs ${
+                                selectedBrand === brand.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {locale === 'en' ? sub.nameEn : sub.name} {subCount > 0 && <span className="opacity-70">({subCount})</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Price filter info */}
