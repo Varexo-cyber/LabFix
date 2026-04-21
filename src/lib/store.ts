@@ -36,11 +36,12 @@ export interface Category {
 export interface User {
   id: string;
   email: string;
-  customerType: 'individual' | 'business';
-  companyName?: string;
-  kvkNumber?: string;
-  firstName: string;
-  lastName: string;
+  customerType?: 'individual' | 'business';
+  companyName: string;
+  kvkNumber: string;
+  contactPerson: string;
+  firstName?: string;
+  lastName?: string;
   phone: string;
   address: string;
   city: string;

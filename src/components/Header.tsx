@@ -118,7 +118,7 @@ export default function Header() {
               {user ? (
                 <Link href="/account" className="hidden sm:flex flex-col items-center text-primary-500">
                   <User size={22} />
-                  <span className="text-xs font-medium truncate max-w-[80px]">{user.companyName.split(' ')[0]}</span>
+                  <span className="text-xs font-medium truncate max-w-[80px]">{user.contactPerson?.split(' ')[0] || user.companyName?.split(' ')[0] || 'Account'}</span>
                 </Link>
               ) : (
                 <Link href="/account/login" className="hidden sm:flex flex-col items-center text-gray-600 hover:text-primary-500">

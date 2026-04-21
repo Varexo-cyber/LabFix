@@ -21,14 +21,15 @@ export async function POST(request: NextRequest) {
     const userData = {
       id: user.id,
       email: user.email,
-      companyName: user.company_name,
-      kvkNumber: user.kvk_number,
-      contactPerson: user.contact_person,
-      phone: user.phone,
-      address: user.address,
-      city: user.city,
-      postalCode: user.postal_code,
-      country: user.country,
+      customerType: user.customer_type || 'business',
+      companyName: user.company_name || '',
+      kvkNumber: user.kvk_number || '',
+      contactPerson: user.contact_person || user.company_name || '',
+      phone: user.phone || '',
+      address: user.address || '',
+      city: user.city || '',
+      postalCode: user.postal_code || '',
+      country: user.country || 'Nederland',
       createdAt: user.created_at,
     };
 
