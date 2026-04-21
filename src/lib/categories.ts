@@ -658,13 +658,63 @@ export const brandCategories: BrandCategory[] = [
     nameEn: 'Nokia',
     subcategories: [
       {
-        slug: 'nokia-phone', name: 'Nokia Telefoon', nameEn: 'Nokia Phone',
+        slug: 'nokia-g', name: 'G Serie', nameEn: 'G Series',
         models: [
+          { slug: 'nokia-g60', name: 'Nokia G60' },
+          { slug: 'nokia-g50', name: 'Nokia G50' },
           { slug: 'nokia-g42', name: 'Nokia G42' },
+          { slug: 'nokia-g400', name: 'Nokia G400' },
+          { slug: 'nokia-g300', name: 'Nokia G300' },
           { slug: 'nokia-g22', name: 'Nokia G22' },
           { slug: 'nokia-g21', name: 'Nokia G21' },
+          { slug: 'nokia-g20', name: 'Nokia G20' },
+          { slug: 'nokia-g11', name: 'Nokia G11' },
+          { slug: 'nokia-g10', name: 'Nokia G10' },
+        ],
+      },
+      {
+        slug: 'nokia-x', name: 'X Serie', nameEn: 'X Series',
+        models: [
           { slug: 'nokia-xr21', name: 'Nokia XR21' },
+          { slug: 'nokia-xr20', name: 'Nokia XR20' },
           { slug: 'nokia-x30', name: 'Nokia X30' },
+          { slug: 'nokia-x100', name: 'Nokia X100' },
+          { slug: 'nokia-x20', name: 'Nokia X20' },
+          { slug: 'nokia-x10', name: 'Nokia X10' },
+        ],
+      },
+      {
+        slug: 'nokia-number', name: 'Nummer Serie', nameEn: 'Number Series',
+        models: [
+          { slug: 'nokia-8-3-5g', name: 'Nokia 8.3 5G' },
+          { slug: 'nokia-8-1', name: 'Nokia 8.1' },
+          { slug: 'nokia-8-sirocco', name: 'Nokia 8 Sirocco' },
+          { slug: 'nokia-7-2', name: 'Nokia 7.2' },
+          { slug: 'nokia-7-plus', name: 'Nokia 7 Plus' },
+          { slug: 'nokia-6-2', name: 'Nokia 6.2' },
+          { slug: 'nokia-6-1', name: 'Nokia 6.1' },
+          { slug: 'nokia-5-4', name: 'Nokia 5.4' },
+          { slug: 'nokia-5-3', name: 'Nokia 5.3' },
+          { slug: 'nokia-3-4', name: 'Nokia 3.4' },
+        ],
+      },
+      {
+        slug: 'nokia-c', name: 'C Serie', nameEn: 'C Series',
+        models: [
+          { slug: 'nokia-c32', name: 'Nokia C32' },
+          { slug: 'nokia-c12', name: 'Nokia C12' },
+        ],
+      },
+      {
+        slug: 'nokia-lumia', name: 'Lumia', nameEn: 'Lumia',
+        models: [
+          { slug: 'nokia-lumia-1520', name: 'Lumia 1520' },
+          { slug: 'nokia-lumia-1020', name: 'Lumia 1020' },
+          { slug: 'nokia-lumia-925', name: 'Lumia 925' },
+          { slug: 'nokia-lumia-920', name: 'Lumia 920' },
+          { slug: 'nokia-lumia-820', name: 'Lumia 820' },
+          { slug: 'nokia-lumia-635', name: 'Lumia 635' },
+          { slug: 'nokia-lumia-520', name: 'Lumia 520' },
         ],
       },
     ],
@@ -703,19 +753,616 @@ export const brandCategories: BrandCategory[] = [
     ],
   },
   {
-    slug: 'other-brands',
-    name: 'Overige Merken',
-    nameEn: 'Other Brands',
+    slug: 'honor',
+    name: 'Honor',
+    nameEn: 'Honor',
     subcategories: [
-      { slug: 'honor', name: 'Honor', nameEn: 'Honor', models: [{ slug: 'honor-magic-6-pro', name: 'Magic 6 Pro' }, { slug: 'honor-magic-v2', name: 'Magic V2' }, { slug: 'honor-200-pro', name: 'Honor 200 Pro' }, { slug: 'honor-90', name: 'Honor 90' }] },
-      { slug: 'nothing', name: 'Nothing', nameEn: 'Nothing', models: [{ slug: 'nothing-phone-2a', name: 'Phone (2a)' }, { slug: 'nothing-phone-2', name: 'Phone (2)' }, { slug: 'nothing-phone-1', name: 'Phone (1)' }] },
-      { slug: 'realme', name: 'Realme', nameEn: 'Realme', models: [{ slug: 'realme-gt-6', name: 'GT 6' }, { slug: 'realme-12-pro', name: '12 Pro+' }, { slug: 'realme-c55', name: 'C55' }] },
-      { slug: 'vivo', name: 'Vivo', nameEn: 'Vivo', models: [{ slug: 'vivo-x200-pro', name: 'X200 Pro' }, { slug: 'vivo-x100-pro', name: 'X100 Pro' }, { slug: 'vivo-v30', name: 'V30' }] },
-      { slug: 'tcl', name: 'TCL', nameEn: 'TCL', models: [{ slug: 'tcl-50', name: 'TCL 50 SE' }, { slug: 'tcl-40', name: 'TCL 40 SE' }] },
-      { slug: 'zte', name: 'ZTE', nameEn: 'ZTE', models: [{ slug: 'zte-blade-v50', name: 'Blade V50' }, { slug: 'zte-blade-a73', name: 'Blade A73' }] },
-      { slug: 'microsoft', name: 'Microsoft Surface', nameEn: 'Microsoft Surface', models: [{ slug: 'surface-pro-10', name: 'Surface Pro 10' }, { slug: 'surface-laptop-6', name: 'Surface Laptop 6' }, { slug: 'surface-go-4', name: 'Surface Go 4' }] },
-      { slug: 'lenovo', name: 'Lenovo', nameEn: 'Lenovo', models: [{ slug: 'lenovo-tab-p12', name: 'Tab P12' }, { slug: 'lenovo-tab-m11', name: 'Tab M11' }] },
-      { slug: 'amazon', name: 'Amazon', nameEn: 'Amazon', models: [{ slug: 'kindle-paperwhite', name: 'Kindle Paperwhite' }, { slug: 'fire-hd-10', name: 'Fire HD 10' }] },
+      {
+        slug: 'honor-magic', name: 'Magic Serie', nameEn: 'Magic Series',
+        models: [
+          { slug: 'honor-magic-7-pro', name: 'Magic 7 Pro' },
+          { slug: 'honor-magic-6-pro', name: 'Magic 6 Pro' },
+          { slug: 'honor-magic-6', name: 'Magic 6' },
+          { slug: 'honor-magic-5-pro', name: 'Magic 5 Pro' },
+          { slug: 'honor-magic-v3', name: 'Magic V3' },
+          { slug: 'honor-magic-v2', name: 'Magic V2' },
+          { slug: 'honor-magic-vs', name: 'Magic Vs' },
+        ],
+      },
+      {
+        slug: 'honor-number', name: 'Honor Serie', nameEn: 'Honor Series',
+        models: [
+          { slug: 'honor-200-pro', name: 'Honor 200 Pro' },
+          { slug: 'honor-200', name: 'Honor 200' },
+          { slug: 'honor-90', name: 'Honor 90' },
+          { slug: 'honor-90-lite', name: 'Honor 90 Lite' },
+          { slug: 'honor-70', name: 'Honor 70' },
+          { slug: 'honor-50', name: 'Honor 50' },
+        ],
+      },
+      {
+        slug: 'honor-x', name: 'X Serie', nameEn: 'X Series',
+        models: [
+          { slug: 'honor-x8b', name: 'Honor X8b' },
+          { slug: 'honor-x8a', name: 'Honor X8a' },
+          { slug: 'honor-x7b', name: 'Honor X7b' },
+          { slug: 'honor-x6a', name: 'Honor X6a' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'nothing',
+    name: 'Nothing',
+    nameEn: 'Nothing',
+    subcategories: [
+      {
+        slug: 'nothing-phone', name: 'Nothing Phone', nameEn: 'Nothing Phone',
+        models: [
+          { slug: 'nothing-phone-2a-plus', name: 'Phone (2a) Plus' },
+          { slug: 'nothing-phone-2a', name: 'Phone (2a)' },
+          { slug: 'nothing-phone-2', name: 'Phone (2)' },
+          { slug: 'nothing-phone-1', name: 'Phone (1)' },
+          { slug: 'cmf-phone-1', name: 'CMF Phone 1' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'realme',
+    name: 'Realme',
+    nameEn: 'Realme',
+    subcategories: [
+      {
+        slug: 'realme-number', name: 'Realme Serie', nameEn: 'Realme Series',
+        models: [
+          { slug: 'realme-13-plus', name: 'Realme 13+' },
+          { slug: 'realme-13-5g', name: 'Realme 13 5G' },
+          { slug: 'realme-12-pro-plus', name: 'Realme 12 Pro+' },
+          { slug: 'realme-12-pro', name: 'Realme 12 Pro' },
+          { slug: 'realme-12', name: 'Realme 12' },
+          { slug: 'realme-11-pro-plus', name: 'Realme 11 Pro+' },
+          { slug: 'realme-11-pro', name: 'Realme 11 Pro' },
+          { slug: 'realme-10-pro-plus', name: 'Realme 10 Pro+' },
+          { slug: 'realme-9-pro-plus', name: 'Realme 9 Pro+' },
+          { slug: 'realme-8-pro', name: 'Realme 8 Pro' },
+        ],
+      },
+      {
+        slug: 'realme-gt', name: 'GT Serie', nameEn: 'GT Series',
+        models: [
+          { slug: 'realme-gt-6', name: 'GT 6' },
+          { slug: 'realme-gt-5-pro', name: 'GT 5 Pro' },
+          { slug: 'realme-gt-neo-6', name: 'GT Neo 6' },
+          { slug: 'realme-gt-neo-3', name: 'GT Neo 3' },
+          { slug: 'realme-gt-master', name: 'GT Master' },
+        ],
+      },
+      {
+        slug: 'realme-c', name: 'C Serie', nameEn: 'C Series',
+        models: [
+          { slug: 'realme-c75', name: 'C75' },
+          { slug: 'realme-c67', name: 'C67' },
+          { slug: 'realme-c63', name: 'C63' },
+          { slug: 'realme-c55', name: 'C55' },
+          { slug: 'realme-c33', name: 'C33' },
+          { slug: 'realme-c31', name: 'C31' },
+        ],
+      },
+      {
+        slug: 'realme-narzo', name: 'Narzo Serie', nameEn: 'Narzo Series',
+        models: [
+          { slug: 'realme-narzo-50-pro', name: 'Narzo 50 Pro' },
+          { slug: 'realme-narzo-50', name: 'Narzo 50' },
+          { slug: 'realme-narzo-30-pro', name: 'Narzo 30 Pro' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'vivo',
+    name: 'Vivo',
+    nameEn: 'Vivo',
+    subcategories: [
+      {
+        slug: 'vivo-x', name: 'X Serie', nameEn: 'X Series',
+        models: [
+          { slug: 'vivo-x200-pro', name: 'X200 Pro' },
+          { slug: 'vivo-x200', name: 'X200' },
+          { slug: 'vivo-x100-pro', name: 'X100 Pro' },
+          { slug: 'vivo-x100', name: 'X100' },
+        ],
+      },
+      {
+        slug: 'vivo-v', name: 'V Serie', nameEn: 'V Series',
+        models: [
+          { slug: 'vivo-v30', name: 'V30' },
+          { slug: 'vivo-v27-pro', name: 'V27 Pro' },
+          { slug: 'vivo-v23-5g', name: 'V23 5G' },
+          { slug: 'vivo-v20', name: 'V20' },
+        ],
+      },
+      {
+        slug: 'vivo-y', name: 'Y Serie', nameEn: 'Y Series',
+        models: [
+          { slug: 'vivo-y300i', name: 'Y300i' },
+          { slug: 'vivo-y200-plus', name: 'Y200 Plus' },
+          { slug: 'vivo-y77-5g', name: 'Y77 5G' },
+          { slug: 'vivo-y55-5g', name: 'Y55 5G' },
+          { slug: 'vivo-y39-5g', name: 'Y39 5G' },
+          { slug: 'vivo-y28-5g', name: 'Y28 5G' },
+          { slug: 'vivo-y22', name: 'Y22' },
+          { slug: 'vivo-y21', name: 'Y21' },
+          { slug: 'vivo-y03', name: 'Y03' },
+        ],
+      },
+      {
+        slug: 'vivo-s', name: 'S Serie', nameEn: 'S Series',
+        models: [
+          { slug: 'vivo-s19-pro', name: 'S19 Pro' },
+          { slug: 'vivo-s18-pro', name: 'S18 Pro' },
+          { slug: 'vivo-s18', name: 'S18' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'tcl',
+    name: 'TCL',
+    nameEn: 'TCL',
+    subcategories: [
+      {
+        slug: 'tcl-phone', name: 'TCL Telefoon', nameEn: 'TCL Phone',
+        models: [
+          { slug: 'tcl-50-le', name: 'TCL 50 LE' },
+          { slug: 'tcl-50-xl-5g', name: 'TCL 50 XL 5G' },
+          { slug: 'tcl-50-5g', name: 'TCL 50 5G' },
+          { slug: 'tcl-40-se', name: 'TCL 40 SE' },
+          { slug: 'tcl-40-xl', name: 'TCL 40 XL' },
+          { slug: 'tcl-stylus-5g', name: 'TCL Stylus 5G' },
+          { slug: 'tcl-30-xl', name: 'TCL 30 XL' },
+          { slug: 'tcl-30-se', name: 'TCL 30 SE' },
+          { slug: 'tcl-30', name: 'TCL 30' },
+          { slug: 'tcl-20-se', name: 'TCL 20 SE' },
+          { slug: 'tcl-10-pro', name: 'TCL 10 Pro' },
+          { slug: 'tcl-10l', name: 'TCL 10L' },
+        ],
+      },
+      {
+        slug: 'tcl-tab', name: 'TCL Tablet', nameEn: 'TCL Tablet',
+        models: [
+          { slug: 'tcl-tab-pro-5g', name: 'Tab Pro 5G' },
+          { slug: 'tcl-tab-10s', name: 'Tab 10S' },
+          { slug: 'tcl-tab-10-5g', name: 'Tab 10 5G' },
+          { slug: 'tcl-tab-8-4g', name: 'Tab 8 4G' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'zte',
+    name: 'ZTE',
+    nameEn: 'ZTE',
+    subcategories: [
+      {
+        slug: 'zte-blade', name: 'Blade Serie', nameEn: 'Blade Series',
+        models: [
+          { slug: 'zte-blade-v60', name: 'Blade V60 Smart' },
+          { slug: 'zte-blade-a75-5g', name: 'Blade A75 5G' },
+          { slug: 'zte-blade-a75', name: 'Blade A75 4G' },
+          { slug: 'zte-blade-a72', name: 'Blade A72' },
+          { slug: 'zte-blade-a71', name: 'Blade A71' },
+          { slug: 'zte-blade-a52', name: 'Blade A52' },
+          { slug: 'zte-blade-a51', name: 'Blade A51' },
+          { slug: 'zte-blade-v40', name: 'Blade V40 Smart' },
+        ],
+      },
+      {
+        slug: 'zte-axon', name: 'Axon Serie', nameEn: 'Axon Series',
+        models: [
+          { slug: 'zte-axon-60-lite', name: 'Axon 60 Lite' },
+          { slug: 'zte-axon-30-ultra', name: 'Axon 30 Ultra 5G' },
+          { slug: 'zte-axon-30', name: 'Axon 30 5G' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'asus',
+    name: 'ASUS',
+    nameEn: 'ASUS',
+    subcategories: [
+      {
+        slug: 'asus-rog-phone', name: 'ROG Phone', nameEn: 'ROG Phone',
+        models: [
+          { slug: 'rog-phone-9-pro', name: 'ROG Phone 9 Pro' },
+          { slug: 'rog-phone-9', name: 'ROG Phone 9' },
+          { slug: 'rog-phone-8-pro', name: 'ROG Phone 8 Pro' },
+          { slug: 'rog-phone-8', name: 'ROG Phone 8' },
+          { slug: 'rog-phone-7-pro', name: 'ROG Phone 7 Pro' },
+          { slug: 'rog-phone-7', name: 'ROG Phone 7' },
+          { slug: 'rog-phone-6-pro', name: 'ROG Phone 6 Pro' },
+          { slug: 'rog-phone-6', name: 'ROG Phone 6' },
+          { slug: 'rog-phone-5', name: 'ROG Phone 5' },
+        ],
+      },
+      {
+        slug: 'asus-zenfone', name: 'Zenfone', nameEn: 'Zenfone',
+        models: [
+          { slug: 'zenfone-11-ultra', name: 'Zenfone 11 Ultra' },
+          { slug: 'zenfone-10', name: 'Zenfone 10' },
+          { slug: 'zenfone-9', name: 'Zenfone 9' },
+          { slug: 'zenfone-8-flip', name: 'Zenfone 8 Flip' },
+          { slug: 'zenfone-8', name: 'Zenfone 8' },
+        ],
+      },
+      {
+        slug: 'asus-laptop', name: 'ASUS Laptop', nameEn: 'ASUS Laptop',
+        models: [
+          { slug: 'asus-rog-strix-g16', name: 'ROG Strix G16' },
+          { slug: 'asus-rog-strix-g15', name: 'ROG Strix G15' },
+          { slug: 'asus-rog-zephyrus-g14', name: 'ROG Zephyrus G14' },
+          { slug: 'asus-rog-zephyrus-g16', name: 'ROG Zephyrus G16' },
+          { slug: 'asus-vivobook-15', name: 'VivoBook 15' },
+          { slug: 'asus-vivobook-16', name: 'VivoBook 16' },
+          { slug: 'asus-zenbook-14', name: 'ZenBook 14' },
+          { slug: 'asus-zenbook-15', name: 'ZenBook 15' },
+          { slug: 'asus-tuf-gaming', name: 'TUF Gaming' },
+          { slug: 'asus-chromebook', name: 'Chromebook' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'lenovo',
+    name: 'Lenovo',
+    nameEn: 'Lenovo',
+    subcategories: [
+      {
+        slug: 'lenovo-tab-m', name: 'Tab M Serie', nameEn: 'Tab M Series',
+        models: [
+          { slug: 'lenovo-tab-m11', name: 'Tab M11 (TB-330)' },
+          { slug: 'lenovo-tab-m10-plus-3', name: 'Tab M10 Plus 3rd Gen' },
+          { slug: 'lenovo-tab-m10-3', name: 'Tab M10 3rd Gen' },
+          { slug: 'lenovo-tab-m10-2-fhd', name: 'Tab M10 2nd Gen FHD+' },
+          { slug: 'lenovo-tab-m10-fhd', name: 'Tab M10 FHD' },
+          { slug: 'lenovo-tab-m10-hd', name: 'Tab M10 HD' },
+          { slug: 'lenovo-tab-m8-3', name: 'Tab M8 3rd Gen' },
+        ],
+      },
+      {
+        slug: 'lenovo-tab-p', name: 'Tab P Serie', nameEn: 'Tab P Series',
+        models: [
+          { slug: 'lenovo-tab-p12-pro', name: 'Tab P12 Pro' },
+          { slug: 'lenovo-tab-p12', name: 'Tab P12' },
+          { slug: 'lenovo-tab-p11-pro-2', name: 'Tab P11 Pro 2nd Gen' },
+          { slug: 'lenovo-tab-p11-plus', name: 'Tab P11 Plus' },
+        ],
+      },
+      {
+        slug: 'lenovo-thinkpad', name: 'ThinkPad', nameEn: 'ThinkPad',
+        models: [
+          { slug: 'thinkpad-x1-carbon-g12', name: 'X1 Carbon Gen 12' },
+          { slug: 'thinkpad-x1-carbon-g11', name: 'X1 Carbon Gen 11' },
+          { slug: 'thinkpad-x1-carbon-g10', name: 'X1 Carbon Gen 10' },
+          { slug: 'thinkpad-t14s-g5', name: 'T14s Gen 5' },
+          { slug: 'thinkpad-t14-g5', name: 'T14 Gen 5' },
+          { slug: 'thinkpad-t16-g3', name: 'T16 Gen 3' },
+          { slug: 'thinkpad-l14-g4', name: 'L14 Gen 4' },
+          { slug: 'thinkpad-e16-g2', name: 'E16 Gen 2' },
+        ],
+      },
+      {
+        slug: 'lenovo-ideapad', name: 'IdeaPad', nameEn: 'IdeaPad',
+        models: [
+          { slug: 'ideapad-5-16', name: 'IdeaPad 5 16"' },
+          { slug: 'ideapad-5-14', name: 'IdeaPad 5 14"' },
+          { slug: 'ideapad-3-15', name: 'IdeaPad 3 15"' },
+          { slug: 'ideapad-slim-5', name: 'IdeaPad Slim 5' },
+          { slug: 'ideapad-flex-5', name: 'IdeaPad Flex 5' },
+        ],
+      },
+      {
+        slug: 'lenovo-yoga', name: 'Yoga', nameEn: 'Yoga',
+        models: [
+          { slug: 'yoga-9i-14', name: 'Yoga 9i 14"' },
+          { slug: 'yoga-7-16', name: 'Yoga 7 16"' },
+          { slug: 'yoga-slim-7-14', name: 'Yoga Slim 7 14"' },
+          { slug: 'yoga-tab-smart', name: 'Yoga Smart Tab' },
+        ],
+      },
+      {
+        slug: 'lenovo-legion', name: 'Legion', nameEn: 'Legion',
+        models: [
+          { slug: 'legion-pro-7-16', name: 'Legion Pro 7 16"' },
+          { slug: 'legion-pro-5-16', name: 'Legion Pro 5 16"' },
+          { slug: 'legion-5-15', name: 'Legion 5 15"' },
+          { slug: 'legion-slim-5-14', name: 'Legion Slim 5 14"' },
+        ],
+      },
+      {
+        slug: 'lenovo-chromebook', name: 'Chromebook', nameEn: 'Chromebook',
+        models: [
+          { slug: 'lenovo-chromebook-300e', name: 'Chromebook 300e' },
+          { slug: 'lenovo-chromebook-100e', name: 'Chromebook 100e' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'microsoft',
+    name: 'Microsoft',
+    nameEn: 'Microsoft',
+    subcategories: [
+      {
+        slug: 'surface-pro', name: 'Surface Pro', nameEn: 'Surface Pro',
+        models: [
+          { slug: 'surface-pro-11', name: 'Surface Pro 11 (2024)' },
+          { slug: 'surface-pro-10', name: 'Surface Pro 10 (2024)' },
+          { slug: 'surface-pro-9', name: 'Surface Pro 9 (2022)' },
+          { slug: 'surface-pro-8', name: 'Surface Pro 8 (2021)' },
+          { slug: 'surface-pro-7-plus', name: 'Surface Pro 7+ (2021)' },
+          { slug: 'surface-pro-x', name: 'Surface Pro X (2020)' },
+          { slug: 'surface-pro-7', name: 'Surface Pro 7 (2019)' },
+          { slug: 'surface-pro-6', name: 'Surface Pro 6 (2018)' },
+          { slug: 'surface-pro-5', name: 'Surface Pro 5 (2017)' },
+          { slug: 'surface-pro-4', name: 'Surface Pro 4 (2015)' },
+          { slug: 'surface-pro-3', name: 'Surface Pro 3 (2014)' },
+        ],
+      },
+      {
+        slug: 'surface-laptop', name: 'Surface Laptop', nameEn: 'Surface Laptop',
+        models: [
+          { slug: 'surface-laptop-7-15', name: 'Laptop 7 15"' },
+          { slug: 'surface-laptop-7-13', name: 'Laptop 7 13.8"' },
+          { slug: 'surface-laptop-6-15', name: 'Laptop 6 15"' },
+          { slug: 'surface-laptop-5-15', name: 'Laptop 5 15"' },
+          { slug: 'surface-laptop-5-13', name: 'Laptop 5 13.5"' },
+          { slug: 'surface-laptop-4-15', name: 'Laptop 4 15"' },
+          { slug: 'surface-laptop-4-13', name: 'Laptop 4 13.5"' },
+          { slug: 'surface-laptop-3-15', name: 'Laptop 3 15"' },
+          { slug: 'surface-laptop-3-13', name: 'Laptop 3 13.5"' },
+        ],
+      },
+      {
+        slug: 'surface-go', name: 'Surface Go', nameEn: 'Surface Go',
+        models: [
+          { slug: 'surface-go-4', name: 'Surface Go 4 (2023)' },
+          { slug: 'surface-go-3', name: 'Surface Go 3 (2021)' },
+          { slug: 'surface-go-2', name: 'Surface Go 2 (2020)' },
+          { slug: 'surface-go-1', name: 'Surface Go (2018)' },
+        ],
+      },
+      {
+        slug: 'surface-book', name: 'Surface Book', nameEn: 'Surface Book',
+        models: [
+          { slug: 'surface-book-3-15', name: 'Book 3 15"' },
+          { slug: 'surface-book-3-13', name: 'Book 3 13.5"' },
+          { slug: 'surface-book-2-15', name: 'Book 2 15"' },
+          { slug: 'surface-book-2-13', name: 'Book 2 13.5"' },
+        ],
+      },
+      {
+        slug: 'surface-laptop-go', name: 'Surface Laptop Go', nameEn: 'Surface Laptop Go',
+        models: [
+          { slug: 'surface-laptop-go-4', name: 'Laptop Go 4' },
+          { slug: 'surface-laptop-go-3', name: 'Laptop Go 3' },
+          { slug: 'surface-laptop-go-2', name: 'Laptop Go 2' },
+          { slug: 'surface-laptop-go-1', name: 'Laptop Go 1' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'hp',
+    name: 'HP',
+    nameEn: 'HP',
+    subcategories: [
+      {
+        slug: 'hp-pavilion', name: 'Pavilion', nameEn: 'Pavilion',
+        models: [
+          { slug: 'hp-pavilion-16', name: 'Pavilion 16"' },
+          { slug: 'hp-pavilion-15', name: 'Pavilion 15"' },
+          { slug: 'hp-pavilion-14', name: 'Pavilion 14"' },
+          { slug: 'hp-pavilion-x360-14', name: 'Pavilion x360 14"' },
+          { slug: 'hp-pavilion-x360-15', name: 'Pavilion x360 15"' },
+        ],
+      },
+      {
+        slug: 'hp-envy', name: 'Envy', nameEn: 'Envy',
+        models: [
+          { slug: 'hp-envy-16', name: 'Envy 16"' },
+          { slug: 'hp-envy-15', name: 'Envy 15"' },
+          { slug: 'hp-envy-14', name: 'Envy 14"' },
+          { slug: 'hp-envy-x360-15', name: 'Envy x360 15"' },
+          { slug: 'hp-envy-x360-13', name: 'Envy x360 13"' },
+        ],
+      },
+      {
+        slug: 'hp-spectre', name: 'Spectre', nameEn: 'Spectre',
+        models: [
+          { slug: 'hp-spectre-x360-16', name: 'Spectre x360 16"' },
+          { slug: 'hp-spectre-x360-14', name: 'Spectre x360 14"' },
+          { slug: 'hp-spectre-x360-13', name: 'Spectre x360 13"' },
+        ],
+      },
+      {
+        slug: 'hp-elitebook', name: 'EliteBook', nameEn: 'EliteBook',
+        models: [
+          { slug: 'hp-elitebook-860-g11', name: 'EliteBook 860 G11' },
+          { slug: 'hp-elitebook-840-g11', name: 'EliteBook 840 G11' },
+          { slug: 'hp-elitebook-640-g11', name: 'EliteBook 640 G11' },
+          { slug: 'hp-elitebook-x360-1040', name: 'EliteBook x360 1040' },
+        ],
+      },
+      {
+        slug: 'hp-probook', name: 'ProBook', nameEn: 'ProBook',
+        models: [
+          { slug: 'hp-probook-450-g11', name: 'ProBook 450 G11' },
+          { slug: 'hp-probook-440-g11', name: 'ProBook 440 G11' },
+          { slug: 'hp-probook-640-g9', name: 'ProBook 640 G9' },
+        ],
+      },
+      {
+        slug: 'hp-omen', name: 'OMEN', nameEn: 'OMEN',
+        models: [
+          { slug: 'hp-omen-16', name: 'OMEN 16"' },
+          { slug: 'hp-omen-17', name: 'OMEN 17"' },
+          { slug: 'hp-omen-transcend-16', name: 'OMEN Transcend 16"' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'dell',
+    name: 'Dell',
+    nameEn: 'Dell',
+    subcategories: [
+      {
+        slug: 'dell-xps', name: 'XPS', nameEn: 'XPS',
+        models: [
+          { slug: 'dell-xps-16-9640', name: 'XPS 16 (9640)' },
+          { slug: 'dell-xps-14-9440', name: 'XPS 14 (9440)' },
+          { slug: 'dell-xps-13-9340', name: 'XPS 13 (9340)' },
+          { slug: 'dell-xps-15-9530', name: 'XPS 15 (9530)' },
+          { slug: 'dell-xps-13-plus', name: 'XPS 13 Plus (9320)' },
+        ],
+      },
+      {
+        slug: 'dell-inspiron', name: 'Inspiron', nameEn: 'Inspiron',
+        models: [
+          { slug: 'dell-inspiron-16-7640', name: 'Inspiron 16 (7640)' },
+          { slug: 'dell-inspiron-15-3530', name: 'Inspiron 15 (3530)' },
+          { slug: 'dell-inspiron-14-5440', name: 'Inspiron 14 (5440)' },
+          { slug: 'dell-inspiron-14-2in1', name: 'Inspiron 14 2-in-1' },
+        ],
+      },
+      {
+        slug: 'dell-latitude', name: 'Latitude', nameEn: 'Latitude',
+        models: [
+          { slug: 'dell-latitude-7450', name: 'Latitude 7450' },
+          { slug: 'dell-latitude-5540', name: 'Latitude 5540' },
+          { slug: 'dell-latitude-5440', name: 'Latitude 5440' },
+          { slug: 'dell-latitude-3440', name: 'Latitude 3440' },
+        ],
+      },
+      {
+        slug: 'dell-alienware', name: 'Alienware', nameEn: 'Alienware',
+        models: [
+          { slug: 'alienware-m18-r2', name: 'Alienware m18 R2' },
+          { slug: 'alienware-m16-r2', name: 'Alienware m16 R2' },
+          { slug: 'alienware-x16-r2', name: 'Alienware x16 R2' },
+          { slug: 'alienware-x14-r2', name: 'Alienware x14 R2' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'acer',
+    name: 'Acer',
+    nameEn: 'Acer',
+    subcategories: [
+      {
+        slug: 'acer-swift', name: 'Swift', nameEn: 'Swift',
+        models: [
+          { slug: 'acer-swift-go-16', name: 'Swift Go 16' },
+          { slug: 'acer-swift-go-14', name: 'Swift Go 14' },
+          { slug: 'acer-swift-14-ai', name: 'Swift 14 AI' },
+          { slug: 'acer-swift-edge-16', name: 'Swift Edge 16' },
+          { slug: 'acer-swift-x-14', name: 'Swift X 14' },
+        ],
+      },
+      {
+        slug: 'acer-aspire', name: 'Aspire', nameEn: 'Aspire',
+        models: [
+          { slug: 'acer-aspire-5-15', name: 'Aspire 5 15"' },
+          { slug: 'acer-aspire-5-14', name: 'Aspire 5 14"' },
+          { slug: 'acer-aspire-3-15', name: 'Aspire 3 15"' },
+          { slug: 'acer-aspire-vero-15', name: 'Aspire Vero 15"' },
+        ],
+      },
+      {
+        slug: 'acer-nitro', name: 'Nitro', nameEn: 'Nitro',
+        models: [
+          { slug: 'acer-nitro-v-16', name: 'Nitro V 16"' },
+          { slug: 'acer-nitro-v-15', name: 'Nitro V 15"' },
+          { slug: 'acer-nitro-5-17', name: 'Nitro 5 17"' },
+        ],
+      },
+      {
+        slug: 'acer-predator', name: 'Predator', nameEn: 'Predator',
+        models: [
+          { slug: 'acer-predator-helios-18', name: 'Predator Helios 18' },
+          { slug: 'acer-predator-helios-16', name: 'Predator Helios 16' },
+          { slug: 'acer-predator-triton-17', name: 'Predator Triton 17' },
+        ],
+      },
+      {
+        slug: 'acer-chromebook', name: 'Chromebook', nameEn: 'Chromebook',
+        models: [
+          { slug: 'acer-chromebook-plus-515', name: 'Chromebook Plus 515' },
+          { slug: 'acer-chromebook-314', name: 'Chromebook 314' },
+          { slug: 'acer-chromebook-spin-513', name: 'Chromebook Spin 513' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'amazon',
+    name: 'Amazon',
+    nameEn: 'Amazon',
+    subcategories: [
+      {
+        slug: 'kindle', name: 'Kindle', nameEn: 'Kindle',
+        models: [
+          { slug: 'kindle-paperwhite-2024', name: 'Kindle Paperwhite (2024)' },
+          { slug: 'kindle-scribe-2022', name: 'Kindle Scribe (2022)' },
+          { slug: 'kindle-2022', name: 'Kindle (2022)' },
+        ],
+      },
+      {
+        slug: 'fire-tablet', name: 'Fire Tablet', nameEn: 'Fire Tablet',
+        models: [
+          { slug: 'fire-hd-10-2023', name: 'Fire HD 10 (2023)' },
+          { slug: 'fire-hd-10-2021', name: 'Fire HD 10 (2021)' },
+          { slug: 'fire-hd-8-plus-2022', name: 'Fire HD 8 Plus (2022)' },
+          { slug: 'fire-hd-8-2022', name: 'Fire HD 8 (2022)' },
+          { slug: 'fire-hd-8-2020', name: 'Fire HD 8 (2020)' },
+          { slug: 'fire-7-2022', name: 'Fire 7 (2022)' },
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'infinix',
+    name: 'Infinix',
+    nameEn: 'Infinix',
+    subcategories: [
+      {
+        slug: 'infinix-hot', name: 'Hot Serie', nameEn: 'Hot Series',
+        models: [
+          { slug: 'infinix-hot-40-pro', name: 'Hot 40 Pro' },
+          { slug: 'infinix-hot-40', name: 'Hot 40' },
+          { slug: 'infinix-hot-30', name: 'Hot 30' },
+          { slug: 'infinix-hot-20', name: 'Hot 20' },
+        ],
+      },
+      {
+        slug: 'infinix-note', name: 'Note Serie', nameEn: 'Note Series',
+        models: [
+          { slug: 'infinix-note-40-pro', name: 'Note 40 Pro' },
+          { slug: 'infinix-note-40', name: 'Note 40' },
+          { slug: 'infinix-note-30-pro', name: 'Note 30 Pro' },
+          { slug: 'infinix-note-30', name: 'Note 30' },
+        ],
+      },
+      {
+        slug: 'infinix-zero', name: 'Zero Serie', nameEn: 'Zero Series',
+        models: [
+          { slug: 'infinix-zero-30', name: 'Zero 30 5G' },
+          { slug: 'infinix-zero-ultra', name: 'Zero Ultra' },
+        ],
+      },
     ],
   },
   {

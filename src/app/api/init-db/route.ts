@@ -80,6 +80,23 @@ export async function POST() {
       )
     `;
 
+    // News articles table
+    await sql`
+      CREATE TABLE IF NOT EXISTS news_articles (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        title_en TEXT DEFAULT '',
+        summary TEXT DEFAULT '',
+        summary_en TEXT DEFAULT '',
+        content TEXT DEFAULT '',
+        content_en TEXT DEFAULT '',
+        image TEXT DEFAULT '',
+        published BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
     // Newsletter subscribers table
     await sql`
       CREATE TABLE IF NOT EXISTS newsletter_subscribers (

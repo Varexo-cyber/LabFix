@@ -58,10 +58,12 @@ export default function Footer() {
                 </svg>
               </div>
               {/* PostNL */}
-              <div className="bg-white rounded-md h-9 w-16 flex items-center justify-center px-1">
-                <svg viewBox="0 0 200 60" className="h-4 w-auto">
-                  <text x="5" y="45" fontFamily="Arial Black, Arial" fontWeight="900" fontSize="38" fill="#EE7203">Post</text>
-                  <text x="120" y="45" fontFamily="Arial Black, Arial" fontWeight="900" fontSize="38" fill="#2E3192">NL</text>
+              <div className="bg-white rounded-md h-9 w-16 flex items-center justify-center px-1.5">
+                <svg viewBox="0 0 200 80" className="h-5 w-auto">
+                  <rect x="0" y="10" width="60" height="60" rx="8" fill="#EE7203"/>
+                  <text x="30" y="52" textAnchor="middle" fontFamily="Arial" fontWeight="900" fontSize="28" fill="#fff">P</text>
+                  <text x="75" y="58" fontFamily="Arial" fontWeight="800" fontSize="32" fill="#EE7203">post</text>
+                  <text x="143" y="58" fontFamily="Arial" fontWeight="800" fontSize="32" fill="#2E3192">nl</text>
                 </svg>
               </div>
               {/* DHL */}
@@ -267,6 +269,18 @@ export default function Footer() {
             {locale === 'nl'
               ? 'Alle handelsmerken zijn eigendom van hun respectievelijke houders. LabFix claimt geen eigendom van handelsmerken die op deze website worden gebruikt.'
               : 'All trademarks are properties of their respective holders. LabFix does not own or make claim to trademarks used on this website.'}
+          </p>
+        </div>
+      </div>
+
+      {/* Varexo credit */}
+      <div className="border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-3 text-center">
+          <p className="text-[11px] text-gray-600">
+            {locale === 'nl' ? 'Medemogelijk gemaakt door' : 'Made possible by'}{' '}
+            <a href="https://varexo.nl" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
+              Varexo
+            </a>
           </p>
         </div>
       </div>

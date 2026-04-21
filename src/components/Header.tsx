@@ -243,7 +243,7 @@ export default function Header() {
                     <ChevronDown size={12} />
                   </button>
                   {openDropdown === 'more' && (
-                    <div className="absolute top-full right-0 bg-white text-gray-800 rounded-b-lg shadow-xl py-2 min-w-[220px] z-50 border-t-2 border-accent-500">
+                    <div className="absolute top-full right-0 bg-white text-gray-800 rounded-b-lg shadow-xl py-2 z-50 border-t-2 border-accent-500 max-h-[70vh] overflow-y-auto grid grid-cols-2 min-w-[400px]">
                       {moreBrands.map((brand) => (
                         <Link
                           key={brand.slug}

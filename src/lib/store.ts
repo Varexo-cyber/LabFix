@@ -77,6 +77,20 @@ export interface Order {
   updatedAt: string;
 }
 
+export interface NewsArticle {
+  id: string;
+  title: string;
+  titleEn: string;
+  summary: string;
+  summaryEn: string;
+  content: string;
+  contentEn: string;
+  image: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ==================== API HELPERS ====================
 
 const API_BASE = typeof window !== 'undefined' ? '' : '';
@@ -149,6 +163,29 @@ export async function sendEmailApi(to: string, subject: string, message: string)
 
 export async function initDatabase(): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/api/init-db`, { method: 'POST' });
+  return res.json();
+}
+
+// ==================== NEWS ====================
+
+export async function fetchNews(): Promise<NewsArticle[]> {
+  const res = await fetch(`${API_BASE}/api/news`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function createNews(article: Omit<NewsArticle, 'id' | 'createdAt' | 'updatedAt'>): Promise<{ success: boolean; id?: string }> {
+  const res = await fetch(`${API_BASE}/api/news`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(article) });
+  return res.json();
+}
+
+export async function updateNews(article: NewsArticle): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/api/news`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(article) });
+  return res.json();
+}
+
+export async function deleteNews(id: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/api/news?id=${id}`, { method: 'DELETE' });
   return res.json();
 }
 

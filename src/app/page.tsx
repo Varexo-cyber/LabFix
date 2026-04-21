@@ -4,16 +4,18 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
-import { fetchProducts, Product } from '@/lib/store';
-import { Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, Package, ChevronRight } from 'lucide-react';
+import { fetchProducts, Product, fetchNews, NewsArticle } from '@/lib/store';
+import { Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, Package, ChevronRight, Newspaper, Laptop, Monitor } from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
 export default function HomePage() {
   const { t, locale } = useApp();
   const [products, setProducts] = useState<Product[]>([]);
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
     fetchProducts().then(setProducts);
+    fetchNews().then(articles => setNewsArticles(articles.filter(a => a.published)));
   }, []);
 
   const featuredProducts = products.filter((p) => p.featured);
@@ -213,6 +215,42 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Latest News */}
+      {newsArticles.length > 0 && (
+        <section className="py-12 bg-white border-t">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-center mb-8 animate-fade-in-up">
+              <div className="flex items-center gap-3">
+                <Newspaper size={24} className="text-primary-500" />
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {locale === 'nl' ? 'Laatste Nieuws' : 'Latest News'}
+                </h2>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {newsArticles.slice(0, 3).map((article, i) => (
+                <div key={article.id} className={`bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow animate-fade-in-up delay-${(i + 1) * 100}`}>
+                  {article.image && (
+                    <img src={article.image} alt="" className="w-full h-44 object-cover" />
+                  )}
+                  <div className="p-5">
+                    <p className="text-xs text-primary-500 font-medium mb-2">
+                      {new Date(article.createdAt).toLocaleDateString(locale === 'nl' ? 'nl-NL' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                    <h3 className="font-bold text-gray-800 mb-2">
+                      {locale === 'nl' ? article.title : (article.titleEn || article.title)}
+                    </h3>
+                    <p className="text-sm text-gray-500 line-clamp-3">
+                      {locale === 'nl' ? article.summary : (article.summaryEn || article.summary)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Brands / Trust */}
       <section className="bg-white py-16 border-t">
         <div className="max-w-7xl mx-auto px-4">
@@ -221,11 +259,24 @@ export default function HomePage() {
               {locale === 'nl' ? 'Wij leveren onderdelen voor' : 'We supply parts for'}
             </h2>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
-            {['Apple', 'Samsung', 'Huawei', 'Motorola', 'Google', 'OnePlus'].map((brand, i) => (
-              <div key={brand} className={`text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default animate-fade-in-up delay-${(i + 1) * 100}`}>
-                <Smartphone size={36} className="mx-auto mb-1.5" />
-                <p className="font-semibold text-sm">{brand}</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            {[
+              { name: 'Apple', icon: <Smartphone size={32} /> },
+              { name: 'Samsung', icon: <Smartphone size={32} /> },
+              { name: 'Google', icon: <Smartphone size={32} /> },
+              { name: 'Huawei', icon: <Smartphone size={32} /> },
+              { name: 'Xiaomi', icon: <Smartphone size={32} /> },
+              { name: 'OnePlus', icon: <Smartphone size={32} /> },
+              { name: 'Motorola', icon: <Smartphone size={32} /> },
+              { name: 'ASUS', icon: <Laptop size={32} /> },
+              { name: 'Lenovo', icon: <Laptop size={32} /> },
+              { name: 'HP', icon: <Laptop size={32} /> },
+              { name: 'Dell', icon: <Laptop size={32} /> },
+              { name: 'Microsoft', icon: <Monitor size={32} /> },
+            ].map((brand, i) => (
+              <div key={brand.name} className={`text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default animate-fade-in-up delay-${(i + 1) * 100}`}>
+                <div className="mx-auto mb-1.5">{brand.icon}</div>
+                <p className="font-semibold text-sm">{brand.name}</p>
               </div>
             ))}
           </div>

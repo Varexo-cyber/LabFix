@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload } from 'lucide-react';
+import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews } from '@/lib/store';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper } from 'lucide-react';
 import Link from 'next/link';
 import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
 
@@ -36,7 +36,11 @@ export default function AdminPage() {
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'customers' | 'newsletter' | 'news'>('products');
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
+  const [creatingNews, setCreatingNews] = useState(false);
+  const [newsForm, setNewsForm] = useState({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', published: true });
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -64,16 +68,18 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
-      const [prods, cats, ords, usrs] = await Promise.all([
+      const [prods, cats, ords, usrs, news] = await Promise.all([
         fetchProducts(),
         fetchCategories(),
         fetchOrders(),
         fetchUsers(),
+        fetchNews(),
       ]);
       setProducts(prods);
       setCategories(cats);
       setOrders(ords);
       setUsers(usrs);
+      setNewsArticles(news);
       setDbInitialized(true);
     } catch {
       setDbInitialized(false);
@@ -289,6 +295,9 @@ export default function AdminPage() {
             </button>
             <button onClick={() => setActiveTab('newsletter')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'newsletter' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Mail size={16} /> Nieuwsbrief
+            </button>
+            <button onClick={() => setActiveTab('news')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'news' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <Newspaper size={16} /> Nieuws ({newsArticles.length})
             </button>
           </div>
         </div>
@@ -847,6 +856,166 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* NEWS TAB */}
+        {activeTab === 'news' && (
+          <div className="max-w-7xl mx-auto px-4 pb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Nieuwsartikelen</h2>
+              <button
+                onClick={() => { setCreatingNews(true); setEditingNews(null); setNewsForm({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', published: true }); }}
+                className="bg-primary-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-600"
+              >
+                <Plus size={18} /> Nieuw Artikel
+              </button>
+            </div>
+
+            {(creatingNews || editingNews) && (
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border-l-4 border-primary-500">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-lg">{editingNews ? 'Artikel Bewerken' : 'Nieuw Artikel'}</h3>
+                  <button onClick={() => { setCreatingNews(false); setEditingNews(null); }} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Titel (NL) *</label>
+                      <input type="text" value={newsForm.title} onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Nieuw product gelanceerd" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Title (EN)</label>
+                      <input type="text" value={newsForm.titleEn} onChange={(e) => setNewsForm({ ...newsForm, titleEn: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="New product launched" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Samenvatting (NL)</label>
+                      <textarea value={newsForm.summary} onChange={(e) => setNewsForm({ ...newsForm, summary: e.target.value })}
+                        rows={2} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Korte samenvatting..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Summary (EN)</label>
+                      <textarea value={newsForm.summaryEn} onChange={(e) => setNewsForm({ ...newsForm, summaryEn: e.target.value })}
+                        rows={2} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Short summary..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Inhoud (NL)</label>
+                      <textarea value={newsForm.content} onChange={(e) => setNewsForm({ ...newsForm, content: e.target.value })}
+                        rows={5} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Volledige artikelinhoud..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Content (EN)</label>
+                      <textarea value={newsForm.contentEn} onChange={(e) => setNewsForm({ ...newsForm, contentEn: e.target.value })}
+                        rows={5} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Full article content..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Afbeelding URL</label>
+                      <input type="text" value={newsForm.image} onChange={(e) => setNewsForm({ ...newsForm, image: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="https://..." />
+                    </div>
+                    <div className="flex items-end">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({ ...newsForm, published: e.target.checked })}
+                          className="w-4 h-4 text-primary-500 rounded" />
+                        <span className="text-sm font-semibold">Gepubliceerd</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (!newsForm.title) { alert('Vul een titel in'); return; }
+                        if (editingNews) {
+                          await updateNews({ ...editingNews, ...newsForm });
+                        } else {
+                          await createNews(newsForm);
+                        }
+                        const articles = await fetchNews();
+                        setNewsArticles(articles);
+                        setCreatingNews(false);
+                        setEditingNews(null);
+                      }}
+                      className="bg-primary-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-600 flex items-center gap-2"
+                    >
+                      <Save size={16} /> {editingNews ? 'Opslaan' : 'Aanmaken'}
+                    </button>
+                    <button onClick={() => { setCreatingNews(false); setEditingNews(null); }}
+                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300">Annuleren</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white rounded-xl shadow overflow-hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Titel</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Samenvatting</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Datum</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Acties</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {newsArticles.length === 0 ? (
+                    <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Geen nieuwsartikelen. Maak je eerste artikel aan!</td></tr>
+                  ) : newsArticles.map((article) => (
+                    <tr key={article.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {article.image && <img src={article.image} alt="" className="w-12 h-8 object-cover rounded" />}
+                          <span className="font-medium text-sm">{article.title}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{article.summary}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${article.published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {article.published ? 'Gepubliceerd' : 'Concept'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500">{new Date(article.createdAt).toLocaleDateString('nl-NL')}</td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            setEditingNews(article);
+                            setCreatingNews(false);
+                            setNewsForm({
+                              title: article.title, titleEn: article.titleEn,
+                              summary: article.summary, summaryEn: article.summaryEn,
+                              content: article.content, contentEn: article.contentEn,
+                              image: article.image, published: article.published,
+                            });
+                          }}
+                          className="text-primary-500 hover:text-primary-700 mr-2"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!confirm('Weet je zeker dat je dit artikel wilt verwijderen?')) return;
+                            await deleteNews(article.id);
+                            const articles = await fetchNews();
+                            setNewsArticles(articles);
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
