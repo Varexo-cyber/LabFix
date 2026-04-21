@@ -289,6 +289,50 @@ export default function AdminPage() {
     }
   };
 
+  // Repair appointment handlers
+  const handleApproveRepair = async (id: string) => {
+    try {
+      await updateRepairAppointment(id, { status: 'approved' });
+      const result = await fetchRepairAppointments();
+      if (result.success) {
+        setRepairAppointments(result.appointments);
+      }
+    } catch {
+      alert('Reparatie goedkeuren mislukt');
+    }
+  };
+
+  const handleRejectRepair = async (id: string) => {
+    if (!rejectionReason.trim()) {
+      alert('Geef een reden voor afwijzing');
+      return;
+    }
+    try {
+      await updateRepairAppointment(id, { status: 'rejected', rejectionReason });
+      setRejectionReason('');
+      setSelectedRepair(null);
+      const result = await fetchRepairAppointments();
+      if (result.success) {
+        setRepairAppointments(result.appointments);
+      }
+    } catch {
+      alert('Reparatie afwijzen mislukt');
+    }
+  };
+
+  const handleDeleteRepair = async (id: string) => {
+    if (!confirm('Weet je zeker dat je deze reparatie wilt verwijderen?')) return;
+    try {
+      await deleteRepairAppointment(id);
+      const result = await fetchRepairAppointments();
+      if (result.success) {
+        setRepairAppointments(result.appointments);
+      }
+    } catch {
+      alert('Reparatie verwijderen mislukt');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 animate-fade-in">
       {/* Admin header */}
