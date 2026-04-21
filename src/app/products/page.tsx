@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProducts, Product } from '@/lib/store';
 import { Filter, Grid3X3, List, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale } = useApp();
@@ -15,6 +15,7 @@ function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedSub, setSelectedSub] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -28,10 +29,12 @@ function ProductsPageContent() {
   useEffect(() => {
     const brand = searchParams.get('brand');
     const sub = searchParams.get('sub');
+    const model = searchParams.get('model');
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
     if (brand) { setSelectedBrand(brand); setExpandedBrands([brand]); }
     if (sub) setSelectedSub(sub);
+    if (model) setSelectedModel(model);
     if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
   }, [searchParams]);
@@ -49,6 +52,10 @@ function ProductsPageContent() {
 
     if (selectedSub) {
       filtered = filtered.filter((p) => p.subcategory === selectedSub);
+    }
+
+    if (selectedModel) {
+      filtered = filtered.filter((p) => p.model === selectedModel);
     }
 
     if (searchQuery) {
@@ -80,7 +87,7 @@ function ProductsPageContent() {
     }
 
     return filtered;
-  }, [products, selectedBrand, selectedSub, searchQuery, sortBy, locale]);
+  }, [products, selectedBrand, selectedSub, selectedModel, searchQuery, sortBy, locale]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -101,7 +108,16 @@ function ProductsPageContent() {
         {selectedSub && (
           <>
             <span className="mx-2">/</span>
-            <span className="text-gray-800">{getSubcategoryName(selectedBrand, selectedSub, locale)}</span>
+            <span className={`${!selectedModel ? 'text-gray-800' : 'hover:text-primary-500 cursor-pointer'}`}
+              onClick={() => setSelectedModel('')}>
+              {getSubcategoryName(selectedBrand, selectedSub, locale)}
+            </span>
+          </>
+        )}
+        {selectedModel && (
+          <>
+            <span className="mx-2">/</span>
+            <span className="text-gray-800">{getModelName(selectedBrand, selectedSub, selectedModel)}</span>
           </>
         )}
       </nav>

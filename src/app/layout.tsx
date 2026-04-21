@@ -4,6 +4,7 @@ import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import HelpWidget from '@/components/HelpWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <HelpWidget />
           </div>
         </AppProvider>
       </body>

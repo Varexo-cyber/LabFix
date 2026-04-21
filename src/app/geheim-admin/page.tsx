@@ -13,8 +13,9 @@ const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   descriptionEn: '',
   price: 0,
   comparePrice: undefined,
-  category: 'iphone',
+  category: 'apple',
   subcategory: '',
+  model: '',
   sku: '',
   image: '',
   images: [],
@@ -371,7 +372,7 @@ export default function AdminPage() {
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-1">Merk *</label>
                     <select 
@@ -388,15 +389,31 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Subcategorie *</label>
+                    <label className="block text-sm font-semibold mb-1">Productlijn *</label>
                     <select 
                       value={formData.subcategory || ''} 
                       onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                      <option value="">-- Kies subcategorie --</option>
+                      <option value="">-- Kies productlijn --</option>
                       {(brandCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category))?.subcategories || []).map((sub) => (
                         <option key={sub.slug} value={sub.slug}>{sub.name}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Model</label>
+                    <select 
+                      value={formData.model || ''} 
+                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                      <option value="">-- Optioneel --</option>
+                      {(() => {
+                        const brand = brandCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category));
+                        const sub = brand?.subcategories.find(s => s.slug === formData.subcategory);
+                        return (sub?.models || []).map((model) => (
+                          <option key={model.slug} value={model.slug}>{model.name}</option>
+                        ));
+                      })()}
                     </select>
                   </div>
                   <div>

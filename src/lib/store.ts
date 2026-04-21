@@ -8,6 +8,7 @@ export interface Product {
   comparePrice?: number;
   category: string;
   subcategory?: string;
+  model?: string;
   sku: string;
   image: string;
   images: string[];
