@@ -8,6 +8,41 @@ import { mkdir } from 'fs/promises';
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    
+    // Verify database connection and create table if needed
+    try {
+      await sql`SELECT 1`;
+      
+      // Ensure repair_appointments table exists
+      await sql`
+        CREATE TABLE IF NOT EXISTS repair_appointments (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          device_type TEXT NOT NULL,
+          device_model TEXT NOT NULL,
+          problem_description TEXT NOT NULL,
+          appointment_date DATE NOT NULL,
+          appointment_time TIME NOT NULL,
+          service_type TEXT NOT NULL DEFAULT 'bring_in',
+          shipping_address TEXT DEFAULT '',
+          status TEXT NOT NULL DEFAULT 'pending',
+          rejection_reason TEXT DEFAULT '',
+          admin_notes TEXT DEFAULT '',
+          attachments JSONB DEFAULT '[]',
+          created_at TIMESTAMP DEFAULT NOW(),
+          updated_at TIMESTAMP DEFAULT NOW()
+        )
+      `;
+    } catch (dbError: any) {
+      console.error('Database connection error:', dbError);
+      return NextResponse.json(
+        { success: false, message: 'Database connection failed. Please try again later.' },
+        { status: 500 }
+      );
+    }
+    
     const formData = await request.formData();
     
     // Get text fields
@@ -76,8 +111,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Repair appointment error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: `Database error: ${error.message || 'Unknown error'}` },
       { status: 500 }
     );
   }

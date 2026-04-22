@@ -4,15 +4,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Truck, Wrench } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Truck, Wrench, Coins } from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
 export default function Header() {
-  const { t, locale, setLocale, cartCount, user, logout } = useApp();
+  const { t, locale, setLocale, currency, setCurrency, cartCount, user, logout } = useApp();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpenBrand, setMobileOpenBrand] = useState<string | null>(null);
   const [mobileOpenSub, setMobileOpenSub] = useState<string | null>(null);
@@ -55,6 +56,32 @@ export default function Header() {
             <Phone size={14} />
             +31 6 5113 1133
           </a>
+          {/* Currency Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+              className="flex items-center gap-1 hover:text-gray-200"
+            >
+              <Coins size={14} />
+              {currency}
+              <ChevronDown size={12} />
+            </button>
+            {showCurrencyDropdown && (
+              <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-[80px] z-50">
+                {['EUR', 'USD', 'GBP'].map((curr) => (
+                  <button
+                    key={curr}
+                    onClick={() => { setCurrency(curr as 'EUR' | 'USD' | 'GBP'); setShowCurrencyDropdown(false); }}
+                    className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${currency === curr ? 'font-bold text-primary-500' : ''}`}
+                  >
+                    {curr === 'EUR' && '€ EUR'}
+                    {curr === 'USD' && '$ USD'}
+                    {curr === 'GBP' && '£ GBP'}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Language Switcher */}
           <div className="relative">
             <button

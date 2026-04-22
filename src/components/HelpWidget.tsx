@@ -241,7 +241,9 @@ export default function HelpWidget() {
         <div className="bg-gray-900 text-white px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="LabFix" className="h-8 w-auto" />
+              <div className="bg-white rounded-lg p-0.5 inline-block">
+                <img src="/logo.png" alt="LabFix" className="h-7 w-auto object-contain" />
+              </div>
             </div>
             <button
               onClick={handleClose}

@@ -106,10 +106,11 @@ export default function RepairPage() {
       if (result.success) {
         setSuccess(true);
       } else {
-        setError(result.message || 'Er is iets misgegaan');
+        setError(result.message || result.error || 'Er is iets misgegaan');
       }
-    } catch (err) {
-      setError('Er is iets misgegaan bij het maken van de afspraak');
+    } catch (err: any) {
+      setError('Er is iets misgegaan bij het maken van de afspraak. Probeer het later opnieuw.');
+      console.error('Submit error:', err);
     } finally {
       setLoading(false);
     }

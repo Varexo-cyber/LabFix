@@ -4,12 +4,13 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
+import ScrollReveal from '@/components/ScrollReveal';
 import { fetchProducts, Product, fetchNews, NewsArticle } from '@/lib/store';
-import { 
-  Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench, 
-  Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock, 
-  CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles, 
-  ShieldCheck 
+import {
+  Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench,
+  Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock,
+  CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
@@ -177,6 +178,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust Bar */}
+      <ScrollReveal animation="fade-up">
       <section className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
@@ -193,8 +195,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Categories Grid */}
+      <ScrollReveal animation="stagger">
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
@@ -238,8 +242,10 @@ export default function HomePage() {
           })}
         </div>
       </section>
+      </ScrollReveal>
 
-      {/* Quality Standards Section - Exact MobileSentrix Style */}
+      {/* Quality Standards Section */}
+      <ScrollReveal animation="fade-up">
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
@@ -301,9 +307,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
+        <ScrollReveal animation="stagger">
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-end mb-10">
@@ -324,9 +332,11 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        </ScrollReveal>
       )}
 
-      {/* Feature Cards - MobileSentrix Style */}
+      {/* Feature Cards */}
+      <ScrollReveal animation="stagger">
       <section className="bg-gray-50 py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
@@ -384,8 +394,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* B2B Commercial Section */}
+      <ScrollReveal animation="fade-up">
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -412,9 +424,9 @@ export default function HomePage() {
                 title: locale === 'nl' ? 'Merken' : 'Brands',
                 desc: locale === 'nl' ? 'Reparatie voor alle grote merken' : 'Repair for all major brands'
               },
-              { 
-                icon: <Clock size={40} />, 
-                stat: '30m', 
+              {
+                icon: <Clock size={40} />,
+                stat: locale === 'nl' ? '< 30 min' : '< 30 min',
                 title: locale === 'nl' ? 'Snelle Reparatie' : 'Fast Repair',
                 desc: locale === 'nl' ? 'De meeste reparaties binnen 30 minuten' : 'Most repairs within 30 minutes'
               },
@@ -469,9 +481,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* New Arrivals */}
       {newProducts.length > 0 && (
+        <ScrollReveal animation="stagger">
         <section className="py-20 bg-gray-100">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-end mb-10">
@@ -492,9 +506,11 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        </ScrollReveal>
       )}
 
       {/* CTA Banner */}
+      <ScrollReveal animation="fade-up">
       <section className="py-20 bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
@@ -525,9 +541,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Latest News */}
       {newsArticles.length > 0 && (
+        <ScrollReveal animation="stagger">
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
@@ -566,9 +584,11 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        </ScrollReveal>
       )}
 
       {/* Brands Trust */}
+      <ScrollReveal animation="fade-up">
       <section className="py-16 bg-gray-50 border-t">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-10">
@@ -608,6 +628,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      </ScrollReveal>
     </div>
   );
 }
