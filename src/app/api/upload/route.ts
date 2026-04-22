@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return the public URL
-    const publicUrl = `/uploads/${filename}`;
+    const publicUrl = `/api/uploads/${filename}`;
 
     return NextResponse.json({ 
       success: true, 
