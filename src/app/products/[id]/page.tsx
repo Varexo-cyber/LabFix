@@ -7,6 +7,7 @@ import { useApp } from '@/context/AppContext';
 import { fetchProducts, Product } from '@/lib/store';
 import { ShoppingCart, ArrowLeft, Truck, Shield, Check, Minus, Plus } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
+import ImageSlideshow from '@/components/ImageSlideshow';
 
 export default function ProductDetailPage() {
   const { t, locale, formatPrice, addToCart } = useApp();
@@ -62,9 +63,18 @@ export default function ProductDetailPage() {
 
       {/* Product Detail */}
       <div className="grid md:grid-cols-2 gap-8 bg-white rounded-xl shadow-md p-6 mb-12">
-        {/* Image */}
+        {/* Images - Show slideshow if multiple images exist */}
         <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden animate-fade-in-left">
-          <img src={product.image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+          {product.images && product.images.length > 1 ? (
+            <ImageSlideshow 
+              images={product.images} 
+              alt={name}
+              className="w-full h-full"
+              showThumbnails={true}
+            />
+          ) : (
+            <img src={product.image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+          )}
         </div>
 
         {/* Info */}

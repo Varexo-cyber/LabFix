@@ -65,6 +65,22 @@ export default function AdminPage() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [repairStatus, setRepairStatus] = useState<RepairStatus>('pending');
 
+  // Custom confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ isOpen: true, title, message, onConfirm });
+  };
+
+  const closeConfirm = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+  };
+
   const loadRepairAppointments = async () => {
     const result = await fetchRepairAppointments(repairFilter === 'all' ? undefined : repairFilter);
     if (result.success) {
@@ -160,10 +176,16 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Weet je zeker dat je dit product wilt verwijderen?')) return;
-    await deleteProduct(id);
-    const prods = await fetchProducts();
-    setProducts(prods);
+    showConfirm(
+      'Product verwijderen',
+      'Weet je zeker dat je dit product wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.',
+      async () => {
+        await deleteProduct(id);
+        const prods = await fetchProducts();
+        setProducts(prods);
+        closeConfirm();
+      }
+    );
   };
 
   const startEdit = (product: Product) => {
@@ -255,18 +277,24 @@ export default function AdminPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Weet u zeker dat u deze klant wilt verwijderen? Alle bestellingen van deze klant worden ook verwijderd.')) return;
-    try {
-      const res = await fetch(`/api/users?id=${userId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setUsers(users.filter(u => u.id !== userId));
-        alert('Klant verwijderd');
-      } else {
-        alert('Verwijderen mislukt');
+    showConfirm(
+      'Klant verwijderen',
+      'Weet u zeker dat u deze klant wilt verwijderen? Alle bestellingen van deze klant worden ook verwijderd.',
+      async () => {
+        try {
+          const res = await fetch(`/api/users?id=${userId}`, { method: 'DELETE' });
+          if (res.ok) {
+            setUsers(users.filter(u => u.id !== userId));
+            alert('Klant verwijderd');
+          } else {
+            alert('Verwijderen mislukt');
+          }
+        } catch {
+          alert('Verwijderen mislukt');
+        }
+        closeConfirm();
       }
-    } catch {
-      alert('Verwijderen mislukt');
-    }
+    );
   };
 
   const handleSendNewsletter = async () => {
@@ -321,16 +349,22 @@ export default function AdminPage() {
   };
 
   const handleDeleteRepair = async (id: string) => {
-    if (!confirm('Weet je zeker dat je deze reparatie wilt verwijderen?')) return;
-    try {
-      await deleteRepairAppointment(id);
-      const result = await fetchRepairAppointments();
-      if (result.success) {
-        setRepairAppointments(result.appointments);
+    showConfirm(
+      'Reparatie verwijderen',
+      'Weet je zeker dat je deze reparatie wilt verwijderen?',
+      async () => {
+        try {
+          await deleteRepairAppointment(id);
+          const result = await fetchRepairAppointments();
+          if (result.success) {
+            setRepairAppointments(result.appointments);
+          }
+        } catch {
+          alert('Reparatie verwijderen mislukt');
+        }
+        closeConfirm();
       }
-    } catch {
-      alert('Reparatie verwijderen mislukt');
-    }
+    );
   };
 
   return (
@@ -517,7 +551,7 @@ export default function AdminPage() {
                   
                   {/* Slideshow Preview */}
                   {formData.images && formData.images.length > 0 && (
-                    <div className="mb-4">
+                    <div className="mb-4 w-full overflow-hidden">
                       <ImageSlideshow 
                         images={formData.images} 
                         alt={formData.name}
@@ -536,6 +570,7 @@ export default function AdminPage() {
                         type="file" 
                         accept="image/*" 
                         className="hidden" 
+                        style={{ display: 'none' }}
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (!file) return;
@@ -904,11 +939,12 @@ export default function AdminPage() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Bedrijf</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Bedrijf / Naam</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Type</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">KVK</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Contact</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">E-mail</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Locatie</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Adres</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">06 / Telefoon</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Geregistreerd</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actie</th>
                   </tr>
@@ -919,20 +955,60 @@ export default function AdminPage() {
                       <td className="px-6 py-4 text-sm text-gray-900">
                         {u.customerType === 'business' ? (
                           <>
-                            {u.companyName}
+                            <div className="font-medium">{u.companyName || '-'}</div>
                             <div className="text-xs text-gray-500">{u.contactPerson}</div>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">Zakelijk</span>
                           </>
                         ) : (
-                          <>
-                            {u.firstName} {u.lastName}
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mt-1">Particulier</span>
-                          </>
+                          <div className="font-medium">{u.firstName} {u.lastName}</div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{u.email}</td>
+                      <td className="px-6 py-4">
+                        {u.customerType === 'business' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Zakelijk</span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Particulier</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{u.kvkNumber || '-'}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{u.phone || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <details className="relative">
+                          <summary className="cursor-pointer text-primary-600 hover:text-primary-700 font-medium">
+                            Contact ▼
+                          </summary>
+                          <div className="absolute z-10 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs">
+                            <div className="space-y-2">
+                              <div>
+                                <span className="text-gray-500">E-mail:</span>
+                                <a href={`mailto:${u.email}`} className="block text-primary-600 hover:underline truncate">
+                                  {u.email}
+                                </a>
+                              </div>
+                              {u.phone && (
+                                <div>
+                                  <span className="text-gray-500">Telefoon:</span>
+                                  <a href={`tel:${u.phone}`} className="block text-primary-600 hover:underline">
+                                    {u.phone}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </details>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div>{u.address || '-'}</div>
+                        <div className="text-xs text-gray-400">{u.postalCode} {u.city}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {u.phone ? (
+                          <a href={`tel:${u.phone}`} className="text-primary-600 hover:underline">
+                            {u.phone}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString('nl-NL')}</td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleDeleteUser(u.id)}
@@ -1070,19 +1146,81 @@ export default function AdminPage() {
                         rows={5} className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="Full article content..." />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-1">Afbeelding URL</label>
-                      <input type="text" value={newsForm.image} onChange={(e) => setNewsForm({ ...newsForm, image: e.target.value })}
-                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="https://..." />
+                  {/* Image Upload Section */}
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <label className="block text-sm font-semibold mb-2">Afbeelding</label>
+                    
+                    {/* Image Preview */}
+                    {(newsForm.image || uploadingNewsImage) && (
+                      <div className="mb-3">
+                        {uploadingNewsImage ? (
+                          <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <span className="text-sm text-gray-500">Uploaden...</span>
+                          </div>
+                        ) : (
+                          <img src={newsForm.image} alt="Preview" className="w-full max-h-48 object-cover rounded-lg" />
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Upload Button + URL Input */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors cursor-pointer text-sm">
+                          <Upload size={16} />
+                          <span>{uploadingNewsImage ? 'Uploaden...' : 'Bestand uploaden'}</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            disabled={uploadingNewsImage}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setUploadingNewsImage(true);
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              try {
+                                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                                const data = await res.json();
+                                if (data.success) {
+                                  setNewsForm(prev => ({ ...prev, image: data.url }));
+                                } else {
+                                  alert('Upload mislukt: ' + data.error);
+                                }
+                              } catch {
+                                alert('Upload mislukt - Controleer of de upload map bestaat');
+                              } finally {
+                                setUploadingNewsImage(false);
+                                e.target.value = '';
+                              }
+                            }}
+                          />
+                        </label>
+                        <span className="text-sm text-gray-500">Of</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input type="text" value={newsForm.image} onChange={(e) => setNewsForm({ ...newsForm, image: e.target.value })}
+                          className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 text-sm" placeholder="https://... (URL plakken)" />
+                        {newsForm.image && (
+                          <button 
+                            onClick={() => setNewsForm({ ...newsForm, image: '' })}
+                            className="bg-red-100 text-red-600 px-3 py-2 rounded-lg hover:bg-red-200 text-sm"
+                          >
+                            Verwijderen
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-end">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({ ...newsForm, published: e.target.checked })}
-                          className="w-4 h-4 text-primary-500 rounded" />
-                        <span className="text-sm font-semibold">Gepubliceerd</span>
-                      </label>
-                    </div>
+                  </div>
+                  
+                  {/* Published Checkbox */}
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={newsForm.published} onChange={(e) => setNewsForm({ ...newsForm, published: e.target.checked })}
+                        className="w-4 h-4 text-primary-500 rounded" />
+                      <span className="text-sm font-semibold">Gepubliceerd (zichtbaar op website)</span>
+                    </label>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -1157,11 +1295,17 @@ export default function AdminPage() {
                           <Pencil size={16} />
                         </button>
                         <button
-                          onClick={async () => {
-                            if (!confirm('Weet je zeker dat je dit artikel wilt verwijderen?')) return;
-                            await deleteNews(article.id);
-                            const articles = await fetchNews();
-                            setNewsArticles(articles);
+                          onClick={() => {
+                            showConfirm(
+                              'Nieuwsartikel verwijderen',
+                              'Weet je zeker dat je dit nieuwsartikel wilt verwijderen?',
+                              async () => {
+                                await deleteNews(article.id);
+                                const articles = await fetchNews();
+                                setNewsArticles(articles);
+                                closeConfirm();
+                              }
+                            );
                           }}
                           className="text-red-500 hover:text-red-700"
                         >
@@ -1471,11 +1615,17 @@ export default function AdminPage() {
                         <td className="px-4 py-3 text-sm text-gray-500">{new Date(message.created_at).toLocaleDateString('nl-NL')}</td>
                         <td className="px-4 py-3 text-right">
                           <button
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
-                              if (!confirm('Weet je zeker dat je dit bericht wilt verwijderen?')) return;
-                              await deleteContactMessage(message.id);
-                              loadContactMessages();
+                              showConfirm(
+                                'Bericht verwijderen',
+                                'Weet je zeker dat je dit bericht wilt verwijderen?',
+                                async () => {
+                                  await deleteContactMessage(message.id);
+                                  loadContactMessages();
+                                  closeConfirm();
+                                }
+                              );
                             }}
                             className="text-red-500 hover:text-red-700"
                           >
@@ -1492,6 +1642,39 @@ export default function AdminPage() {
         )}
 
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeConfirm}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 animate-scale-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 size={20} className="text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">{confirmModal.title}</h3>
+            </div>
+            <p className="text-gray-600 mb-6">{confirmModal.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={closeConfirm}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={() => confirmModal.onConfirm()}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+              >
+                Verwijderen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -99,6 +99,7 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-white transition-colors">{t('nav.about')}</Link></li>
               <li><Link href="/quality" className="hover:text-white transition-colors">{locale === 'nl' ? 'Kwaliteitsstandaarden' : 'Quality Standards'}</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">{t('footer.returns')}</Link></li>
+              <li><Link href="/nieuws" className="hover:text-white transition-colors">{locale === 'nl' ? 'Nieuws' : 'News'}</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-white transition-colors">{locale === 'nl' ? 'Privacy Policy' : 'Privacy Policy'}</Link></li>
               <li><Link href="/algemene-voorwaarden" className="hover:text-white transition-colors">{locale === 'nl' ? 'Algemene Voorwaarden' : 'Terms & Conditions'}</Link></li>
               <li><Link href="/shipping" className="hover:text-white transition-colors">{t('footer.shipping')}</Link></li>
@@ -272,7 +273,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 text-sm text-gray-500">
             <div className="flex flex-col gap-1">
-              <p>&copy; {new Date().getFullYear()} LabFix B.V. {t('footer.rights')}.</p>
+              <p>&copy; {new Date().getFullYear()} LabFix {t('footer.rights')}.</p>
               <p className="text-xs text-gray-600">
                 {locale === 'nl'
                   ? 'Alle handelsmerken zijn eigendom van hun respectievelijke houders. LabFix claimt geen eigendom van handelsmerken die op deze website worden gebruikt.'

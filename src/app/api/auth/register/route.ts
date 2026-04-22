@@ -2,10 +2,50 @@ import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email';
+import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+
+// Ensure table exists with all columns
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      customer_type TEXT DEFAULT 'individual',
+      company_name TEXT DEFAULT '',
+      kvk_number TEXT DEFAULT '',
+      btw_number TEXT DEFAULT '',
+      contact_person TEXT DEFAULT '',
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      city TEXT DEFAULT '',
+      postal_code TEXT DEFAULT '',
+      country TEXT DEFAULT 'Nederland',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+  
+  // Add missing columns if they don't exist
+  try {
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS btw_number TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_address TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_city TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_postal_code TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_country TEXT DEFAULT 'Nederland'`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_same_as_shipping BOOLEAN DEFAULT true`;
+  } catch {
+    // Ignore if columns already exist
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const body = await request.json();
     const isBusiness = body.customerType === 'business';
 
@@ -23,7 +63,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     const hashedPassword = await bcrypt.hash(body.password, 10);
 
     // Set display name
@@ -32,8 +72,8 @@ export async function POST(request: NextRequest) {
       : `${body.firstName} ${body.lastName}`;
 
     await sql`
-      INSERT INTO users (id, email, password, customer_type, first_name, last_name, company_name, kvk_number, contact_person, phone, address, city, postal_code, country)
-      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'})
+      INSERT INTO users (id, email, password, customer_type, first_name, last_name, company_name, kvk_number, btw_number, contact_person, phone, address, city, postal_code, country)
+      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'})
     `;
 
     // Send welcome email
@@ -75,6 +115,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: 'Account aangemaakt' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Registration error:', error);
+    return NextResponse.json({ success: false, message: error.message || 'Er is een serverfout opgetreden' }, { status: 500 });
   }
 }

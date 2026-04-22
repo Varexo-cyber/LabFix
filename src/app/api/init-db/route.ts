@@ -44,7 +44,7 @@ export async function POST() {
         id TEXT PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        customer_type TEXT DEFAULT 'individual' CHECK (customer_type IN ('individual', 'business')),
+        customer_type TEXT DEFAULT 'individual',
         company_name TEXT DEFAULT '',
         kvk_number TEXT DEFAULT '',
         contact_person TEXT DEFAULT '',
@@ -58,6 +58,17 @@ export async function POST() {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `;
+    
+    // Add billing columns if they don't exist
+    try {
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_address TEXT DEFAULT ''`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_city TEXT DEFAULT ''`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_postal_code TEXT DEFAULT ''`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_country TEXT DEFAULT 'Nederland'`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_same_as_shipping BOOLEAN DEFAULT true`;
+    } catch {
+      // Ignore if columns already exist
+    }
 
     await sql`
       CREATE TABLE IF NOT EXISTS orders (

@@ -123,6 +123,8 @@ export default function HelpWidget() {
   const { locale } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>('home');
+  const [prevTab, setPrevTab] = useState<WidgetTab>('home');
+  const [isAnimating, setIsAnimating] = useState(false);
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
   const [botInput, setBotInput] = useState('');
@@ -163,6 +165,14 @@ export default function HelpWidget() {
 
   const handleClose = () => {
     setIsOpen(false);
+  };
+
+  const handleTabChange = (newTab: WidgetTab) => {
+    if (newTab === activeTab || isAnimating) return;
+    setIsAnimating(true);
+    setPrevTab(activeTab);
+    setActiveTab(newTab);
+    setTimeout(() => setIsAnimating(false), 200);
   };
 
   const handleBotSend = () => {
@@ -241,8 +251,8 @@ export default function HelpWidget() {
         <div className="bg-gray-900 text-white px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white rounded-lg p-0.5 inline-block">
-                <img src="/logo.png" alt="LabFix" className="h-7 w-auto object-contain" />
+              <div className="bg-white rounded-lg p-0.1 inline-block">
+                <img src="/logo.png" alt="LabFix" className="h-12 w-auto object-contain" />
               </div>
             </div>
             <button
@@ -255,10 +265,9 @@ export default function HelpWidget() {
         </div>
 
         {/* Tab content */}
-        <div className="h-[380px] overflow-y-auto">
+        <div className="h-[380px] overflow-y-auto relative">
           {/* HOME TAB */}
-          {activeTab === 'home' && (
-            <div>
+          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'home' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'home' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
               <div className="px-5 pt-5 pb-3">
                 <h2 className="text-xl font-bold text-gray-900">
                   {nl ? 'Hoe kunnen we helpen?' : 'How can we help?'}
@@ -308,6 +317,15 @@ export default function HelpWidget() {
               {/* News articles */}
               {newsArticles.length > 0 && (
                 <div className="px-4 pb-4">
+                  <div className="flex items-center justify-between px-1 mb-2">
+                    <span className="text-xs font-semibold text-gray-500 uppercase">{nl ? 'Nieuws' : 'News'}</span>
+                    <button 
+                      onClick={() => handleTabChange('news')}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                    >
+                      {nl ? 'Alles bekijken' : 'View all'} <ChevronRight size={14} />
+                    </button>
+                  </div>
                   {newsArticles.slice(0, 3).map((article) => (
                     <div key={article.id} className="mb-3 border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
                       {article.image && (
@@ -328,11 +346,10 @@ export default function HelpWidget() {
                   ))}
                 </div>
               )}
-            </div>
-          )}
+          </div>
 
           {/* BOT TAB */}
-          {activeTab === 'bot' && (
+          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'bot' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'bot' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="flex flex-col h-full">
               <div className="flex-1 p-4 space-y-3 overflow-y-auto min-h-[280px]">
                 {botMessages.length === 0 && (
@@ -413,10 +430,10 @@ export default function HelpWidget() {
                 </button>
               </div>
             </div>
-          )}
+          </div>
 
           {/* HELP TAB */}
-          {activeTab === 'help' && (
+          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'help' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'help' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="py-2">
               <div className="px-5 pt-3 pb-2">
                 <h3 className="font-bold text-gray-900">{nl ? 'Neem contact op' : 'Get in touch'}</h3>
@@ -478,12 +495,21 @@ export default function HelpWidget() {
                 {nl ? 'Ma - Vr: 09:00 - 17:00 | Za - Zo: Gesloten' : 'Mon - Fri: 09:00 - 17:00 | Sat - Sun: Closed'}
               </div>
             </div>
-          )}
+          </div>
 
           {/* NEWS TAB */}
-          {activeTab === 'news' && (
+          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'news' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'news' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="p-4">
-              <h3 className="font-bold text-gray-900 mb-3">{nl ? 'Laatste Nieuws' : 'Latest News'}</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-900">{nl ? 'Laatste Nieuws' : 'Latest News'}</h3>
+                <Link 
+                  href="/nieuws" 
+                  onClick={handleClose}
+                  className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                >
+                  {nl ? 'Alles bekijken' : 'View all'} <ChevronRight size={14} />
+                </Link>
+              </div>
               {newsArticles.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 text-sm">
                   {nl ? 'Nog geen nieuwsartikelen.' : 'No news articles yet.'}
@@ -491,7 +517,12 @@ export default function HelpWidget() {
               ) : (
                 <div className="space-y-3">
                   {newsArticles.map((article) => (
-                    <div key={article.id} className="border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+                    <Link 
+                      key={article.id} 
+                      href={`/nieuws`}
+                      onClick={handleClose}
+                      className="block border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                    >
                       {article.image && (
                         <img src={article.image} alt="" className="w-full h-28 object-cover" />
                       )}
@@ -506,12 +537,12 @@ export default function HelpWidget() {
                           {new Date(article.createdAt).toLocaleDateString(nl ? 'nl-NL' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Bottom tab bar */}
@@ -524,7 +555,7 @@ export default function HelpWidget() {
           ]).map(({ key, icon: Icon, label }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key)}
+              onClick={() => handleTabChange(key)}
               className={`flex-1 flex flex-col items-center py-2.5 text-[10px] font-medium transition-colors ${
                 activeTab === key ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'
               }`}

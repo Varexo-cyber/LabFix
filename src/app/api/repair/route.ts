@@ -1,9 +1,12 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
+import { randomUUID } from 'crypto';
+
+// Use Node.js runtime for file system operations
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     
     // Handle file uploads
     const attachments: string[] = [];

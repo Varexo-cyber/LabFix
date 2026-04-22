@@ -1,9 +1,26 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      used BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
 

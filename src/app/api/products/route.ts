@@ -1,9 +1,37 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      name_en TEXT DEFAULT '',
+      description TEXT DEFAULT '',
+      description_en TEXT DEFAULT '',
+      price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      compare_price DECIMAL(10,2),
+      category TEXT NOT NULL,
+      subcategory TEXT DEFAULT '',
+      sku TEXT UNIQUE NOT NULL,
+      image TEXT DEFAULT '',
+      images TEXT[] DEFAULT '{}',
+      in_stock BOOLEAN DEFAULT true,
+      featured BOOLEAN DEFAULT false,
+      is_new BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
 
 export async function GET(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const search = searchParams.get('search');
@@ -51,8 +79,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const body = await request.json();
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     await sql`
       INSERT INTO products (id, name, name_en, description, description_en, price, compare_price, category, subcategory, sku, image, images, in_stock, featured, is_new)
@@ -68,6 +97,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const body = await request.json();
 
     await sql`
@@ -98,6 +128,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });

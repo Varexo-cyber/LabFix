@@ -2,9 +2,41 @@ import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmation } from '@/lib/email';
 
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      user_email TEXT NOT NULL,
+      customer_type TEXT DEFAULT 'individual',
+      company_name TEXT DEFAULT '',
+      kvk_number TEXT DEFAULT '',
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      shipping_address TEXT DEFAULT '',
+      shipping_city TEXT DEFAULT '',
+      shipping_postal_code TEXT DEFAULT '',
+      shipping_country TEXT DEFAULT '',
+      items JSONB NOT NULL DEFAULT '[]',
+      subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,
+      shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+      total DECIMAL(10,2) NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending',
+      notes TEXT DEFAULT '',
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
@@ -46,6 +78,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
+    
     const body = await request.json();
     const id = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 

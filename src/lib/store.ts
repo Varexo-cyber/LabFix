@@ -39,6 +39,7 @@ export interface User {
   customerType: 'individual' | 'business';
   companyName?: string;
   kvkNumber?: string;
+  btwNumber?: string;
   contactPerson?: string;
   firstName?: string;
   lastName?: string;
@@ -47,6 +48,11 @@ export interface User {
   city: string;
   postalCode: string;
   country: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingPostalCode?: string;
+  billingCountry?: string;
+  billingSameAsShipping?: boolean;
   createdAt: string;
 }
 

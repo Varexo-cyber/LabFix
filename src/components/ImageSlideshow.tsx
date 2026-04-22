@@ -23,8 +23,36 @@ export default function ImageSlideshow({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Filter out empty images
+  // Filter out empty images - do this first before any hooks that depend on it
   const validImages = images.filter(img => img && img.trim() !== '');
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % (validImages.length || 1));
+  }, [validImages.length]);
+
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + (validImages.length || 1)) % (validImages.length || 1));
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // Auto-play
+  useEffect(() => {
+    if (!autoPlay || validImages.length <= 1) return;
+    const timer = setInterval(nextSlide, interval);
+    return () => clearInterval(timer);
+  }, [autoPlay, interval, nextSlide, validImages.length]);
+
+  // Preload images
+  useEffect(() => {
+    validImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => setIsLoaded(true);
+    });
+  }, [validImages]);
   
   // If no valid images, show placeholder
   if (validImages.length === 0) {
@@ -47,34 +75,6 @@ export default function ImageSlideshow({
       </div>
     );
   }
-
-  const nextSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % validImages.length);
-  }, [validImages.length]);
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
-
-  // Auto-play
-  useEffect(() => {
-    if (!autoPlay) return;
-    const timer = setInterval(nextSlide, interval);
-    return () => clearInterval(timer);
-  }, [autoPlay, interval, nextSlide]);
-
-  // Preload images
-  useEffect(() => {
-    validImages.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-      img.onload = () => setIsLoaded(true);
-    });
-  }, [validImages]);
 
   return (
     <div className={`relative ${className}`}>
@@ -123,21 +123,22 @@ export default function ImageSlideshow({
 
       {/* Thumbnails */}
       {showThumbnails && validImages.length > 1 && (
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-2 max-w-full">
           {validImages.map((image, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
                 index === currentIndex
                   ? 'border-primary-500 ring-2 ring-primary-200'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
+              style={{ minWidth: '64px' }}
             >
               <img
                 src={image}
                 alt={`Thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
               />
             </button>
           ))}

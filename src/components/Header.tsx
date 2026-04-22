@@ -18,6 +18,8 @@ export default function Header() {
   const [mobileOpenBrand, setMobileOpenBrand] = useState<string | null>(null);
   const [mobileOpenSub, setMobileOpenSub] = useState<string | null>(null);
   const [hoveredSub, setHoveredSub] = useState<string | null>(null);
+  const [hoveredMegaBrand, setHoveredMegaBrand] = useState<string | null>(null);
+  const [hoveredMegaSub, setHoveredMegaSub] = useState<string | null>(null);
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const navBrands = brandCategories.slice(0, 8);
@@ -180,13 +182,159 @@ export default function Header() {
         <nav className="bg-primary-500 text-white relative">
           <div className="max-w-7xl mx-auto px-4">
             <div className="hidden md:flex items-center">
-              <Link
-                href="/products"
-                className={`px-4 py-2 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+              {/* All Products Mega Dropdown - 3 Column Layout */}
+              <div
+                className="relative"
+                onMouseEnter={() => { handleDropdownEnter('all-products'); setHoveredMegaBrand(null); setHoveredMegaSub(null); }}
+                onMouseLeave={handleDropdownLeave}
               >
-                <Menu size={16} />
-                {t('nav.allProducts')}
-              </Link>
+                <Link
+                  href="/products"
+                  className={`px-4 py-2 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 whitespace-nowrap ${pathname === '/products' ? 'bg-primary-600 border-b-2 border-white' : ''}`}
+                >
+                  <Menu size={16} />
+                  {t('nav.allProducts')}
+                  <ChevronDown size={12} />
+                </Link>
+                {openDropdown === 'all-products' && (
+                  <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl min-w-[720px] z-50 border-t-2 border-accent-500 max-h-[80vh] overflow-hidden">
+                    <div className="flex h-[500px]">
+                      {/* Column 1: All Brands */}
+                      <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
+                        <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
+                          {locale === 'nl' ? 'Merken' : 'Brands'}
+                        </div>
+                        {brandCategories.map((brand) => (
+                          <div
+                            key={brand.slug}
+                            onMouseEnter={() => { setHoveredMegaBrand(brand.slug); setHoveredMegaSub(null); }}
+                            className="relative"
+                          >
+                            <Link
+                              href={`/products?brand=${brand.slug}`}
+                              className={`flex items-center justify-between px-3 py-2 text-sm transition-colors ${hoveredMegaBrand === brand.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}
+                              onClick={() => setOpenDropdown(null)}
+                            >
+                              {locale === 'en' ? brand.nameEn : brand.name}
+                              <ChevronRight size={14} className="text-gray-400" />
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Column 2: Subcategories of hovered brand */}
+                      <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
+                        {hoveredMegaBrand && (() => {
+                          const activeBrand = brandCategories.find(b => b.slug === hoveredMegaBrand);
+                          if (!activeBrand) return null;
+                          return (
+                            <>
+                              <div className="p-3 bg-gray-50 border-b">
+                                <Link
+                                  href={`/products?brand=${activeBrand.slug}`}
+                                  className="text-sm font-bold text-primary-600 hover:underline"
+                                  onClick={() => setOpenDropdown(null)}
+                                >
+                                  {locale === 'nl' ? `Alle ${activeBrand.name}` : `All ${activeBrand.nameEn}`} →
+                                </Link>
+                              </div>
+                              {activeBrand.subcategories.map((sub) => (
+                                <div
+                                  key={sub.slug}
+                                  onMouseEnter={() => setHoveredMegaSub(sub.slug)}
+                                  className="relative"
+                                >
+                                  <Link
+                                    href={`/products?brand=${activeBrand.slug}&sub=${sub.slug}`}
+                                    className={`flex items-center justify-between px-3 py-2 text-sm transition-colors ${hoveredMegaSub === sub.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}
+                                    onClick={() => setOpenDropdown(null)}
+                                  >
+                                    {locale === 'en' ? sub.nameEn : sub.name}
+                                    {sub.models.length > 0 && <ChevronRight size={14} className="text-gray-400" />}
+                                  </Link>
+                                </div>
+                              ))}
+                            </>
+                          );
+                        })()}
+                        {!hoveredMegaBrand && (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm p-4 text-center">
+                            {locale === 'nl' ? 'Hover over een merk' : 'Hover over a brand'}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Column 3: Models of hovered subcategory */}
+                      <div className="w-[280px] overflow-y-auto">
+                        {hoveredMegaBrand && hoveredMegaSub && (() => {
+                          const activeBrand = brandCategories.find(b => b.slug === hoveredMegaBrand);
+                          const activeSub = activeBrand?.subcategories.find(s => s.slug === hoveredMegaSub);
+                          if (!activeSub || activeSub.models.length === 0) return null;
+                          return (
+                            <>
+                              <div className="p-3 bg-gray-50 border-b">
+                                <div className="text-xs font-bold text-gray-500 uppercase mb-1">
+                                  {locale === 'en' ? activeSub.nameEn : activeSub.name}
+                                </div>
+                                <Link
+                                  href={`/products?brand=${activeBrand?.slug}&sub=${activeSub.slug}`}
+                                  className="text-sm font-semibold text-primary-600 hover:underline"
+                                  onClick={() => setOpenDropdown(null)}
+                                >
+                                  {locale === 'nl' ? `Alle ${activeSub.name}` : `All ${activeSub.nameEn}`} →
+                                </Link>
+                              </div>
+                              {activeSub.models.map((model) => (
+                                <Link
+                                  key={model.slug}
+                                  href={`/products?brand=${activeBrand?.slug}&sub=${activeSub.slug}&model=${model.slug}`}
+                                  className="block px-3 py-1.5 text-sm hover:bg-gray-50 hover:text-primary-600 transition-colors"
+                                  onClick={() => setOpenDropdown(null)}
+                                >
+                                  {model.name}
+                                </Link>
+                              ))}
+                            </>
+                          );
+                        })()}
+                        {(!hoveredMegaBrand || !hoveredMegaSub) && (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm p-4 text-center">
+                            {locale === 'nl' ? 'Hover over een categorie' : 'Hover over a category'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Quick links footer */}
+                    <div className="border-t grid grid-cols-3 gap-4 p-4 bg-gray-50">
+                      <Link
+                        href="/products?filter=featured"
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary-600 bg-white p-3 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                        onClick={() => setOpenDropdown(null)}
+                      >
+                        <span className="text-yellow-500">★</span>
+                        {locale === 'nl' ? 'Uitgelichte Producten' : 'Featured Products'}
+                      </Link>
+                      <Link
+                        href="/products?filter=new"
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary-600 bg-white p-3 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                        onClick={() => setOpenDropdown(null)}
+                      >
+                        <span className="text-red-500">●</span>
+                        {locale === 'nl' ? 'Nieuw Binnen' : 'New Arrivals'}
+                      </Link>
+                      <Link
+                        href="/repair"
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:text-primary-600 bg-white p-3 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                        onClick={() => setOpenDropdown(null)}
+                      >
+                        <Wrench size={14} className="text-primary-500" />
+                        {locale === 'nl' ? 'Reparatie Aanvragen' : 'Repair Request'}
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
               {navBrands.map((brand) => (
                 <div
                   key={brand.slug}

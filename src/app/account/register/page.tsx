@@ -107,8 +107,12 @@ export default function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 animate-scale-in">
           <div className="text-center mb-8">
             <img src="/logo.png" alt="LabFix" className="h-14 w-auto mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-800">{t('auth.registerTitle')}</h1>
-            <p className="text-gray-500 text-center mt-2">Maak een account aan</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              {customerType === 'business' ? t('auth.registerTitle') : 'Account Aanmaken'}
+            </h1>
+            <p className="text-gray-500 text-center mt-2">
+              {customerType === 'business' ? 'Maak een zakelijk account aan' : 'Maak een persoonlijk account aan'}
+            </p>
           </div>
 
           {error && (

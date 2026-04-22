@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/lib/db';
 
-const sql = neon(process.env.DATABASE_URL!);
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS contact_messages (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      subject TEXT DEFAULT 'Geen onderwerp',
+      message TEXT NOT NULL,
+      status TEXT DEFAULT 'unread',
+      admin_notes TEXT DEFAULT '',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
 
 // POST - Create new contact message
 export async function POST(request: NextRequest) {
   try {
+    const sql = getDb();
+    await ensureTable(sql);
+    
     const { name, email, subject, message } = await request.json();
 
     // Validation
@@ -50,6 +69,9 @@ export async function POST(request: NextRequest) {
 // GET - Get all contact messages (for admin)
 export async function GET(request: NextRequest) {
   try {
+    const sql = getDb();
+    await ensureTable(sql);
+    
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '50');

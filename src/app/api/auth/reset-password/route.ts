@@ -2,10 +2,59 @@ import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email';
+import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+
+// Ensure tables exist
+async function ensureTables(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      customer_type TEXT DEFAULT 'individual',
+      company_name TEXT DEFAULT '',
+      kvk_number TEXT DEFAULT '',
+      contact_person TEXT DEFAULT '',
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      phone TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      city TEXT DEFAULT '',
+      postal_code TEXT DEFAULT '',
+      country TEXT DEFAULT 'Nederland',
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+  
+  // Add billing columns if they don't exist
+  try {
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_address TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_city TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_postal_code TEXT DEFAULT ''`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_country TEXT DEFAULT 'Nederland'`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_same_as_shipping BOOLEAN DEFAULT true`;
+  } catch {
+    // Ignore if columns already exist
+  }
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT UNIQUE NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      used BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTables(sql);
     const { email } = await request.json();
 
     // Find user
@@ -18,14 +67,14 @@ export async function POST(request: NextRequest) {
     const user = users[0];
     
     // Generate token
-    const token = crypto.randomUUID();
+    const token = randomUUID();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours
 
     // Save token
     await sql`
       INSERT INTO password_reset_tokens (id, user_id, token, expires_at)
-      VALUES (${crypto.randomUUID()}, ${user.id}, ${token}, ${expiresAt.toISOString()})
+      VALUES (${randomUUID()}, ${user.id}, ${token}, ${expiresAt.toISOString()})
     `;
 
     // Send email

@@ -1,11 +1,28 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email';
+import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      company_name TEXT DEFAULT '',
+      subscribed_at TIMESTAMP DEFAULT NOW(),
+      is_active BOOLEAN DEFAULT true
+    )
+  `;
+}
 
 // Subscribe to newsletter
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { email, companyName } = await request.json();
 
     // Check if already subscribed
@@ -20,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Add new subscriber
     await sql`
       INSERT INTO newsletter_subscribers (id, email, company_name)
-      VALUES (${crypto.randomUUID()}, ${email}, ${companyName || ''})
+      VALUES (${randomUUID()}, ${email}, ${companyName || ''})
     `;
 
     // Send welcome email
@@ -56,6 +73,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const subscribers = await sql`SELECT * FROM newsletter_subscribers WHERE is_active = true ORDER BY subscribed_at DESC`;
     return NextResponse.json(subscribers);
   } catch (error: any) {

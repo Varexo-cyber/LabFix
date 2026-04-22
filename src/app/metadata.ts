@@ -1,10 +1,4 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import { AppProvider } from '@/context/AppContext';
-import LayoutWrapper from '@/components/LayoutWrapper';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'LabFix - Professionele Telefoon & Tablet Onderdelen | Europa',
@@ -27,25 +21,3 @@ export const metadata: Metadata = {
     shortcut: '/logo.png',
   },
 };
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="nl">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="preload" href="/logo.png" as="image" type="image/png" />
-      </head>
-      <body className={`${inter.className} bg-gray-50 antialiased`}>
-        <AppProvider>
-          <LayoutWrapper>{children}</LayoutWrapper>
-        </AppProvider>
-      </body>
-    </html>
-  );
-}

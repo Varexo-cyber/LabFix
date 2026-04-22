@@ -1,9 +1,33 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+
+// Ensure table exists
+async function ensureTable(sql: any) {
+  await sql`
+    CREATE TABLE IF NOT EXISTS news_articles (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      title_en TEXT DEFAULT '',
+      summary TEXT DEFAULT '',
+      summary_en TEXT DEFAULT '',
+      content TEXT DEFAULT '',
+      content_en TEXT DEFAULT '',
+      image TEXT DEFAULT '',
+      images JSONB DEFAULT '[]',
+      published BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `;
+}
 
 export async function GET() {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const articles = await sql`SELECT * FROM news_articles ORDER BY created_at DESC`;
 
     const mapped = articles.map((a: any) => ({
@@ -30,8 +54,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const body = await request.json();
-    const id = crypto.randomUUID();
+    const id = randomUUID();
 
     await sql`
       INSERT INTO news_articles (id, title, title_en, summary, summary_en, content, content_en, image, images, published)
@@ -47,6 +72,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const body = await request.json();
 
     await sql`
@@ -73,6 +99,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const sql = getDb();
+    await ensureTable(sql);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
