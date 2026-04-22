@@ -24,64 +24,32 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size (max 2MB for base64)
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json({ 
-        error: 'File too large. Maximum size is 5MB.' 
+        error: 'File too large. Maximum size is 2MB for Netlify deployment.' 
       }, { status: 400 });
     }
 
+    // Convert to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
+    const mimeType = file.type || 'image/jpeg';
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-    console.log('Uploads directory:', uploadsDir);
-    try {
-      await mkdir(uploadsDir, { recursive: true });
-      console.log('Directory created/verified');
-    } catch (dirError) {
-      console.error('Directory creation error:', dirError);
-      return NextResponse.json({ 
-        error: 'Failed to create uploads directory' 
-      }, { status: 500 });
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const extension = path.extname(originalName) || '.jpg';
-    const filename = `${timestamp}_${originalName}`;
-    const filepath = path.join(uploadsDir, filename);
-
-    console.log('Generated filename:', filename);
-    console.log('Full filepath:', filepath);
-
-    // Write file
-    try {
-      await writeFile(filepath, buffer);
-      console.log('File written successfully');
-    } catch (writeError) {
-      console.error('File write error:', writeError);
-      return NextResponse.json({ 
-        error: 'Failed to save file to disk' 
-      }, { status: 500 });
-    }
-
-    // Return the public URL
-    const publicUrl = `/api/uploads/${filename}`;
-    console.log('Returning URL:', publicUrl);
+    console.log('Converted to base64, length:', base64.length);
 
     return NextResponse.json({ 
       success: true, 
-      url: publicUrl,
-      filename: filename 
+      url: dataUrl,
+      isBase64: true
     });
   } catch (error: any) {
     console.error('Upload error:', error);
     return NextResponse.json({ 
-      error: error.message || 'Failed to upload file' 
+      error: error.message || 'Failed to upload' 
     }, { status: 500 });
   }
 }

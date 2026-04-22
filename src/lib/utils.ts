@@ -2,19 +2,25 @@
 
 /**
  * Normalizes image URLs to ensure they work correctly
- * - Converts /uploads/ paths to /api/uploads/
+ * - Converts /uploads/ paths to /api/uploads/ (for local dev)
  * - Handles external URLs (returns as-is)
- * - Handles data URIs (returns as-is)
+ * - Handles data URIs/base64 (returns as-is)
+ * - Handles base64 URLs from Netlify (returns as-is)
  */
 export function normalizeImageUrl(url: string | null | undefined): string {
   if (!url) return '';
   
-  // External URLs - return as-is
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+  // Base64 data URLs - return as-is
+  if (url.startsWith('data:')) {
     return url;
   }
   
-  // Convert old /uploads/ paths to /api/uploads/
+  // External URLs - return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // Convert old /uploads/ paths to /api/uploads/ (for local dev)
   if (url.startsWith('/uploads/')) {
     return url.replace('/uploads/', '/api/uploads/');
   }
