@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart } from 'lucide-react';
 import { Product } from '@/lib/store';
+import { normalizeImageUrl } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -21,9 +22,13 @@ export default function ProductCard({ product }: ProductCardProps) {
       <Link href={`/products/${product.id}`}>
         <div className="relative overflow-hidden aspect-square bg-gray-50">
           <img
-            src={product.image}
+            src={normalizeImageUrl(product.image)}
             alt={name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/logo.png';
+              (e.target as HTMLImageElement).className = 'w-full h-full object-contain opacity-50 p-4';
+            }}
           />
           {product.isNew && (
             <span className="absolute top-2 left-2 bg-accent-500 text-white text-xs font-bold px-2 py-1 rounded">

@@ -5,10 +5,14 @@ import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Upload API called');
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
+    console.log('File received:', file?.name, file?.size, file?.type);
+
     if (!file) {
+      console.log('No file in formData');
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
@@ -32,9 +36,11 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+    console.log('Uploads directory:', uploadsDir);
     try {
       await mkdir(uploadsDir, { recursive: true });
+      console.log('Directory created/verified');
     } catch (dirError) {
       console.error('Directory creation error:', dirError);
       return NextResponse.json({ 
@@ -49,9 +55,13 @@ export async function POST(request: NextRequest) {
     const filename = `${timestamp}_${originalName}`;
     const filepath = path.join(uploadsDir, filename);
 
+    console.log('Generated filename:', filename);
+    console.log('Full filepath:', filepath);
+
     // Write file
     try {
       await writeFile(filepath, buffer);
+      console.log('File written successfully');
     } catch (writeError) {
       console.error('File write error:', writeError);
       return NextResponse.json({ 
@@ -61,6 +71,7 @@ export async function POST(request: NextRequest) {
 
     // Return the public URL
     const publicUrl = `/api/uploads/${filename}`;
+    console.log('Returning URL:', publicUrl);
 
     return NextResponse.json({ 
       success: true, 

@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock
 import ImageSlideshow from '@/components/ImageSlideshow';
 import Link from 'next/link';
 import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
+import { normalizeImageUrl } from '@/lib/utils';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   name: '',
@@ -713,7 +714,15 @@ export default function AdminPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.image && (
-                          <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                          <img 
+                            src={normalizeImageUrl(product.image)} 
+                            alt={product.name} 
+                            className="w-10 h-10 rounded object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/logo.png';
+                              (e.target as HTMLImageElement).className = 'w-10 h-10 rounded object-contain opacity-50';
+                            }}
+                          />
                         )}
                         <div>
                           <p className="font-semibold text-sm text-gray-800">{product.name}</p>
@@ -828,7 +837,7 @@ export default function AdminPage() {
                         {selectedOrder.items.map((item, i) => (
                           <tr key={i}>
                             <td className="px-4 py-2 flex items-center gap-2">
-                              {item.product.image && <img src={item.product.image} alt="" className="w-8 h-8 rounded object-cover" />}
+                              {item.product.image && <img src={normalizeImageUrl(item.product.image)} alt="" className="w-8 h-8 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; (e.target as HTMLImageElement).className = 'w-8 h-8 rounded object-contain opacity-50'; }} />}
                               {item.product.name}
                             </td>
                             <td className="px-4 py-2">{item.product.sku}</td>

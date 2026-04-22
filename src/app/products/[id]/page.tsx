@@ -8,6 +8,7 @@ import { fetchProducts, Product } from '@/lib/store';
 import { ShoppingCart, ArrowLeft, Truck, Shield, Check, Minus, Plus } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import ImageSlideshow from '@/components/ImageSlideshow';
+import { normalizeImageUrl } from '@/lib/utils';
 
 export default function ProductDetailPage() {
   const { t, locale, formatPrice, addToCart } = useApp();
@@ -73,7 +74,15 @@ export default function ProductDetailPage() {
               showThumbnails={true}
             />
           ) : (
-            <img src={product.image} alt={name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+            <img 
+              src={normalizeImageUrl(product.image)} 
+              alt={name} 
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/logo.png';
+                (e.target as HTMLImageElement).className = 'w-full h-full object-contain opacity-50 p-8';
+              }}
+            />
           )}
         </div>
 

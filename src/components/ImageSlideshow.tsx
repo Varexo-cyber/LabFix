@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { normalizeImageUrl } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ImageSlideshowProps {
@@ -23,8 +24,12 @@ export default function ImageSlideshow({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Filter out empty images - do this first before any hooks that depend on it
-  const validImages = images.filter(img => img && img.trim() !== '');
+  // Filter and normalize images
+  const validImages = useMemo(() => {
+    return images
+      .filter(img => img && img.trim() !== '')
+      .map(img => normalizeImageUrl(img));
+  }, [images]);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % (validImages.length || 1));
@@ -71,6 +76,10 @@ export default function ImageSlideshow({
           src={validImages[0]}
           alt={alt}
           className="w-full h-full object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/logo.png';
+            (e.target as HTMLImageElement).className = 'w-full h-full object-contain opacity-50';
+          }}
         />
       </div>
     );
@@ -95,6 +104,10 @@ export default function ImageSlideshow({
               src={image}
               alt={`${alt} - ${index + 1}`}
               className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/logo.png';
+                (e.target as HTMLImageElement).className = 'w-full h-full object-contain opacity-50';
+              }}
             />
           </div>
         ))}
@@ -139,6 +152,10 @@ export default function ImageSlideshow({
                 src={image}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover pointer-events-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/logo.png';
+                  (e.target as HTMLImageElement).className = 'w-full h-full object-contain opacity-50';
+                }}
               />
             </button>
           ))}
