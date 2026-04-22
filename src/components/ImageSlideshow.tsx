@@ -77,9 +77,9 @@ export default function ImageSlideshow({
   }
 
   return (
-    <div className={`relative ${className}`}>
-      {/* Main Image */}
-      <div className="relative overflow-hidden rounded-lg bg-gray-50 h-full">
+    <div className={`flex flex-col h-full w-full ${className}`}>
+      {/* Main Image Container */}
+      <div className="relative flex-1 overflow-hidden rounded-lg bg-gray-50 min-h-0">
         {validImages.map((image, index) => (
           <div
             key={index}

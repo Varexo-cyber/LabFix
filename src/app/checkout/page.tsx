@@ -23,6 +23,16 @@ export default function CheckoutPage() {
   const [guestEmail, setGuestEmail] = useState('');
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
+  const [guestCompanyName, setGuestCompanyName] = useState('');
+  const [guestKvkNumber, setGuestKvkNumber] = useState('');
+  const [guestVatNumber, setGuestVatNumber] = useState('');
+  
+  // Billing address (for guests)
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  const [billingAddress, setBillingAddress] = useState('');
+  const [billingCity, setBillingCity] = useState('');
+  const [billingPostalCode, setBillingPostalCode] = useState('');
+  const [billingCountry, setBillingCountry] = useState('Nederland');
 
   useEffect(() => {
     if (cart.length === 0 && !orderPlaced) {
@@ -62,14 +72,19 @@ export default function CheckoutPage() {
       const result = await createOrderApi({
         userId: user?.id || 'guest',
         userEmail: isGuest ? guestEmail : user?.email || '',
-        companyName: isGuest ? '' : user?.companyName || '',
-        kvkNumber: isGuest ? '' : user?.kvkNumber || '',
+        companyName: isGuest ? guestCompanyName : user?.companyName || '',
+        kvkNumber: isGuest ? guestKvkNumber : user?.kvkNumber || '',
+        vatNumber: isGuest ? guestVatNumber : user?.btwNumber || '',
         contactPerson: isGuest ? guestName : user?.contactPerson || '',
         phone: isGuest ? guestPhone : user?.phone || '',
         shippingAddress,
         shippingCity,
         shippingPostalCode,
         shippingCountry,
+        billingAddress: billingSameAsShipping ? shippingAddress : billingAddress,
+        billingCity: billingSameAsShipping ? shippingCity : billingCity,
+        billingPostalCode: billingSameAsShipping ? shippingPostalCode : billingPostalCode,
+        billingCountry: billingSameAsShipping ? shippingCountry : billingCountry,
         items: cart.map(item => ({
           product: item.product,
           quantity: item.quantity,
@@ -134,16 +149,29 @@ export default function CheckoutPage() {
                   <div className="bg-white rounded-lg border p-6 mb-4">
                     <h3 className="text-lg font-semibold mb-4">Contactgegevens</h3>
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
-                        <input
-                          type="text"
-                          required
-                          value={guestName}
-                          onChange={(e) => setGuestName(e.target.value)}
-                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
-                          placeholder="Jan Jansen"
-                        />
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Naam *</label>
+                          <input
+                            type="text"
+                            required
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                            placeholder="Jan Jansen"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Telefoon *</label>
+                          <input
+                            type="tel"
+                            required
+                            value={guestPhone}
+                            onChange={(e) => setGuestPhone(e.target.value)}
+                            className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                            placeholder="06 12345678"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">E-mail *</label>
@@ -156,16 +184,42 @@ export default function CheckoutPage() {
                           placeholder="jan@example.com"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Telefoon *</label>
-                        <input
-                          type="tel"
-                          required
-                          value={guestPhone}
-                          onChange={(e) => setGuestPhone(e.target.value)}
-                          className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
-                          placeholder="06 12345678"
-                        />
+                      
+                      {/* Company Info (Optional) */}
+                      <div className="border-t pt-4 mt-4">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Bedrijfsgegevens (optioneel)</h4>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-1">Bedrijfsnaam</label>
+                            <input
+                              type="text"
+                              value={guestCompanyName}
+                              onChange={(e) => setGuestCompanyName(e.target.value)}
+                              className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                              placeholder="Uw Bedrijf B.V."
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-600 mb-1">KVK-nummer</label>
+                            <input
+                              type="text"
+                              value={guestKvkNumber}
+                              onChange={(e) => setGuestKvkNumber(e.target.value)}
+                              className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                              placeholder="12345678"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-600 mb-1">BTW-nummer</label>
+                          <input
+                            type="text"
+                            value={guestVatNumber}
+                            onChange={(e) => setGuestVatNumber(e.target.value)}
+                            className="w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                            placeholder="NL123456789B01"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t text-center">
@@ -223,6 +277,64 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* Billing Address */}
+            {!user && (
+              <div className="bg-white rounded-lg border p-6">
+                <h3 className="text-lg font-semibold mb-4">Factuuradres</h3>
+                
+                <label className="flex items-center gap-2 mb-4 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={billingSameAsShipping}
+                    onChange={(e) => setBillingSameAsShipping(e.target.checked)}
+                    className="w-4 h-4 text-primary-600"
+                  />
+                  <span className="text-sm text-gray-600">Factuuradres is hetzelfde als verzendadres</span>
+                </label>
+                
+                {!billingSameAsShipping && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Adres *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={billingAddress} 
+                        onChange={(e) => setBillingAddress(e.target.value)}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Postcode *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={billingPostalCode} 
+                        onChange={(e) => setBillingPostalCode(e.target.value)}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Plaats *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={billingCity} 
+                        onChange={(e) => setBillingCity(e.target.value)}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">Land *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={billingCountry} 
+                        onChange={(e) => setBillingCountry(e.target.value)}
+                        className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-lg font-bold mb-3">{t('checkout.notes')}</h2>

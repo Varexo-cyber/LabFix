@@ -426,9 +426,9 @@ export default function HomePage() {
               },
               {
                 icon: <Clock size={40} />,
-                stat: locale === 'nl' ? '< 30 min' : '< 30 min',
-                title: locale === 'nl' ? 'Snelle Reparatie' : 'Fast Repair',
-                desc: locale === 'nl' ? 'De meeste reparaties binnen 30 minuten' : 'Most repairs within 30 minutes'
+                stat: locale === 'nl' ? 'Snel' : 'Fast',
+                title: locale === 'nl' ? 'Verzending' : 'Shipping',
+                desc: locale === 'nl' ? 'Snelle verzending door heel Europa' : 'Fast shipping throughout Europe'
               },
               { 
                 icon: <ShieldCheck size={40} />, 
@@ -440,7 +440,7 @@ export default function HomePage() {
                 icon: <Headphones size={40} />, 
                 stat: '09-17', 
                 title: locale === 'nl' ? 'Service' : 'Service',
-                desc: locale === 'nl' ? 'Loop-in reparatie of afspraak' : 'Walk-in repair or appointment'
+                desc: locale === 'nl' ? 'Klantenservice via mail en telefoon' : 'Customer service via email and phone'
               },
             ].map((item, i) => (
               <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">

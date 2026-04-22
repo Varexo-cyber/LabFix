@@ -14,6 +14,7 @@ async function ensureTable(sql: any) {
       customer_type TEXT DEFAULT 'individual',
       company_name TEXT DEFAULT '',
       kvk_number TEXT DEFAULT '',
+      vat_number TEXT DEFAULT '',
       first_name TEXT NOT NULL,
       last_name TEXT NOT NULL,
       phone TEXT DEFAULT '',
@@ -21,6 +22,10 @@ async function ensureTable(sql: any) {
       shipping_city TEXT DEFAULT '',
       shipping_postal_code TEXT DEFAULT '',
       shipping_country TEXT DEFAULT '',
+      billing_address TEXT DEFAULT '',
+      billing_city TEXT DEFAULT '',
+      billing_postal_code TEXT DEFAULT '',
+      billing_country TEXT DEFAULT '',
       items JSONB NOT NULL DEFAULT '[]',
       subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,
       shipping_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -84,8 +89,8 @@ export async function POST(request: NextRequest) {
     const id = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
     await sql`
-      INSERT INTO orders (id, user_id, user_email, company_name, kvk_number, contact_person, phone, shipping_address, shipping_city, shipping_postal_code, shipping_country, items, subtotal, shipping_cost, total, status, notes)
-      VALUES (${id}, ${body.userId}, ${body.userEmail}, ${body.companyName}, ${body.kvkNumber}, ${body.contactPerson}, ${body.phone || ''}, ${body.shippingAddress || ''}, ${body.shippingCity || ''}, ${body.shippingPostalCode || ''}, ${body.shippingCountry || ''}, ${JSON.stringify(body.items)}, ${body.subtotal}, ${body.shippingCost}, ${body.total}, 'pending', ${body.notes || ''})
+      INSERT INTO orders (id, user_id, user_email, company_name, kvk_number, vat_number, contact_person, phone, shipping_address, shipping_city, shipping_postal_code, shipping_country, billing_address, billing_city, billing_postal_code, billing_country, items, subtotal, shipping_cost, total, status, notes)
+      VALUES (${id}, ${body.userId}, ${body.userEmail}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.vatNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.shippingAddress || ''}, ${body.shippingCity || ''}, ${body.shippingPostalCode || ''}, ${body.shippingCountry || ''}, ${body.billingAddress || body.shippingAddress || ''}, ${body.billingCity || body.shippingCity || ''}, ${body.billingPostalCode || body.shippingPostalCode || ''}, ${body.billingCountry || body.shippingCountry || ''}, ${JSON.stringify(body.items)}, ${body.subtotal}, ${body.shippingCost}, ${body.total}, 'pending', ${body.notes || ''})
     `;
 
     // Send confirmation email
