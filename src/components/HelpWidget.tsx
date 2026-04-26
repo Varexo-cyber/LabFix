@@ -16,6 +16,7 @@ import {
   Newspaper,
   ChevronRight,
   Bot,
+  Wrench,
 } from 'lucide-react';
 
 // WhatsApp icon component
@@ -151,7 +152,12 @@ export default function HelpWidget() {
   }, [isOpen]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatEndRef.current && botMessages.length > 0) {
+      const container = chatEndRef.current.parentElement;
+      if (container && container.scrollHeight > container.clientHeight) {
+        chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }
   }, [botMessages, typedText, isTyping]);
 
   // Clear typing interval on unmount
@@ -248,7 +254,7 @@ export default function HelpWidget() {
         }`}
       >
         {/* Header */}
-        <div className="bg-gray-900 text-white px-5 py-4">
+        <div className="bg-primary-600 text-white px-5 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-white rounded-lg p-0.1 inline-block">
@@ -265,10 +271,34 @@ export default function HelpWidget() {
         </div>
 
         {/* Tab content */}
-        <div className="h-[380px] overflow-y-auto relative">
+        <div className="h-[380px] relative">
           {/* HOME TAB */}
-          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'home' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'home' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
-              <div className="px-5 pt-5 pb-3">
+          <div className={`absolute inset-0 overflow-y-auto transition-all duration-200 ${activeTab === 'home' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'home' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
+              {/* News Banner */}
+              {newsArticles.length > 0 && (
+                <div className="mx-4 mt-4">
+                  <Link href="/nieuws" onClick={handleClose}>
+                    <div className="bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200 rounded-xl p-3 hover:shadow-md transition-all duration-300">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                          <Newspaper size={16} className="text-primary-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-primary-700 truncate">
+                            {nl ? 'Bekijk onze recente nieuwsartikelen' : 'View our recent news articles'}
+                          </p>
+                          <p className="text-[10px] text-primary-500 truncate">
+                            {newsArticles[0] && (nl ? newsArticles[0].title : (newsArticles[0].titleEn || newsArticles[0].title))}
+                          </p>
+                        </div>
+                        <ChevronRight size={16} className="text-primary-400 flex-shrink-0" />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
+              <div className="px-5 pt-4 pb-3">
                 <h2 className="text-xl font-bold text-gray-900">
                   {nl ? 'Hoe kunnen we helpen?' : 'How can we help?'}
                 </h2>
@@ -314,6 +344,24 @@ export default function HelpWidget() {
                 </a>
               </div>
 
+              {/* Repair Link */}
+              <div className="mx-4 mb-3">
+                <Link href="/repair" onClick={handleClose}>
+                  <div className="w-full flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100 hover:shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center">
+                        <Wrench size={20} className="text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-semibold text-gray-800 text-sm">{nl ? 'Reparatie nodig?' : 'Need a repair?'}</p>
+                        <p className="text-xs text-gray-500">{nl ? 'Vul het formulier in voor een afspraak' : 'Fill in the form for an appointment'}</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={18} className="text-amber-500" />
+                  </div>
+                </Link>
+              </div>
+
               {/* News articles */}
               {newsArticles.length > 0 && (
                 <div className="px-4 pb-4">
@@ -351,7 +399,7 @@ export default function HelpWidget() {
           {/* BOT TAB */}
           <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'bot' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'bot' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="flex flex-col h-full">
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto min-h-[280px]">
+              <div className="flex-1 p-4 space-y-3 overflow-y-auto">
                 {botMessages.length === 0 && (
                   <div className="text-center py-8">
                     <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center mx-auto mb-3">
@@ -433,7 +481,7 @@ export default function HelpWidget() {
           </div>
 
           {/* HELP TAB */}
-          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'help' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'help' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
+          <div className={`absolute inset-0 overflow-y-auto transition-all duration-200 ${activeTab === 'help' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'help' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="py-2">
               <div className="px-5 pt-3 pb-2">
                 <h3 className="font-bold text-gray-900">{nl ? 'Neem contact op' : 'Get in touch'}</h3>
@@ -498,7 +546,7 @@ export default function HelpWidget() {
           </div>
 
           {/* NEWS TAB */}
-          <div className={`absolute inset-0 transition-all duration-200 ${activeTab === 'news' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'news' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
+          <div className={`absolute inset-0 overflow-y-auto transition-all duration-200 ${activeTab === 'news' ? 'opacity-100 translate-x-0 z-10' : prevTab === 'news' ? 'opacity-0 -translate-x-4 z-0' : 'opacity-0 translate-x-4 z-0 pointer-events-none'}`}>
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-gray-900">{nl ? 'Laatste Nieuws' : 'Latest News'}</h3>
@@ -573,9 +621,7 @@ export default function HelpWidget() {
           if (isOpen) handleClose();
           else { setIsOpen(true); setActiveTab('home'); }
         }}
-        className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-          isOpen ? 'bg-gray-700 hover:bg-gray-800' : 'bg-primary-600 hover:bg-primary-700'
-        }`}
+        className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 bg-primary-600 hover:bg-primary-700`}
       >
         {isOpen ? (
           <X size={24} className="text-white" />

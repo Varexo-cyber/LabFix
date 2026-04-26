@@ -177,7 +177,59 @@ export const brandCategories: BrandCategory[] = [
         ],
       },
       {
-        slug: 'macbook-air', name: 'MacBook Air', nameEn: 'MacBook Air',
+        slug: 'mac-studio',
+        name: 'Mac Studio',
+        nameEn: 'Mac Studio',
+        models: [
+          { slug: 'mac-studio-2023-m2-ultra', name: 'Mac Studio (2023) M2 Ultra' },
+          { slug: 'mac-studio-2023-m2-max', name: 'Mac Studio (2023) M2 Max' },
+          { slug: 'mac-studio-2022-m1-ultra', name: 'Mac Studio (2022) M1 Ultra' },
+          { slug: 'mac-studio-2022-m1-max', name: 'Mac Studio (2022) M1 Max' },
+        ],
+      },
+      {
+        slug: 'studio-display',
+        name: 'Studio Display',
+        nameEn: 'Studio Display',
+        models: [
+          { slug: 'studio-display-2022', name: 'Studio Display 27" (2022)' },
+        ],
+      },
+      {
+        slug: 'mac-pro',
+        name: 'Mac Pro',
+        nameEn: 'Mac Pro',
+        models: [
+          { slug: 'mac-pro-2023', name: 'Mac Pro (2023) M2 Ultra' },
+          { slug: 'mac-pro-2019', name: 'Mac Pro (2019) Intel' },
+        ],
+      },
+      {
+        slug: 'mac-mini',
+        name: 'Mac Mini',
+        nameEn: 'Mac Mini',
+        models: [
+          { slug: 'mac-mini-2024-m4', name: 'Mac Mini (2024) M4' },
+          { slug: 'mac-mini-2023-m2', name: 'Mac Mini (2023) M2/M2 Pro' },
+          { slug: 'mac-mini-2020-m1', name: 'Mac Mini (2020) M1' },
+        ],
+      },
+      {
+        slug: 'imac',
+        name: 'iMac',
+        nameEn: 'iMac',
+        models: [
+          { slug: 'imac-24-2024-m4', name: 'iMac 24" (2024) M4' },
+          { slug: 'imac-24-2023-m3', name: 'iMac 24" (2023) M3' },
+          { slug: 'imac-24-2021-m1', name: 'iMac 24" (2021) M1' },
+          { slug: 'imac-27-2020', name: 'iMac 27" (2020) Intel' },
+          { slug: 'imac-21-2019', name: 'iMac 21.5" (2019) Intel' },
+        ],
+      },
+      {
+        slug: 'macbook-air',
+        name: 'MacBook Air',
+        nameEn: 'MacBook Air',
         models: [
           { slug: 'mba-15-2025-m4', name: 'MacBook Air 15" (2025) M4' },
           { slug: 'mba-13-2025-m4', name: 'MacBook Air 13" (2025) M4' },
@@ -190,25 +242,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'mba-13-2019', name: 'MacBook Air 13" (2019)' },
           { slug: 'mba-13-2018', name: 'MacBook Air 13" (2018)' },
           { slug: 'mba-13-2017', name: 'MacBook Air 13" (2017)' },
-        ],
-      },
-      {
-        slug: 'imac', name: 'iMac', nameEn: 'iMac',
-        models: [
-          { slug: 'imac-24-2024-m4', name: 'iMac 24" (2024) M4' },
-          { slug: 'imac-24-2023-m3', name: 'iMac 24" (2023) M3' },
-          { slug: 'imac-24-2021-m1', name: 'iMac 24" (2021) M1' },
-          { slug: 'imac-27-2020', name: 'iMac 27" (2019-2020)' },
-          { slug: 'imac-27-2017', name: 'iMac 27" (2017)' },
-          { slug: 'imac-215-2017', name: 'iMac 21.5" (2017)' },
-        ],
-      },
-      {
-        slug: 'mac-mini', name: 'Mac Mini', nameEn: 'Mac Mini',
-        models: [
-          { slug: 'mac-mini-2024-m4', name: 'Mac Mini (2024) M4' },
-          { slug: 'mac-mini-2023-m2', name: 'Mac Mini (2023) M2' },
-          { slug: 'mac-mini-2020-m1', name: 'Mac Mini (2020) M1' },
         ],
       },
       {
@@ -407,6 +440,175 @@ export const brandCategories: BrandCategory[] = [
       },
     ],
   },
+  // ==================== OTHER BRANDS FROM MOBILE SENTRIX ====================
+  {
+    slug: 'alcatel',
+    name: 'Alcatel',
+    nameEn: 'Alcatel',
+    subcategories: [
+      { slug: 'alcatel-1', name: 'Alcatel 1 Series', nameEn: 'Alcatel 1 Series', models: [{ slug: 'alcatel-1-2021', name: 'Alcatel 1 (2021)' }, { slug: 'alcatel-1x', name: 'Alcatel 1X' }] },
+      { slug: 'alcatel-3', name: 'Alcatel 3 Series', nameEn: 'Alcatel 3 Series', models: [{ slug: 'alcatel-3-2020', name: 'Alcatel 3 (2020)' }, { slug: 'alcatel-3x', name: 'Alcatel 3X' }] },
+      { slug: 'alcatel-5', name: 'Alcatel 5 Series', nameEn: 'Alcatel 5 Series', models: [{ slug: 'alcatel-5', name: 'Alcatel 5' }] },
+    ],
+  },
+  {
+    slug: 'att',
+    name: 'AT&T',
+    nameEn: 'AT&T',
+    subcategories: [
+      { slug: 'att-phones', name: 'AT&T Phones', nameEn: 'AT&T Phones', models: [{ slug: 'att-fusion-5g', name: 'AT&T Fusion 5G' }, { slug: 'att-maestro-plus', name: 'AT&T Maestro Plus' }] },
+    ],
+  },
+  {
+    slug: 'blackberry',
+    name: 'Blackberry',
+    nameEn: 'Blackberry',
+    subcategories: [
+      { slug: 'key-series', name: 'Key Series', nameEn: 'Key Series', models: [{ slug: 'key2', name: 'BlackBerry Key2' }, { slug: 'keyone', name: 'BlackBerry KeyOne' }] },
+      { slug: 'motion', name: 'Motion', nameEn: 'Motion', models: [{ slug: 'motion', name: 'BlackBerry Motion' }] },
+    ],
+  },
+  {
+    slug: 'blu',
+    name: 'Blu',
+    nameEn: 'Blu',
+    subcategories: [
+      { slug: 'g-series', name: 'G Series', nameEn: 'G Series', models: [{ slug: 'g91', name: 'Blu G91' }, { slug: 'g90', name: 'Blu G90' }] },
+      { slug: 'v-series', name: 'V Series', nameEn: 'V Series', models: [{ slug: 'v90', name: 'Blu V90' }] },
+    ],
+  },
+  {
+    slug: 'cat',
+    name: 'CAT',
+    nameEn: 'CAT',
+    subcategories: [
+      { slug: 'cat-s', name: 'S Series', nameEn: 'S Series', models: [{ slug: 'cat-s62', name: 'CAT S62' }, { slug: 'cat-s42', name: 'CAT S42' }, { slug: 'cat-s22', name: 'CAT S22' }] },
+    ],
+  },
+  {
+    slug: 'coolpad',
+    name: 'Coolpad',
+    nameEn: 'Coolpad',
+    subcategories: [
+      { slug: 'coolpad-legacy', name: 'Legacy', nameEn: 'Legacy', models: [{ slug: 'legacy', name: 'Coolpad Legacy' }, { slug: 'legacy-s', name: 'Coolpad Legacy S' }] },
+    ],
+  },
+  {
+    slug: 'cricket',
+    name: 'Cricket',
+    nameEn: 'Cricket',
+    subcategories: [
+      { slug: 'cricket-wireless', name: 'Cricket Wireless', nameEn: 'Cricket Wireless', models: [{ slug: 'cricket-debut', name: 'Cricket Debut' }, { slug: 'cricket-wave', name: 'Cricket Wave' }] },
+    ],
+  },
+  {
+    slug: 'dji',
+    name: 'DJI',
+    nameEn: 'DJI',
+    subcategories: [
+      { slug: 'dji-drones', name: 'DJI Drones', nameEn: 'DJI Drones', models: [{ slug: 'mavic-3', name: 'Mavic 3' }, { slug: 'air-3', name: 'Air 3' }, { slug: 'mini-4', name: 'Mini 4 Pro' }] },
+    ],
+  },
+  {
+    slug: 'essential',
+    name: 'Essential',
+    nameEn: 'Essential',
+    subcategories: [
+      { slug: 'essential-phone', name: 'Essential Phone', nameEn: 'Essential Phone', models: [{ slug: 'ph-1', name: 'Essential PH-1' }] },
+    ],
+  },
+  {
+    slug: 'fitbit',
+    name: 'Fitbit',
+    nameEn: 'Fitbit',
+    subcategories: [
+      { slug: 'fitbit-watches', name: 'Fitbit Watches', nameEn: 'Fitbit Watches', models: [{ slug: 'sense-2', name: 'Sense 2' }, { slug: 'versa-4', name: 'Versa 4' }, { slug: 'charge-6', name: 'Charge 6' }] },
+    ],
+  },
+  {
+    slug: 'gopro',
+    name: 'GoPro',
+    nameEn: 'GoPro',
+    subcategories: [
+      { slug: 'hero', name: 'Hero', nameEn: 'Hero', models: [{ slug: 'hero-13', name: 'Hero 13' }, { slug: 'hero-12', name: 'Hero 12' }, { slug: 'hero-11', name: 'Hero 11' }] },
+    ],
+  },
+  {
+    slug: 'htc',
+    name: 'HTC',
+    nameEn: 'HTC',
+    subcategories: [
+      { slug: 'u-series', name: 'U Series', nameEn: 'U Series', models: [{ slug: 'u12-plus', name: 'U12+' }, { slug: 'u11', name: 'U11' }] },
+      { slug: 'desire', name: 'Desire', nameEn: 'Desire', models: [{ slug: 'desire-21', name: 'Desire 21' }] },
+    ],
+  },
+  {
+    slug: 'insta360',
+    name: 'Insta360',
+    nameEn: 'Insta360',
+    subcategories: [
+      { slug: 'action-cameras', name: 'Action Cameras', nameEn: 'Action Cameras', models: [{ slug: 'ace-pro', name: 'Ace Pro' }, { slug: 'go-3', name: 'GO 3' }] },
+    ],
+  },
+  {
+    slug: 'kyocera',
+    name: 'Kyocera',
+    nameEn: 'Kyocera',
+    subcategories: [
+      { slug: 'duraforce', name: 'DuraForce', nameEn: 'DuraForce', models: [{ slug: 'duraforce-pro-3', name: 'DuraForce Pro 3' }, { slug: 'duraforce-ultra', name: 'DuraForce Ultra' }] },
+    ],
+  },
+  {
+    slug: 'nexus',
+    name: 'Nexus',
+    nameEn: 'Nexus',
+    subcategories: [
+      { slug: 'nexus-phones', name: 'Nexus Phones', nameEn: 'Nexus Phones', models: [{ slug: 'nexus-6p', name: 'Nexus 6P' }, { slug: 'nexus-5x', name: 'Nexus 5X' }, { slug: 'nexus-6', name: 'Nexus 6' }] },
+    ],
+  },
+  {
+    slug: 'oukitel',
+    name: 'Oukitel',
+    nameEn: 'Oukitel',
+    subcategories: [
+      { slug: 'wp-series', name: 'WP Series', nameEn: 'WP Series', models: [{ slug: 'wp30', name: 'WP30 Pro' }, { slug: 'wp22', name: 'WP22' }] },
+      { slug: 'c-series', name: 'C Series', nameEn: 'C Series', models: [{ slug: 'c35', name: 'C35' }] },
+    ],
+  },
+  {
+    slug: 'revvl',
+    name: 'Revvl',
+    nameEn: 'Revvl',
+    subcategories: [
+      { slug: 'revvl-series', name: 'Revvl Series', nameEn: 'Revvl Series', models: [{ slug: 'revvl-7', name: 'Revvl 7' }, { slug: 'revvl-6', name: 'Revvl 6' }] },
+    ],
+  },
+  {
+    slug: 'tecno',
+    name: 'Tecno',
+    nameEn: 'Tecno',
+    subcategories: [
+      { slug: 'phantom', name: 'Phantom', nameEn: 'Phantom', models: [{ slug: 'phantom-v2', name: 'Phantom V2' }, { slug: 'phantom-v', name: 'Phantom V' }] },
+      { slug: 'camon', name: 'Camon', nameEn: 'Camon', models: [{ slug: 'camon-30', name: 'Camon 30' }, { slug: 'camon-20', name: 'Camon 20' }] },
+    ],
+  },
+  {
+    slug: 'zebra',
+    name: 'Zebra',
+    nameEn: 'Zebra',
+    subcategories: [
+      { slug: 'tc-series', name: 'TC Series', nameEn: 'TC Series', models: [{ slug: 'tc26', name: 'TC26' }, { slug: 'tc52', name: 'TC52' }] },
+    ],
+  },
+  {
+    slug: 'zte',
+    name: 'ZTE',
+    nameEn: 'ZTE',
+    subcategories: [
+      { slug: 'axon', name: 'Axon', nameEn: 'Axon', models: [{ slug: 'axon-50', name: 'Axon 50' }, { slug: 'axon-40', name: 'Axon 40' }] },
+      { slug: 'blade', name: 'Blade', nameEn: 'Blade', models: [{ slug: 'blade-v50', name: 'Blade V50' }, { slug: 'blade-a73', name: 'Blade A73' }] },
+    ],
+  },
   {
     slug: 'google',
     name: 'Google',
@@ -543,6 +745,34 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'poco-x6', name: 'POCO X6' },
           { slug: 'poco-m6-pro', name: 'POCO M6 Pro' },
           { slug: 'poco-m6', name: 'POCO M6' },
+          { slug: 'poco-c75', name: 'POCO C75' },
+          { slug: 'poco-c65', name: 'POCO C65' },
+          { slug: 'poco-c61', name: 'POCO C61' },
+          { slug: 'poco-f5-pro', name: 'POCO F5 Pro' },
+          { slug: 'poco-f5', name: 'POCO F5' },
+          { slug: 'poco-x5-pro', name: 'POCO X5 Pro' },
+          { slug: 'poco-x5', name: 'POCO X5' },
+        ],
+      },
+      {
+        slug: 'xiaomi-mix', name: 'Xiaomi Mix', nameEn: 'Xiaomi Mix',
+        models: [
+          { slug: 'mix-fold-4', name: 'Xiaomi Mix Fold 4' },
+          { slug: 'mix-fold-3', name: 'Xiaomi Mix Fold 3' },
+          { slug: 'mix-fold-2', name: 'Xiaomi Mix Fold 2' },
+          { slug: 'mix-fold', name: 'Xiaomi Mix Fold' },
+          { slug: 'mix-4', name: 'Xiaomi Mix 4' },
+          { slug: 'mix-3', name: 'Xiaomi Mix 3' },
+        ],
+      },
+      {
+        slug: 'xiaomi-pad', name: 'Xiaomi Pad', nameEn: 'Xiaomi Pad',
+        models: [
+          { slug: 'pad-6s-pro', name: 'Xiaomi Pad 6S Pro' },
+          { slug: 'pad-6-pro', name: 'Xiaomi Pad 6 Pro' },
+          { slug: 'pad-6', name: 'Xiaomi Pad 6' },
+          { slug: 'pad-5-pro', name: 'Xiaomi Pad 5 Pro' },
+          { slug: 'pad-5', name: 'Xiaomi Pad 5' },
         ],
       },
     ],
@@ -582,6 +812,16 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'razr-50', name: 'Razr 50' },
           { slug: 'razr-40-ultra', name: 'Razr 40 Ultra' },
           { slug: 'razr-40', name: 'Razr 40' },
+        ],
+      },
+      {
+        slug: 'moto-e', name: 'Moto E Serie', nameEn: 'Moto E Series',
+        models: [
+          { slug: 'moto-e14', name: 'Moto E14' },
+          { slug: 'moto-e13', name: 'Moto E13' },
+          { slug: 'moto-e32', name: 'Moto E32' },
+          { slug: 'moto-e22', name: 'Moto E22' },
+          { slug: 'moto-e20', name: 'Moto E20' },
         ],
       },
     ],
@@ -940,34 +1180,6 @@ export const brandCategories: BrandCategory[] = [
     ],
   },
   {
-    slug: 'zte',
-    name: 'ZTE',
-    nameEn: 'ZTE',
-    subcategories: [
-      {
-        slug: 'zte-blade', name: 'Blade Serie', nameEn: 'Blade Series',
-        models: [
-          { slug: 'zte-blade-v60', name: 'Blade V60 Smart' },
-          { slug: 'zte-blade-a75-5g', name: 'Blade A75 5G' },
-          { slug: 'zte-blade-a75', name: 'Blade A75 4G' },
-          { slug: 'zte-blade-a72', name: 'Blade A72' },
-          { slug: 'zte-blade-a71', name: 'Blade A71' },
-          { slug: 'zte-blade-a52', name: 'Blade A52' },
-          { slug: 'zte-blade-a51', name: 'Blade A51' },
-          { slug: 'zte-blade-v40', name: 'Blade V40 Smart' },
-        ],
-      },
-      {
-        slug: 'zte-axon', name: 'Axon Serie', nameEn: 'Axon Series',
-        models: [
-          { slug: 'zte-axon-60-lite', name: 'Axon 60 Lite' },
-          { slug: 'zte-axon-30-ultra', name: 'Axon 30 Ultra 5G' },
-          { slug: 'zte-axon-30', name: 'Axon 30 5G' },
-        ],
-      },
-    ],
-  },
-  {
     slug: 'asus',
     name: 'ASUS',
     nameEn: 'ASUS',
@@ -996,21 +1208,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'zenfone-8', name: 'Zenfone 8' },
         ],
       },
-      {
-        slug: 'asus-laptop', name: 'ASUS Laptop', nameEn: 'ASUS Laptop',
-        models: [
-          { slug: 'asus-rog-strix-g16', name: 'ROG Strix G16' },
-          { slug: 'asus-rog-strix-g15', name: 'ROG Strix G15' },
-          { slug: 'asus-rog-zephyrus-g14', name: 'ROG Zephyrus G14' },
-          { slug: 'asus-rog-zephyrus-g16', name: 'ROG Zephyrus G16' },
-          { slug: 'asus-vivobook-15', name: 'VivoBook 15' },
-          { slug: 'asus-vivobook-16', name: 'VivoBook 16' },
-          { slug: 'asus-zenbook-14', name: 'ZenBook 14' },
-          { slug: 'asus-zenbook-15', name: 'ZenBook 15' },
-          { slug: 'asus-tuf-gaming', name: 'TUF Gaming' },
-          { slug: 'asus-chromebook', name: 'Chromebook' },
-        ],
-      },
     ],
   },
   {
@@ -1037,272 +1234,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'lenovo-tab-p12', name: 'Tab P12' },
           { slug: 'lenovo-tab-p11-pro-2', name: 'Tab P11 Pro 2nd Gen' },
           { slug: 'lenovo-tab-p11-plus', name: 'Tab P11 Plus' },
-        ],
-      },
-      {
-        slug: 'lenovo-thinkpad', name: 'ThinkPad', nameEn: 'ThinkPad',
-        models: [
-          { slug: 'thinkpad-x1-carbon-g12', name: 'X1 Carbon Gen 12' },
-          { slug: 'thinkpad-x1-carbon-g11', name: 'X1 Carbon Gen 11' },
-          { slug: 'thinkpad-x1-carbon-g10', name: 'X1 Carbon Gen 10' },
-          { slug: 'thinkpad-t14s-g5', name: 'T14s Gen 5' },
-          { slug: 'thinkpad-t14-g5', name: 'T14 Gen 5' },
-          { slug: 'thinkpad-t16-g3', name: 'T16 Gen 3' },
-          { slug: 'thinkpad-l14-g4', name: 'L14 Gen 4' },
-          { slug: 'thinkpad-e16-g2', name: 'E16 Gen 2' },
-        ],
-      },
-      {
-        slug: 'lenovo-ideapad', name: 'IdeaPad', nameEn: 'IdeaPad',
-        models: [
-          { slug: 'ideapad-5-16', name: 'IdeaPad 5 16"' },
-          { slug: 'ideapad-5-14', name: 'IdeaPad 5 14"' },
-          { slug: 'ideapad-3-15', name: 'IdeaPad 3 15"' },
-          { slug: 'ideapad-slim-5', name: 'IdeaPad Slim 5' },
-          { slug: 'ideapad-flex-5', name: 'IdeaPad Flex 5' },
-        ],
-      },
-      {
-        slug: 'lenovo-yoga', name: 'Yoga', nameEn: 'Yoga',
-        models: [
-          { slug: 'yoga-9i-14', name: 'Yoga 9i 14"' },
-          { slug: 'yoga-7-16', name: 'Yoga 7 16"' },
-          { slug: 'yoga-slim-7-14', name: 'Yoga Slim 7 14"' },
-          { slug: 'yoga-tab-smart', name: 'Yoga Smart Tab' },
-        ],
-      },
-      {
-        slug: 'lenovo-legion', name: 'Legion', nameEn: 'Legion',
-        models: [
-          { slug: 'legion-pro-7-16', name: 'Legion Pro 7 16"' },
-          { slug: 'legion-pro-5-16', name: 'Legion Pro 5 16"' },
-          { slug: 'legion-5-15', name: 'Legion 5 15"' },
-          { slug: 'legion-slim-5-14', name: 'Legion Slim 5 14"' },
-        ],
-      },
-      {
-        slug: 'lenovo-chromebook', name: 'Chromebook', nameEn: 'Chromebook',
-        models: [
-          { slug: 'lenovo-chromebook-300e', name: 'Chromebook 300e' },
-          { slug: 'lenovo-chromebook-100e', name: 'Chromebook 100e' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'microsoft',
-    name: 'Microsoft',
-    nameEn: 'Microsoft',
-    subcategories: [
-      {
-        slug: 'surface-pro', name: 'Surface Pro', nameEn: 'Surface Pro',
-        models: [
-          { slug: 'surface-pro-11', name: 'Surface Pro 11 (2024)' },
-          { slug: 'surface-pro-10', name: 'Surface Pro 10 (2024)' },
-          { slug: 'surface-pro-9', name: 'Surface Pro 9 (2022)' },
-          { slug: 'surface-pro-8', name: 'Surface Pro 8 (2021)' },
-          { slug: 'surface-pro-7-plus', name: 'Surface Pro 7+ (2021)' },
-          { slug: 'surface-pro-x', name: 'Surface Pro X (2020)' },
-          { slug: 'surface-pro-7', name: 'Surface Pro 7 (2019)' },
-          { slug: 'surface-pro-6', name: 'Surface Pro 6 (2018)' },
-          { slug: 'surface-pro-5', name: 'Surface Pro 5 (2017)' },
-          { slug: 'surface-pro-4', name: 'Surface Pro 4 (2015)' },
-          { slug: 'surface-pro-3', name: 'Surface Pro 3 (2014)' },
-        ],
-      },
-      {
-        slug: 'surface-laptop', name: 'Surface Laptop', nameEn: 'Surface Laptop',
-        models: [
-          { slug: 'surface-laptop-7-15', name: 'Laptop 7 15"' },
-          { slug: 'surface-laptop-7-13', name: 'Laptop 7 13.8"' },
-          { slug: 'surface-laptop-6-15', name: 'Laptop 6 15"' },
-          { slug: 'surface-laptop-5-15', name: 'Laptop 5 15"' },
-          { slug: 'surface-laptop-5-13', name: 'Laptop 5 13.5"' },
-          { slug: 'surface-laptop-4-15', name: 'Laptop 4 15"' },
-          { slug: 'surface-laptop-4-13', name: 'Laptop 4 13.5"' },
-          { slug: 'surface-laptop-3-15', name: 'Laptop 3 15"' },
-          { slug: 'surface-laptop-3-13', name: 'Laptop 3 13.5"' },
-        ],
-      },
-      {
-        slug: 'surface-go', name: 'Surface Go', nameEn: 'Surface Go',
-        models: [
-          { slug: 'surface-go-4', name: 'Surface Go 4 (2023)' },
-          { slug: 'surface-go-3', name: 'Surface Go 3 (2021)' },
-          { slug: 'surface-go-2', name: 'Surface Go 2 (2020)' },
-          { slug: 'surface-go-1', name: 'Surface Go (2018)' },
-        ],
-      },
-      {
-        slug: 'surface-book', name: 'Surface Book', nameEn: 'Surface Book',
-        models: [
-          { slug: 'surface-book-3-15', name: 'Book 3 15"' },
-          { slug: 'surface-book-3-13', name: 'Book 3 13.5"' },
-          { slug: 'surface-book-2-15', name: 'Book 2 15"' },
-          { slug: 'surface-book-2-13', name: 'Book 2 13.5"' },
-        ],
-      },
-      {
-        slug: 'surface-laptop-go', name: 'Surface Laptop Go', nameEn: 'Surface Laptop Go',
-        models: [
-          { slug: 'surface-laptop-go-4', name: 'Laptop Go 4' },
-          { slug: 'surface-laptop-go-3', name: 'Laptop Go 3' },
-          { slug: 'surface-laptop-go-2', name: 'Laptop Go 2' },
-          { slug: 'surface-laptop-go-1', name: 'Laptop Go 1' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'hp',
-    name: 'HP',
-    nameEn: 'HP',
-    subcategories: [
-      {
-        slug: 'hp-pavilion', name: 'Pavilion', nameEn: 'Pavilion',
-        models: [
-          { slug: 'hp-pavilion-16', name: 'Pavilion 16"' },
-          { slug: 'hp-pavilion-15', name: 'Pavilion 15"' },
-          { slug: 'hp-pavilion-14', name: 'Pavilion 14"' },
-          { slug: 'hp-pavilion-x360-14', name: 'Pavilion x360 14"' },
-          { slug: 'hp-pavilion-x360-15', name: 'Pavilion x360 15"' },
-        ],
-      },
-      {
-        slug: 'hp-envy', name: 'Envy', nameEn: 'Envy',
-        models: [
-          { slug: 'hp-envy-16', name: 'Envy 16"' },
-          { slug: 'hp-envy-15', name: 'Envy 15"' },
-          { slug: 'hp-envy-14', name: 'Envy 14"' },
-          { slug: 'hp-envy-x360-15', name: 'Envy x360 15"' },
-          { slug: 'hp-envy-x360-13', name: 'Envy x360 13"' },
-        ],
-      },
-      {
-        slug: 'hp-spectre', name: 'Spectre', nameEn: 'Spectre',
-        models: [
-          { slug: 'hp-spectre-x360-16', name: 'Spectre x360 16"' },
-          { slug: 'hp-spectre-x360-14', name: 'Spectre x360 14"' },
-          { slug: 'hp-spectre-x360-13', name: 'Spectre x360 13"' },
-        ],
-      },
-      {
-        slug: 'hp-elitebook', name: 'EliteBook', nameEn: 'EliteBook',
-        models: [
-          { slug: 'hp-elitebook-860-g11', name: 'EliteBook 860 G11' },
-          { slug: 'hp-elitebook-840-g11', name: 'EliteBook 840 G11' },
-          { slug: 'hp-elitebook-640-g11', name: 'EliteBook 640 G11' },
-          { slug: 'hp-elitebook-x360-1040', name: 'EliteBook x360 1040' },
-        ],
-      },
-      {
-        slug: 'hp-probook', name: 'ProBook', nameEn: 'ProBook',
-        models: [
-          { slug: 'hp-probook-450-g11', name: 'ProBook 450 G11' },
-          { slug: 'hp-probook-440-g11', name: 'ProBook 440 G11' },
-          { slug: 'hp-probook-640-g9', name: 'ProBook 640 G9' },
-        ],
-      },
-      {
-        slug: 'hp-omen', name: 'OMEN', nameEn: 'OMEN',
-        models: [
-          { slug: 'hp-omen-16', name: 'OMEN 16"' },
-          { slug: 'hp-omen-17', name: 'OMEN 17"' },
-          { slug: 'hp-omen-transcend-16', name: 'OMEN Transcend 16"' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'dell',
-    name: 'Dell',
-    nameEn: 'Dell',
-    subcategories: [
-      {
-        slug: 'dell-xps', name: 'XPS', nameEn: 'XPS',
-        models: [
-          { slug: 'dell-xps-16-9640', name: 'XPS 16 (9640)' },
-          { slug: 'dell-xps-14-9440', name: 'XPS 14 (9440)' },
-          { slug: 'dell-xps-13-9340', name: 'XPS 13 (9340)' },
-          { slug: 'dell-xps-15-9530', name: 'XPS 15 (9530)' },
-          { slug: 'dell-xps-13-plus', name: 'XPS 13 Plus (9320)' },
-        ],
-      },
-      {
-        slug: 'dell-inspiron', name: 'Inspiron', nameEn: 'Inspiron',
-        models: [
-          { slug: 'dell-inspiron-16-7640', name: 'Inspiron 16 (7640)' },
-          { slug: 'dell-inspiron-15-3530', name: 'Inspiron 15 (3530)' },
-          { slug: 'dell-inspiron-14-5440', name: 'Inspiron 14 (5440)' },
-          { slug: 'dell-inspiron-14-2in1', name: 'Inspiron 14 2-in-1' },
-        ],
-      },
-      {
-        slug: 'dell-latitude', name: 'Latitude', nameEn: 'Latitude',
-        models: [
-          { slug: 'dell-latitude-7450', name: 'Latitude 7450' },
-          { slug: 'dell-latitude-5540', name: 'Latitude 5540' },
-          { slug: 'dell-latitude-5440', name: 'Latitude 5440' },
-          { slug: 'dell-latitude-3440', name: 'Latitude 3440' },
-        ],
-      },
-      {
-        slug: 'dell-alienware', name: 'Alienware', nameEn: 'Alienware',
-        models: [
-          { slug: 'alienware-m18-r2', name: 'Alienware m18 R2' },
-          { slug: 'alienware-m16-r2', name: 'Alienware m16 R2' },
-          { slug: 'alienware-x16-r2', name: 'Alienware x16 R2' },
-          { slug: 'alienware-x14-r2', name: 'Alienware x14 R2' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'acer',
-    name: 'Acer',
-    nameEn: 'Acer',
-    subcategories: [
-      {
-        slug: 'acer-swift', name: 'Swift', nameEn: 'Swift',
-        models: [
-          { slug: 'acer-swift-go-16', name: 'Swift Go 16' },
-          { slug: 'acer-swift-go-14', name: 'Swift Go 14' },
-          { slug: 'acer-swift-14-ai', name: 'Swift 14 AI' },
-          { slug: 'acer-swift-edge-16', name: 'Swift Edge 16' },
-          { slug: 'acer-swift-x-14', name: 'Swift X 14' },
-        ],
-      },
-      {
-        slug: 'acer-aspire', name: 'Aspire', nameEn: 'Aspire',
-        models: [
-          { slug: 'acer-aspire-5-15', name: 'Aspire 5 15"' },
-          { slug: 'acer-aspire-5-14', name: 'Aspire 5 14"' },
-          { slug: 'acer-aspire-3-15', name: 'Aspire 3 15"' },
-          { slug: 'acer-aspire-vero-15', name: 'Aspire Vero 15"' },
-        ],
-      },
-      {
-        slug: 'acer-nitro', name: 'Nitro', nameEn: 'Nitro',
-        models: [
-          { slug: 'acer-nitro-v-16', name: 'Nitro V 16"' },
-          { slug: 'acer-nitro-v-15', name: 'Nitro V 15"' },
-          { slug: 'acer-nitro-5-17', name: 'Nitro 5 17"' },
-        ],
-      },
-      {
-        slug: 'acer-predator', name: 'Predator', nameEn: 'Predator',
-        models: [
-          { slug: 'acer-predator-helios-18', name: 'Predator Helios 18' },
-          { slug: 'acer-predator-helios-16', name: 'Predator Helios 16' },
-          { slug: 'acer-predator-triton-17', name: 'Predator Triton 17' },
-        ],
-      },
-      {
-        slug: 'acer-chromebook', name: 'Chromebook', nameEn: 'Chromebook',
-        models: [
-          { slug: 'acer-chromebook-plus-515', name: 'Chromebook Plus 515' },
-          { slug: 'acer-chromebook-314', name: 'Chromebook 314' },
-          { slug: 'acer-chromebook-spin-513', name: 'Chromebook Spin 513' },
         ],
       },
     ],
@@ -1365,35 +1296,6 @@ export const brandCategories: BrandCategory[] = [
       },
     ],
   },
-  {
-    slug: 'tools',
-    name: 'Gereedschap & Supplies',
-    nameEn: 'Tools & Supplies',
-    subcategories: [
-      { slug: 'screwdrivers', name: 'Schroevendraaiers', nameEn: 'Screwdrivers', models: [] },
-      { slug: 'pry-tools', name: 'Opening Tools', nameEn: 'Pry & Opening Tools', models: [] },
-      { slug: 'soldering', name: 'Soldeer Gereedschap', nameEn: 'Soldering Tools', models: [] },
-      { slug: 'adhesives', name: 'Lijm & Tape', nameEn: 'Adhesives & Tape', models: [] },
-      { slug: 'cleaning', name: 'Reiniging', nameEn: 'Cleaning Supplies', models: [] },
-      { slug: 'heat-guns', name: 'Heatguns & Stations', nameEn: 'Heat Guns & Stations', models: [] },
-      { slug: 'microscopes', name: 'Microscopen', nameEn: 'Microscopes', models: [] },
-      { slug: 'mats', name: 'Werkmatten', nameEn: 'Work Mats', models: [] },
-      { slug: 'other-tools', name: 'Overig Gereedschap', nameEn: 'Other Tools', models: [] },
-    ],
-  },
-  {
-    slug: 'accessories',
-    name: 'Accessoires',
-    nameEn: 'Accessories',
-    subcategories: [
-      { slug: 'cases', name: 'Hoesjes', nameEn: 'Cases', models: [] },
-      { slug: 'chargers', name: 'Opladers', nameEn: 'Chargers', models: [] },
-      { slug: 'cables', name: 'Kabels', nameEn: 'Cables', models: [] },
-      { slug: 'screen-protectors', name: 'Screenprotectors', nameEn: 'Screen Protectors', models: [] },
-      { slug: 'power-banks', name: 'Powerbanks', nameEn: 'Power Banks', models: [] },
-      { slug: 'other-accessories', name: 'Overige Accessoires', nameEn: 'Other Accessories', models: [] },
-    ],
-  },
 ];
 
 // ==================== HELPER FUNCTIONS ====================
@@ -1434,3 +1336,521 @@ export function getAllCategoryOptions(): { value: string; label: string; brand: 
   }
   return options;
 }
+
+// ==================== ACCESSORIES CATEGORY SYSTEM ====================
+// Accessories organized by brand and model compatibility
+
+export interface AccessorySubCategory {
+  slug: string;
+  name: string;
+  nameEn: string;
+  description?: string;
+}
+
+export interface AccessoryCategory {
+  slug: string;
+  name: string;
+  nameEn: string;
+  icon?: string;
+  description?: string;
+  subcategories: AccessorySubCategory[];
+}
+
+export const accessoryCategories: AccessoryCategory[] = [
+  {
+    slug: 'cases-covers',
+    name: 'Hoesjes & Cases',
+    nameEn: 'Cases & Covers',
+    description: 'Beschermhoesjes voor alle telefoonmodellen',
+    subcategories: [
+      { slug: 'silicone-cases', name: 'Siliconen Hoesjes', nameEn: 'Silicone Cases', description: 'Flexibele siliconen bescherming' },
+      { slug: 'leather-cases', name: 'Leren Hoesjes', nameEn: 'Leather Cases', description: 'Premium lederen hoesjes' },
+      { slug: 'wallet-cases', name: 'Booktype & Portemonnee', nameEn: 'Wallet & Flip Cases', description: 'Hoesjes met kaarthouders' },
+      { slug: 'rugged-cases', name: 'Rugged & Armor', nameEn: 'Rugged & Armor', description: 'Zware bescherming, shockproof' },
+      { slug: 'clear-cases', name: 'Transparante Hoesjes', nameEn: 'Clear & Transparent', description: 'Doorzichtige bescherming' },
+      { slug: 'magnetic-cases', name: 'MagSafe Hoesjes', nameEn: 'MagSafe Compatible', description: 'Magnetische hoesjes voor iPhone' },
+    ]
+  },
+  {
+    slug: 'screen-protectors',
+    name: 'Screenprotectors',
+    nameEn: 'Screen Protectors',
+    description: 'Display bescherming',
+    subcategories: [
+      { slug: 'tempered-glass', name: 'Gehard Glas', nameEn: 'Tempered Glass', description: '9H gehard glas bescherming' },
+      { slug: 'privacy-glass', name: 'Privacy Glass', nameEn: 'Privacy Glass', description: 'Privacy filter, kijkhoek bescherming' },
+      { slug: 'matte-glass', name: 'Mat Glas', nameEn: 'Matte Glass', description: 'Anti-glans, anti-vingerafdruk' },
+      { slug: 'uv-glass', name: 'UV Liquid Glass', nameEn: 'UV Liquid Glass', description: 'UV licht geharde vloeibare glas' },
+      { slug: 'tpu-film', name: 'TPU Flexibele Film', nameEn: 'TPU Flexible Film', description: 'Krasbestendige TPU folie' },
+      { slug: 'ceramic-shield', name: 'Ceramic Shield', nameEn: 'Ceramic Shield', description: 'Keramische beschermlaag' },
+    ]
+  },
+  {
+    slug: 'chargers-cables',
+    name: 'Opladers & Kabels',
+    nameEn: 'Chargers & Cables',
+    description: 'Power & connectiviteit',
+    subcategories: [
+      { slug: 'fast-chargers', name: 'Fast Chargers', nameEn: 'Fast Chargers', description: '20W, 25W, 30W snelladers' },
+      { slug: 'wireless-chargers', name: 'Draadloze Opladers', nameEn: 'Wireless Chargers', description: 'Qi & MagSafe opladers' },
+      { slug: 'usb-c-cables', name: 'USB-C Kabels', nameEn: 'USB-C Cables', description: 'USB-C naar USB-C, USB-C naar Lightning' },
+      { slug: 'magsafe-chargers', name: 'MagSafe Opladers', nameEn: 'MagSafe Chargers', description: 'Magnetische draadloze opladers' },
+      { slug: 'car-chargers', name: 'Auto Opladers', nameEn: 'Car Chargers', description: '12V/24V auto opladers' },
+      { slug: 'charging-stations', name: 'Oplaadstations', nameEn: 'Charging Stations', description: 'Multi-device docking stations' },
+    ]
+  },
+  {
+    slug: 'audio',
+    name: 'Audio Accessoires',
+    nameEn: 'Audio Accessories',
+    description: 'Geluid & audio',
+    subcategories: [
+      { slug: 'wireless-earbuds', name: 'Wireless Earbuds', nameEn: 'Wireless Earbuds', description: 'Bluetooth oordopjes' },
+      { slug: 'headphones', name: 'Koptelefoons', nameEn: 'Headphones', description: 'Over-ear & on-ear hoofdtelefoons' },
+      { slug: 'audio-adapters', name: 'Audio Adapters', nameEn: 'Audio Adapters', description: '3.5mm jack adapters, DAC' },
+      { slug: 'bluetooth-speakers', name: 'Bluetooth Speakers', nameEn: 'Bluetooth Speakers', description: 'Draagbare speakers' },
+      { slug: 'microphones', name: 'Microfoons', nameEn: 'Microphones', description: 'Externe telefoon microfoons' },
+    ]
+  },
+  {
+    slug: 'batteries-power',
+    name: 'Batterijen & Power',
+    nameEn: 'Batteries & Power',
+    description: 'Energie oplossingen',
+    subcategories: [
+      { slug: 'replacement-batteries', name: 'Vervangingsbatterijen', nameEn: 'Replacement Batteries', description: 'Originele kwaliteit batterijen' },
+      { slug: 'powerbanks', name: 'Powerbanks', nameEn: 'Power Banks', description: 'Draagbare accupacks' },
+      { slug: 'battery-cases', name: 'Battery Cases', nameEn: 'Battery Cases', description: 'Hoesjes met ingebouwde accu' },
+      { slug: 'solar-chargers', name: 'Solar Chargers', nameEn: 'Solar Chargers', description: 'Zonne-energie opladers' },
+    ]
+  },
+  {
+    slug: 'car-mounts',
+    name: 'Auto Accessoires',
+    nameEn: 'Car Accessories',
+    description: 'Voor in de auto',
+    subcategories: [
+      { slug: 'car-holders', name: 'Telefoonhouders', nameEn: 'Phone Holders', description: 'Dashboard, ventilatie, zuignap' },
+      { slug: 'car-mounts-wireless', name: 'Draadloze Auto Opladers', nameEn: 'Wireless Car Chargers', description: 'Auto mounts met Qi opladen' },
+      { slug: 'car-adapters', name: 'Auto Adapters', nameEn: 'Car Adapters', description: 'FM transmitters, AUX adapters' },
+    ]
+  },
+  {
+    slug: 'photography',
+    name: 'Fotografie & Video',
+    nameEn: 'Photography & Video',
+    description: 'Camera & media',
+    subcategories: [
+      { slug: 'phone-lenses', name: 'Telefoon Lenzen', nameEn: 'Phone Lenses', description: 'Wide, macro, fisheye lenzen' },
+      { slug: 'gimbals', name: 'Stabilisatoren', nameEn: 'Gimbals & Stabilizers', description: '3-axis gimbals voor video' },
+      { slug: 'tripods', name: 'Statieven & Tripods', nameEn: 'Tripods & Stands', description: 'Flexibele en statische statieven' },
+      { slug: 'selfie-sticks', name: 'Selfie Sticks', nameEn: 'Selfie Sticks', description: 'Verlengbare selfie sticks' },
+      { slug: 'ring-lights', name: 'Ring Lights', nameEn: 'Ring Lights', description: 'LED ring verlichting' },
+    ]
+  },
+  {
+    slug: 'protection-care',
+    name: 'Bescherming & Onderhoud',
+    nameEn: 'Protection & Care',
+    description: 'Onderhoud & reiniging',
+    subcategories: [
+      { slug: 'cleaning-kits', name: 'Reinigingssets', nameEn: 'Cleaning Kits', description: 'Schermreinigers, microvezel' },
+      { slug: 'waterproof-cases', name: 'Waterdichte Hoesjes', nameEn: 'Waterproof Cases', description: 'IP68 waterdichte bescherming' },
+      { slug: 'dust-plugs', name: 'Stofplugjes', nameEn: 'Dust Plugs', description: 'Bescherming voor poorten' },
+      { slug: 'camera-protectors', name: 'Camera Bescherming', nameEn: 'Camera Protectors', description: 'Camera lens beschermers' },
+      { slug: 'skins-decals', name: 'Skins & Stickers', nameEn: 'Skins & Decals', description: 'Decoratieve telefoon skins' },
+    ]
+  },
+  {
+    slug: 'storage-memory',
+    name: 'Opslag & Geheugen',
+    nameEn: 'Storage & Memory',
+    description: 'Data opslag',
+    subcategories: [
+      { slug: 'sd-cards', name: 'Micro SD Kaarten', nameEn: 'Micro SD Cards', description: 'Geheugenkaarten alle formaten' },
+      { slug: 'card-readers', name: 'Kaartlezers', nameEn: 'Card Readers', description: 'USB-C, Lightning card readers' },
+      { slug: 'usb-flash-drives', name: 'USB Sticks', nameEn: 'USB Flash Drives', description: 'OTG USB drives voor telefoon' },
+      { slug: 'external-ssd', name: 'Externe SSD', nameEn: 'External SSD', description: 'Draagbare externe opslag' },
+    ]
+  },
+  {
+    slug: 'gaming',
+    name: 'Gaming Accessoires',
+    nameEn: 'Gaming Accessories',
+    description: 'Voor mobiele gamers',
+    subcategories: [
+      { slug: 'game-controllers', name: 'Game Controllers', nameEn: 'Game Controllers', description: 'Bluetooth gamepads' },
+      { slug: 'cooling-fans', name: 'Cooling Fans', nameEn: 'Cooling Fans', description: 'Telefoon koelventilatoren' },
+      { slug: 'gaming-triggers', name: 'Gaming Triggers', nameEn: 'Gaming Triggers', description: 'L1R1 schietknoppen' },
+      { slug: 'mobile-gaming-grips', name: 'Gaming Grips', nameEn: 'Gaming Grips', description: 'Ergonomische telefoon grips' },
+    ]
+  },
+  {
+    slug: 'smart-gadgets',
+    name: 'Smart Gadgets',
+    nameEn: 'Smart Gadgets',
+    description: 'Slimme accessoires',
+    subcategories: [
+      { slug: 'smart-watches', name: 'Smartwatches', nameEn: 'Smart Watches', description: 'Horloges, bandjes, opladers' },
+      { slug: 'fitness-trackers', name: 'Fitness Trackers', nameEn: 'Fitness Trackers', description: 'Activity trackers accessoires' },
+      { slug: 'smart-tags', name: 'Smart Tags', nameEn: 'Smart Tags', description: 'AirTag, SmartTag, trackers' },
+      { slug: 'stylus-pens', name: 'Stylus Pennen', nameEn: 'Stylus Pens', description: 'Actieve en passieve pennen' },
+    ]
+  },
+  {
+    slug: 'repair-tools-essentials',
+    name: 'Tools - Essentials',
+    nameEn: 'Tools - Essentials',
+    description: 'Essentiële gereedschappen voor reparatie',
+    subcategories: [
+      { slug: 'screwdrivers', name: 'Schroevendraaiers', nameEn: 'Screwdrivers', description: 'Precisie schroevendraaiers' },
+      { slug: 'tweezers', name: 'Pincetten', nameEn: 'Tweezers', description: 'ESD pincetten' },
+      { slug: 'tool-kits', name: 'Gereedschapssets', nameEn: 'Tool Kits', description: 'Complete tool sets' },
+      { slug: 'adhesive-tapes', name: 'Adhesive Tapes', nameEn: 'Adhesive Tapes', description: 'Tape voor montage' },
+      { slug: 'pry-tools', name: 'Pry Tools', nameEn: 'Pry Tools', description: 'Openingsgereedschap' },
+      { slug: 'work-mats', name: 'Werkmatten', nameEn: 'Work Mats', description: 'Antistatische matten' },
+      { slug: 'clamps-holders', name: 'Klemmen & Houders', nameEn: 'Clamps & Holders', description: 'Bevestigingsgereedschap' },
+      { slug: 'pliers-cutters', name: 'Tangen & Knippers', nameEn: 'Pliers & Cutters', description: 'Knip en grijptangen' },
+      { slug: 'repair-fixtures', name: 'Repair Fixtures', nameEn: 'Repair Fixtures', description: 'Reparatiehouders' },
+      { slug: 'display-comparison', name: 'Display Comparison', nameEn: 'Display Comparison Devices', description: 'Display testers' },
+      { slug: 'repair-guides', name: 'Repair Guides', nameEn: 'Repair Guides', description: 'Handleidingen' },
+      { slug: 'dremels-grinders', name: 'Dremels & Grinders', nameEn: 'Dremels & Grinders', description: 'Slijpmachines' },
+      { slug: 'heat-mats', name: 'Heat Mats', nameEn: 'Heat Mats', description: 'Verwarmingsmatten' },
+      { slug: 'disassembly-tools', name: 'Disassembly Tools', nameEn: 'Disassembly Tools', description: 'Demontage tools' },
+    ]
+  },
+  {
+    slug: 'repair-tools-oem',
+    name: 'Tools - OEM Service',
+    nameEn: 'Tools - OEM Service',
+    description: 'Originele service tools',
+    subcategories: [
+      { slug: 'oem-disassembly', name: 'OEM Disassembly', nameEn: 'Disassembly Tools', description: 'Originele demontage' },
+      { slug: 'oem-fixtures', name: 'OEM Repair Fixtures', nameEn: 'Repair Fixtures', description: 'Originele houders' },
+      { slug: 'oem-clamps', name: 'OEM Clamps', nameEn: 'Clamps & Holders', description: 'Originele klemmen' },
+      { slug: 'oem-pliers', name: 'OEM Pliers', nameEn: 'Pliers & Cutters', description: 'Originele tangen' },
+      { slug: 'oem-cleaning', name: 'OEM Cleaning', nameEn: 'Cleaning Supplies', description: 'Originele schoonmaak' },
+      { slug: 'oem-pry', name: 'OEM Pry Tools', nameEn: 'Pry Tools', description: 'Originele pry tools' },
+      { slug: 'oem-screwdrivers', name: 'OEM Screwdrivers', nameEn: 'Screwdrivers', description: 'Originele schroevendraaiers' },
+      { slug: 'oem-heated-plates', name: 'Heated Display Plates', nameEn: 'Heated Display Plates', description: 'Verwarmde platen' },
+    ]
+  },
+  {
+    slug: 'repair-tools-supplies',
+    name: 'Tools - Supplies',
+    nameEn: 'Tools - Supplies',
+    description: 'Werkplaats benodigdheden',
+    subcategories: [
+      { slug: 'cleaning-supplies', name: 'Schoonmaakmiddelen', nameEn: 'Cleaning Supplies', description: 'Reinigingsmiddelen' },
+      { slug: 'safety-supplies', name: 'Veiligheidsmiddelen', nameEn: 'Safety Supplies', description: 'Beschermingsmiddelen' },
+      { slug: 'work-desk-supplies', name: 'Werkplek Supplies', nameEn: 'Work Desk Supplies', description: 'Bureaubenodigdheden' },
+      { slug: 'shop-supplies', name: 'Werkplaats Supplies', nameEn: 'Shop Supplies', description: 'Werkplaats artikelen' },
+      { slug: 'device-accessories', name: 'Device Accessories', nameEn: 'Device Accessories', description: 'Toestel accessoires' },
+      { slug: 'back-cover-repair', name: 'Back Cover Repair', nameEn: 'Back Cover Repair', description: 'Achterkant reparatie' },
+      { slug: 'glues', name: 'Lijmen', nameEn: 'Glues', description: 'Speciale lijmen' },
+      { slug: 'cosmetic-repair', name: 'Cosmetische Reparatie', nameEn: 'Cosmetic Repair', description: 'Oppervlakte reparatie' },
+      { slug: 'glue-removers', name: 'Lijmverwijderaars', nameEn: 'Glue Removers', description: 'Lijmoplossers' },
+    ]
+  },
+  {
+    slug: 'repair-tools-organization',
+    name: 'Tools - Organization',
+    nameEn: 'Tools - Organization',
+    description: 'Organisatie & opbergen',
+    subcategories: [
+      { slug: 'tool-holders', name: 'Tool Holders', nameEn: 'Tool Holders', description: 'Gereedschaphouders' },
+      { slug: 'screw-mats', name: 'Screw Mats', nameEn: 'Screw Mats', description: 'Schroef organizers' },
+      { slug: 'storage-boxes', name: 'Opbergdozen', nameEn: 'Storage Boxes', description: 'Bewaarboxen' },
+      { slug: 'parts-storage', name: 'Parts Storage', nameEn: 'Parts Storage', description: 'Onderdelen opslag' },
+      { slug: 'screen-holders', name: 'Screen Holders', nameEn: 'Screen Holders', description: 'Display houders' },
+      { slug: 'screwbox', name: 'ScrewBox', nameEn: 'ScrewBox', description: 'Schroef organizers' },
+      { slug: 'tape-dispensers', name: 'Tape Dispensers', nameEn: 'Tape Dispensers', description: 'Tape afrollers' },
+      { slug: 'workstations', name: 'Workstations', nameEn: 'Work Stations', description: 'Werkstations' },
+    ]
+  },
+  {
+    slug: 'repair-tools-programmers',
+    name: 'Tools - Programmers',
+    nameEn: 'Tools - Programmers',
+    description: 'Programmeer apparaten',
+    subcategories: [
+      { slug: 'screen-programmers', name: 'Screen Programmers', nameEn: 'Screen Programmers', description: 'Display programmeurs' },
+      { slug: 'battery-programmers', name: 'Battery Programmers', nameEn: 'Battery Programmers', description: 'Batterij programmeurs' },
+      { slug: 'calibrators', name: 'Calibrators', nameEn: 'Calibrators', description: 'Kalibratie apparaten' },
+      { slug: 'face-id-programmers', name: 'Face ID Programmers', nameEn: 'Face ID Programmers', description: 'Face ID reparatie' },
+      { slug: 'ic-programmers', name: 'IC Programmers', nameEn: 'IC Programmers', description: 'Chip programmeurs' },
+      { slug: 'watch-programmers', name: 'Watch Programmers', nameEn: 'Watch Programmers', description: 'Smartwatch programmeurs' },
+    ]
+  },
+  {
+    slug: 'repair-tools-testing',
+    name: 'Tools - Testing',
+    nameEn: 'Tools - Testing Devices',
+    description: 'Test apparatuur',
+    subcategories: [
+      { slug: 'screen-testers', name: 'Screen Testers', nameEn: 'Screen Tester', description: 'Display testers' },
+      { slug: 'battery-testers', name: 'Battery Testers', nameEn: 'Battery Tester', description: 'Batterij testers' },
+      { slug: 'tristar-testers', name: 'Tristar Testers', nameEn: 'Tristar Tester', description: 'Tristar/MFI testers' },
+      { slug: 'mfi-testers', name: 'MFI Testers', nameEn: 'MFI Tester', description: 'MFI testers' },
+      { slug: 'test-cables', name: 'Test Cables', nameEn: 'Test Cables', description: 'Test kabels' },
+      { slug: 'sim-testers', name: 'SIM Testers', nameEn: 'Sim Tester', description: 'SIM testers' },
+      { slug: 'external-chargers', name: 'External Chargers', nameEn: 'External Chargers', description: 'Externe opladers' },
+      { slug: 'cable-testers', name: 'Cable Testers', nameEn: 'Cable Testers', description: 'Kabel testers' },
+      { slug: 'power-testers', name: 'Power Testers', nameEn: 'Power Testers', description: 'Stroom testers' },
+      { slug: 'motherboard-testers', name: 'Motherboard Testers', nameEn: 'Motherboard Testers', description: 'Moederbord testers' },
+      { slug: 'port-testers', name: 'Port Testers', nameEn: 'Port Testers', description: 'Poort testers' },
+    ]
+  },
+  {
+    slug: 'repair-tools-microsoldering',
+    name: 'Tools - Microsoldering',
+    nameEn: 'Tools - Microsoldering',
+    description: 'Microsoldering apparatuur',
+    subcategories: [
+      { slug: 'hot-air-stations', name: 'Hot Air Stations', nameEn: 'Hot Air Stations', description: 'Hetelucht stations' },
+      { slug: 'soldering-stations', name: 'Soldering Stations', nameEn: 'Soldering Stations', description: 'Soldeer stations' },
+      { slug: 'board-holders', name: 'Board Holders', nameEn: 'Board Holders & Preheaters', description: 'Bord houders & voorverwarmers' },
+      { slug: 'power-supply-units', name: 'Power Supply Units', nameEn: 'Power Supply Units', description: 'Voedingen' },
+      { slug: 'thermal-cameras', name: 'Thermal Cameras', nameEn: 'Thermal Cameras', description: 'Warmtecamera\'s' },
+      { slug: 'microscopes', name: 'Microscopen', nameEn: 'Microscopes', description: 'Reparatie microscopen' },
+      { slug: 'laser-stations', name: 'Laser Stations', nameEn: 'Laser Stations', description: 'Laser stations' },
+      { slug: 'microsoldering-testers', name: 'Testing Devices', nameEn: 'Motherboard Testers', description: 'Test apparaten' },
+      { slug: 'microsoldering-power', name: 'Power Testers', nameEn: 'Power Testers', description: 'Stroom testers' },
+      { slug: 'multimeters', name: 'Multimeters', nameEn: 'Multimeters', description: 'Meetapparatuur' },
+      { slug: 'spot-welders', name: 'Spot Welders', nameEn: 'Spot Welders', description: 'Puntlassers' },
+      { slug: 'fume-extractors', name: 'Fume Extractors', nameEn: 'Fume Extractors', description: 'Dampafzuigers' },
+    ]
+  },
+  {
+    slug: 'repair-tools-soldering-supplies',
+    name: 'Tools - Soldering Supplies',
+    nameEn: 'Tools - Soldering Supplies',
+    description: 'Soldering benodigdheden',
+    subcategories: [
+      { slug: 'solder-wires', name: 'Solder Wires', nameEn: 'Solder Wires', description: 'Soldeerdraad' },
+      { slug: 'solder-paste', name: 'Solder Paste', nameEn: 'Solder Paste', description: 'Soldeerpasta' },
+      { slug: 'flux', name: 'Flux', nameEn: 'Flux', description: 'Flux middelen' },
+      { slug: 'solder-mask', name: 'Solder Mask', nameEn: 'Solder Mask', description: 'Solder masker' },
+      { slug: 'solder-wick', name: 'Solder Wick', nameEn: 'Solder Wick', description: 'Ontsoldeerlont' },
+      { slug: 'solder-balls', name: 'Solder Balls', nameEn: 'Solder balls', description: 'Soldeer ballen' },
+      { slug: 'replacement-tips', name: 'Replacement Tips', nameEn: 'Replacement Tips', description: 'Soldeerpunten' },
+      { slug: 'alcohol-dispensers', name: 'Alcohol Dispensers', nameEn: 'Alcohol Dispensers', description: 'Alcohol dispensers' },
+      { slug: 'stencils', name: 'Stencils', nameEn: 'Stencils', description: 'Reballing stencils' },
+      { slug: 'soldering-glue-removers', name: 'Glue Removers', nameEn: 'Glue Removers', description: 'Lijmverwijderaars' },
+      { slug: 'tip-cleaners', name: 'Tip Cleaners', nameEn: 'Tip Cleaners', description: 'Punt reinigers' },
+      { slug: 'other-supplies', name: 'Other Supplies', nameEn: 'Other Supplies', description: 'Overige benodigdheden' },
+      { slug: 'soldering-glues', name: 'Glues', nameEn: 'Glues', description: 'Lijmen' },
+      { slug: 'blades', name: 'Blades', nameEn: 'Blades', description: 'Mesjes' },
+    ]
+  },
+  {
+    slug: 'repair-tools-refurbishing',
+    name: 'Tools - Refurbishing',
+    nameEn: 'Tools - Refurbishing',
+    description: 'Display refurbishing tools',
+    subcategories: [
+      { slug: 'glass-separation', name: 'Glass Separation', nameEn: 'Glass Separation', description: 'Glass scheiding' },
+      { slug: 'cutting-wire', name: 'Cutting Wire', nameEn: 'Cutting Wire', description: 'Snijdraad' },
+      { slug: 'glue-removal', name: 'Glue Removal', nameEn: 'Glue Removal', description: 'Lijm verwijdering' },
+      { slug: 'alignment-moulds', name: 'Alignment Moulds', nameEn: 'Alignment Moulds', description: 'Uitlijning mallen' },
+      { slug: 'lamination-tools', name: 'Lamination Tools', nameEn: 'Lamination Tools', description: 'Laminatie tools' },
+      { slug: 'loca-oca-films', name: 'LOCA/OCA Films', nameEn: 'LOCA/OCA films', description: 'OCA/LOCA films' },
+      { slug: 'pre-cut-adhesives', name: 'Pre-Cut Adhesives', nameEn: 'Pre-Cut Adhesives', description: 'Pre-cut tapes' },
+      { slug: 'refurbishing-alcohol', name: 'Alcohol Dispensers', nameEn: 'Alcohol Dispensers', description: 'Alcohol dispensers' },
+      { slug: 'glass-frames', name: 'Glass & Frames', nameEn: 'Glass & Frames', description: 'Glass en frames' },
+      { slug: 'refurbishing-pliers', name: 'Pliers & Cutters', nameEn: 'Pliers & Cutters', description: 'Tangen' },
+      { slug: 'refurbishing-tweezers', name: 'Tweezers', nameEn: 'Tweezers', description: 'Pincetten' },
+      { slug: 'refurbishing-testers', name: 'Testers', nameEn: 'Testers', description: 'Testers' },
+      { slug: 'refurbishing-kits', name: 'Refurbishing Kits', nameEn: 'Refurbishing Kits', description: 'Refurbish kits' },
+      { slug: 'refurbishing-glues', name: 'Glues', nameEn: 'Glues', description: 'Lijmen' },
+      { slug: 'lcd-separator', name: 'LCD Separator', nameEn: 'LCD Separator', description: 'LCD separators' },
+      { slug: 'refurbishing-clamps', name: 'Refurbishing Clamps', nameEn: 'Refurbishing Clamps & Holders', description: 'Klemmen' },
+      { slug: 'refurbishing-blades', name: 'Refurbishing Blades', nameEn: 'Blades', description: 'Mesjes' },
+    ]
+  },
+  {
+    slug: 'repair-tools-back-glass',
+    name: 'Tools - Back Glass Repair',
+    nameEn: 'Tools - Back Glass Repair',
+    description: 'Back glass reparatie tools',
+    subcategories: [
+      { slug: 'laser-machines', name: 'Laser Machines', nameEn: 'Laser Machines', description: 'Laser machines' },
+      { slug: 'back-glass-fume', name: 'Fume Extractors', nameEn: 'Fume Extractors', description: 'Dampafzuigers' },
+      { slug: 'laser-moulds', name: 'Laser Moulds', nameEn: 'Laser Moulds', description: 'Laser mallen' },
+      { slug: 'back-glass-adhesives', name: 'Pre-Cut Adhesives', nameEn: 'Pre-Cut Adhesives', description: 'Pre-cut tapes' },
+      { slug: 'back-glass-glues', name: 'Back Glass Glues', nameEn: 'Glues', description: 'Speciale lijmen' },
+      { slug: 'glass-removal', name: 'Glass Removal', nameEn: 'Glass Removal', description: 'Glass verwijdering' },
+      { slug: 'glue-cleaning', name: 'Glue Cleaning', nameEn: 'Glue Cleaning', description: 'Lijm reiniging' },
+      { slug: 'back-glass-clamps', name: 'Back Glass Clamps', nameEn: 'Clamps and Holders', description: 'Klemmen en houders' },
+    ]
+  },
+  {
+    slug: 'universal-components',
+    name: 'Universal Components',
+    nameEn: 'Universal Components',
+    description: 'Universele onderdelen',
+    subcategories: [
+      { slug: 'clicker-switches', name: 'Clicker Switches', nameEn: 'Clicker Switches', description: 'Click switches' },
+      { slug: 'universal-board-components', name: 'Universal Board Components', nameEn: 'Universal Board Components', description: 'Universele bord componenten' },
+    ]
+  },
+  {
+    slug: 'tool-brands',
+    name: 'Tool Brands',
+    nameEn: 'Tool Brands',
+    description: 'Bekende tool merken',
+    subcategories: [
+      { slug: 'aixun', name: 'Aixun', nameEn: 'Aixun', description: 'Aixun tools' },
+      { slug: 'amaoe', name: 'Amaoe', nameEn: 'Amaoe', description: 'Amaoe tools' },
+      { slug: 'amtech', name: 'Amtech', nameEn: 'Amtech', description: 'Amtech tools' },
+      { slug: 'arctic', name: 'Arctic', nameEn: 'Arctic', description: 'Arctic products' },
+      { slug: 'ay', name: 'AY', nameEn: 'AY', description: 'AY tools' },
+      { slug: 'bnr', name: 'B&R', nameEn: 'B&R', description: 'B&R tools' },
+      { slug: 'baiyi', name: 'Baiyi', nameEn: 'Baiyi', description: 'Baiyi tools' },
+      { slug: 'best', name: 'Best', nameEn: 'Best', description: 'Best tools' },
+      { slug: 'cpb', name: 'CPB', nameEn: 'CPB', description: 'CPB tools' },
+      { slug: 'dl', name: 'DL', nameEn: 'DL', description: 'DL tools' },
+      { slug: 'dlzwin', name: 'DLZ Win', nameEn: 'DLZ Win', description: 'DLZ Win tools' },
+      { slug: 'dobe', name: 'Dobe', nameEn: 'Dobe', description: 'Dobe tools' },
+      { slug: 'dottorpodx', name: 'Dottorpodx', nameEn: 'Dottorpodx', description: 'Dottorpodx tools' },
+      { slug: 'falcon', name: 'Falcon', nameEn: 'Falcon', description: 'Falcon tools' },
+      { slug: 'ifixit', name: 'IFixIt', nameEn: 'IFixIt', description: 'IFixIt tools' },
+      { slug: 'itestbox', name: 'iTestBox', nameEn: 'iTestBox', description: 'iTestBox testers' },
+      { slug: 'i2c', name: 'i2C', nameEn: 'i2C', description: 'i2C tools' },
+      { slug: 'jakemy', name: 'Jakemy', nameEn: 'Jakemy', description: 'Jakemy tools' },
+      { slug: 'jbc', name: 'JBC', nameEn: 'JBC', description: 'JBC soldeer' },
+      { slug: 'jcid', name: 'JCID', nameEn: 'JCID', description: 'JCID programmers' },
+      { slug: 'jetclean', name: 'JetClean', nameEn: 'JetClean', description: 'JetClean products' },
+      { slug: 'kaisi', name: 'Kaisi', nameEn: 'Kaisi', description: 'Kaisi tools' },
+      { slug: 'laserpod', name: 'LaserPod', nameEn: 'LaserPod', description: 'LaserPod' },
+      { slug: 'lb-tool', name: 'LB Tool', nameEn: 'LB Tool', description: 'LB Tool' },
+      { slug: 'maant', name: 'MaAnt', nameEn: 'MaAnt', description: 'MaAnt tools' },
+      { slug: 'mechanic', name: 'Mechanic', nameEn: 'Mechanic', description: 'Mechanic tools' },
+      { slug: 'mijing', name: 'Mijing', nameEn: 'Mijing', description: 'Mijing tools' },
+      { slug: 'm-triangel', name: 'M-Triangel', nameEn: 'M-Triangel', description: 'M-Triangel' },
+      { slug: 'nanch', name: 'Nanch', nameEn: 'Nanch', description: 'Nanch tools' },
+      { slug: 'niceseem', name: 'Niceseem', nameEn: 'Niceseem', description: 'Niceseem' },
+      { slug: 'oca-master', name: 'OCA Master', nameEn: 'OCA Master', description: 'OCA Master' },
+      { slug: 'polartronix', name: 'PolarTronix', nameEn: 'PolarTronix', description: 'PolarTronix' },
+      { slug: 'ppd', name: 'PPD', nameEn: 'PPD', description: 'PPD tools' },
+      { slug: 'qianli', name: 'Qianli', nameEn: 'Qianli', description: 'Qianli tools' },
+      { slug: 'quick', name: 'Quick', nameEn: 'Quick', description: 'Quick stations' },
+      { slug: 'refox', name: 'Refox', nameEn: 'Refox', description: 'Refox tools' },
+      { slug: 'relife', name: 'Relife', nameEn: 'Relife', description: 'Relife tools' },
+      { slug: 'rogers', name: 'Rogers', nameEn: 'Rogers', description: 'Rogers' },
+      { slug: 'smartmod', name: 'Smartmod', nameEn: 'Smartmod', description: 'Smartmod' },
+      { slug: 'ssgp', name: 'SSGP', nameEn: 'SSGP', description: 'SSGP' },
+      { slug: 'sunshine', name: 'Sunshine', nameEn: 'Sunshine', description: 'Sunshine tools' },
+      { slug: 'tapebase', name: 'Tapebase', nameEn: 'Tapebase', description: 'Tapebase' },
+      { slug: 'tbk', name: 'TBK', nameEn: 'TBK', description: 'TBK laminators' },
+      { slug: 'techspray', name: 'TechSpray', nameEn: 'TechSpray', description: 'TechSpray' },
+      { slug: 'tesa', name: 'Tesa', nameEn: 'Tesa', description: 'Tesa tapes' },
+      { slug: 'wera', name: 'Wera', nameEn: 'Wera', description: 'Wera tools' },
+      { slug: 'wiha', name: 'Wiha', nameEn: 'Wiha', description: 'Wiha tools' },
+      { slug: 'wlxy', name: 'WLXY', nameEn: 'WLXY', description: 'WLXY' },
+      { slug: 'wolve', name: 'Wolve', nameEn: 'Wolve', description: 'Wolve' },
+      { slug: 'wowstick', name: 'Wowstick', nameEn: 'Wowstick', description: 'Wowstick' },
+      { slug: 'wrepair', name: 'Wrepair', nameEn: 'Wrepair', description: 'Wrepair' },
+      { slug: 'wylie', name: 'Wylie', nameEn: 'Wylie', description: 'Wylie' },
+      { slug: 'xinzhizao', name: 'XinZhiZao', nameEn: 'XinZhiZao', description: 'XinZhiZao' },
+      { slug: 'ycs', name: 'YCS', nameEn: 'YCS', description: 'YCS' },
+      { slug: 'zhanlida', name: 'Zhanlida', nameEn: 'Zhanlida', description: 'Zhanlida' },
+      { slug: '2uul', name: '2uul', nameEn: '2uul', description: '2uul' },
+      { slug: '3m', name: '3M', nameEn: '3M', description: '3M products' },
+    ]
+  },
+];
+
+// ==================== PC PARTS CATEGORY SYSTEM ====================
+export const pcPartsCategories: AccessoryCategory[] = [
+  {
+    slug: 'pc-components',
+    name: 'PC Componenten',
+    nameEn: 'PC Components',
+    description: 'Interne PC componenten',
+    subcategories: [
+      { slug: 'processors', name: 'Processoren (CPU)', nameEn: 'Processors', description: 'Intel & AMD processors' },
+      { slug: 'motherboards', name: 'Moederborden', nameEn: 'Motherboards', description: 'ATX, Micro-ATX, Mini-ITX' },
+      { slug: 'graphics-cards', name: 'Grafische Kaarten (GPU)', nameEn: 'Graphics Cards', description: 'NVIDIA & AMD videokaarten' },
+      { slug: 'memory-ram', name: 'Geheugen (RAM)', nameEn: 'Memory', description: 'DDR4 & DDR5 RAM' },
+      { slug: 'storage', name: 'Opslag (HDD/SSD)', nameEn: 'Storage', description: 'SSD, NVMe, Harde schijven' },
+      { slug: 'power-supplies', name: 'Voedingen (PSU)', nameEn: 'Power Supplies', description: 'ATX voedingen' },
+      { slug: 'cases', name: 'PC Behuizingen', nameEn: 'PC Cases', description: 'Tower, Mini-ITX, Micro-ATX' },
+      { slug: 'cpu-coolers', name: 'CPU Koelers', nameEn: 'CPU Coolers', description: 'Air & Liquid cooling' },
+    ]
+  },
+  {
+    slug: 'pc-internal',
+    name: 'Interne Onderdelen',
+    nameEn: 'Internal Parts',
+    description: 'Overige interne componenten',
+    subcategories: [
+      { slug: 'case-fans', name: 'Case Fans', nameEn: 'Case Fans', description: '120mm, 140mm fans' },
+      { slug: 'thermal-paste', name: 'Koelpasta', nameEn: 'Thermal Paste', description: 'Thermische compound' },
+      { slug: 'cables-internal', name: 'Interne Kabels', nameEn: 'Internal Cables', description: 'SATA, power, fan kabels' },
+      { slug: 'network-cards', name: 'Netwerkkaarten', nameEn: 'Network Cards', description: 'WiFi & Ethernet kaarten' },
+    ]
+  },
+];
+
+// ==================== PC ACCESSORIES CATEGORY SYSTEM ====================
+export const pcAccessoryCategories: AccessoryCategory[] = [
+  {
+    slug: 'drawing-tablets',
+    name: 'Tekentablets',
+    nameEn: 'Drawing Tablets',
+    description: 'Wacom, Huion, XP-Pen',
+    subcategories: [
+      { slug: 'wacom', name: 'Wacom', nameEn: 'Wacom', description: 'Wacom tablets' },
+      { slug: 'huion', name: 'Huion', nameEn: 'Huion', description: 'Huion tablets' },
+      { slug: 'xp-pen', name: 'XP-Pen', nameEn: 'XP-Pen', description: 'XP-Pen tablets' },
+    ],
+  },
+  {
+    slug: 'pc-monitors',
+    name: 'Monitoren',
+    nameEn: 'Monitors',
+    description: 'Beeldschermen',
+    subcategories: [
+      { slug: 'gaming-monitors', name: 'Gaming Monitoren', nameEn: 'Gaming Monitors', description: '144Hz, 240Hz, 1ms' },
+      { slug: '4k-monitors', name: '4K Monitoren', nameEn: '4K Monitors', description: 'Ultra HD beeldschermen' },
+      { slug: 'ultrawide', name: 'Ultrawide', nameEn: 'Ultrawide', description: '21:9 & 32:9 monitoren' },
+      { slug: 'monitor-arms', name: 'Monitor Armen', nameEn: 'Monitor Arms', description: 'Beeldscherm steunen' },
+    ]
+  },
+  {
+    slug: 'pc-audio',
+    name: 'PC Audio',
+    nameEn: 'PC Audio',
+    description: 'Geluid voor PC',
+    subcategories: [
+      { slug: 'pc-speakers', name: 'PC Speakers', nameEn: 'PC Speakers', description: '2.0, 2.1, 5.1 sets' },
+      { slug: 'gaming-headsets', name: 'Gaming Headsets', nameEn: 'Gaming Headsets', description: 'USB & 3.5mm headsets' },
+      { slug: 'sound-cards', name: 'Geluidskaarten', nameEn: 'Sound Cards', description: 'Interne & externe' },
+    ]
+  },
+  {
+    slug: 'pc-connectivity',
+    name: 'PC Connectiviteit',
+    nameEn: 'PC Connectivity',
+    description: 'Kabels & adapters',
+    subcategories: [
+      { slug: 'hdmi-cables', name: 'HDMI Kabels', nameEn: 'HDMI Cables', description: 'HDMI 2.0, 2.1' },
+      { slug: 'displayport', name: 'DisplayPort Kabels', nameEn: 'DisplayPort Cables', description: 'DP 1.4, DP 2.0' },
+      { slug: 'usb-cables', name: 'USB Kabels', nameEn: 'USB Cables', description: 'USB-A, USB-C hubs' },
+      { slug: 'ethernet-cables', name: 'Ethernet Kabels', nameEn: 'Ethernet Cables', description: 'Cat5e, Cat6, Cat6a' },
+    ]
+  },
+];
+
+// Compatibility mapping: which accessory categories work with which brands/models
+export const accessoryCompatibility = {
+  'apple': ['iphone', 'ipad', 'apple-watch', 'airpods'],
+  'samsung': ['galaxy-s', 'galaxy-a', 'galaxy-z', 'galaxy-tab'],
+  'google': ['pixel'],
+  'huawei': ['huawei-phones', 'huawei-tablets'],
+  'xiaomi': ['xiaomi-phones', 'redmi', 'poco'],
+  'motorola': ['moto-g', 'moto-edge', 'moto-razr'],
+  'oneplus': ['oneplus-phones'],
+  'oppo': ['oppo-phones', 'oppo-find', 'oppo-reno'],
+};

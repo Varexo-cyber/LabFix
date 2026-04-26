@@ -80,3 +80,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// Delete a subscriber (admin only)
+export async function DELETE(request: NextRequest) {
+  try {
+    const sql = getDb();
+    await ensureTable(sql);
+    
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Subscriber ID is required' }, { status: 400 });
+    }
+    
+    // Soft delete - mark as inactive instead of hard delete
+    await sql`UPDATE newsletter_subscribers SET is_active = false WHERE id = ${id}`;
+    
+    return NextResponse.json({ success: true, message: 'Subscriber removed' });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

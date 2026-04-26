@@ -67,7 +67,7 @@ export default function HomePage() {
       features: [
         { label: locale === 'nl' ? 'Volledig Getest' : 'Fully Tested', sub: locale === 'nl' ? '& Functioneel' : '& Functional' },
         { label: locale === 'nl' ? 'Resale' : 'Resale', sub: locale === 'nl' ? 'Klaar' : 'Ready' },
-        { label: locale === 'nl' ? '60-Dagen' : '60-Day', sub: locale === 'nl' ? 'Retouren' : 'Returns' }
+        { label: locale === 'nl' ? 'Retour' : 'Returns', sub: locale === 'nl' ? 'Mogelijk' : 'Possible' }
       ],
       cta: locale === 'nl' ? 'Pre-order Sealed Apple Deals' : 'Pre-order Sealed Apple Deals',
       link: '/products?brand=apple',
@@ -81,24 +81,24 @@ export default function HomePage() {
       features: [
         { label: 'OEM', sub: 'Quality' },
         { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
-        { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: '12 Months' }
+        { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
       ],
       cta: locale === 'nl' ? 'Bekijk iPhone Onderdelen' : 'Shop iPhone Parts',
       link: '/products?brand=apple',
       image: '/images/banners/iphone-parts.jpg'
     },
     {
-      badge: 'Repair Tools',
-      badgeIcon: '🛠️',
-      title: locale === 'nl' ? 'Professionele Reparatie Tools' : 'Professional Repair Tools & Equipment',
-      subtitle: locale === 'nl' ? 'Screwdrivers • Heat Guns • Suction Cups • Opening Tools' : 'Screwdrivers • Heat Guns • Suction Cups • Opening Tools',
+      badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
+      badgeIcon: '�',
+      title: locale === 'nl' ? 'Professionele Reparatie Service' : 'Professional Repair Service',
+      subtitle: locale === 'nl' ? 'Smartphones • Tablets • Laptops • Snelle Service' : 'Smartphones • Tablets • Laptops • Fast Service',
       features: [
-        { label: locale === 'nl' ? 'Professioneel' : 'Pro', sub: 'Grade' },
-        { label: locale === 'nl' ? 'Duurzaam' : 'Durable', sub: 'Quality' },
-        { label: locale === 'nl' ? 'Compleet' : 'Complete', sub: 'Sets' }
+        { label: locale === 'nl' ? 'Expert' : 'Expert', sub: 'Technici' },
+        { label: locale === 'nl' ? 'Snel' : 'Fast', sub: 'Service' },
+        { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
       ],
-      cta: locale === 'nl' ? 'Bekijk Gereedschap' : 'Shop Tools',
-      link: '/products?brand=tools',
+      cta: locale === 'nl' ? 'Maak Afspraak' : 'Book Appointment',
+      link: '/repair',
       image: '/images/banners/tools.jpg'
     }
   ];
@@ -112,54 +112,53 @@ export default function HomePage() {
             {heroSlides.map((slide, index) => (
               <div
                 key={index}
-                className={`grid md:grid-cols-2 gap-0 absolute inset-0 transition-all duration-700 ease-in-out ${
-                  index === activeSlide ? 'opacity-100 translate-x-0 z-10' : 'opacity-0 translate-x-full z-0 pointer-events-none'
-                } ${index < activeSlide ? '-translate-x-full' : ''}`}
+                className={`transition-all duration-700 ease-in-out ${
+                  index === activeSlide ? 'opacity-100 translate-x-0 z-10 relative' : 'opacity-0 translate-x-full z-0 pointer-events-none absolute inset-0'
+                } ${index < activeSlide && index !== activeSlide ? '-translate-x-full' : ''}`}
               >
-                {/* Left Content */}
-                <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-                  <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-medium mb-4">
-                    <span className="text-lg">{slide.badgeIcon}</span>
-                    <span className="uppercase tracking-wider">{slide.badge}</span>
+                <div className="grid md:grid-cols-2 gap-0">
+                  {/* Left Content */}
+                  <div className="p-6 md:p-12 lg:p-16 flex flex-col justify-center order-1">
+                    <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-medium mb-4">
+                      <span className="text-lg">{slide.badgeIcon}</span>
+                      <span className="uppercase tracking-wider">{slide.badge}</span>
+                    </div>
+                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                      {slide.title}
+                    </h1>
+                    <p className="text-gray-600 text-base md:text-lg mb-6">
+                      {slide.subtitle}
+                    </p>
+
+                    {/* Features */}
+                    <div className="flex flex-wrap gap-4 md:gap-6 mb-6 md:mb-8">
+                      {slide.features.map((feature, i) => (
+                        <div key={i} className="text-center">
+                          <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
+                          <p className="text-xs text-gray-500">{feature.sub}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Link
+                      href={slide.link}
+                      className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-all w-fit"
+                    >
+                      {slide.cta} <ArrowRight size={18} />
+                    </Link>
                   </div>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                    {slide.title}
-                  </h1>
-                  <p className="text-gray-600 text-lg mb-6">
-                    {slide.subtitle}
-                  </p>
-                  
-                  {/* Features */}
-                  <div className="flex flex-wrap gap-6 mb-8">
-                    {slide.features.map((feature, i) => (
-                      <div key={i} className="text-center">
-                        <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
-                        <p className="text-xs text-gray-500">{feature.sub}</p>
-                      </div>
-                    ))}
+
+                  {/* Right Image - Full coverage */}
+                  <div className="relative h-[250px] md:h-full md:min-h-[500px] order-2">
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                   </div>
-                  
-                  <Link
-                    href={slide.link}
-                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-all w-fit"
-                  >
-                    {slide.cta} <ArrowRight size={18} />
-                  </Link>
-                </div>
-                
-                {/* Right Image - Full coverage */}
-                <div className="relative h-full min-h-[400px] md:min-h-[500px]">
-                  <img 
-                    src={slide.image} 
-                    alt={slide.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
                 </div>
               </div>
             ))}
-            
-            {/* Empty space for absolute slides */}
-            <div className="h-[500px] md:h-[550px]"></div>
             
             {/* Slide Indicators */}
             <div className="flex justify-center gap-2 pb-6 relative z-20">
@@ -185,7 +184,7 @@ export default function HomePage() {
             {[
               { icon: <BadgeCheck size={20} />, text: locale === 'nl' ? 'Kwaliteitsgarantie' : 'Quality Guarantee' },
               { icon: <Clock size={20} />, text: locale === 'nl' ? 'Snelle levering 1-3 dagen' : 'Fast delivery 1-3 days' },
-              { icon: <HeartHandshake size={20} />, text: locale === 'nl' ? 'Klantenservice 09:00-17:00' : 'Customer service 09:00-17:00' },
+              { icon: <HeartHandshake size={20} />, text: locale === 'nl' ? 'Veilige betaling' : 'Secure payment' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-gray-600">
                 <span className="text-primary-500">{item.icon}</span>
@@ -353,8 +352,8 @@ export default function HomePage() {
             {[
               {
                 icon: <Shield size={32} />,
-                title: locale === 'nl' ? 'Lifetime Garantie' : 'Lifetime Warranty',
-                desc: locale === 'nl' ? 'Op al onze reparatieonderdelen. Geen zorgen, altijd vervanging.' : 'On all our repair parts. No worries, always replacement.',
+                title: locale === 'nl' ? 'Premium Kwaliteit' : 'Premium Quality',
+                desc: locale === 'nl' ? 'Topklasse reparatieonderdelen. Streng gecontroleerd.' : 'Top-tier repair parts. Rigorously tested.',
                 image: '/images/products/iphone-screen.jpg',
                 bg: 'bg-gradient-to-br from-blue-500 to-blue-600'
               },
@@ -432,15 +431,15 @@ export default function HomePage() {
               },
               { 
                 icon: <ShieldCheck size={40} />, 
-                stat: 'Lifetime', 
-                title: locale === 'nl' ? 'Garantie' : 'Warranty',
-                desc: locale === 'nl' ? 'Levenslange garantie op reparaties' : 'Lifetime warranty on repairs'
+                stat: locale === 'nl' ? 'A+' : 'A+',
+                title: locale === 'nl' ? 'Kwaliteit' : 'Quality',
+                desc: locale === 'nl' ? 'Uitstekende kwaliteit onderdelen' : 'Excellent quality parts'
               },
               { 
                 icon: <Headphones size={40} />, 
-                stat: '09-17', 
+                stat: locale === 'nl' ? 'Support' : 'Support',
                 title: locale === 'nl' ? 'Service' : 'Service',
-                desc: locale === 'nl' ? 'Klantenservice via mail en telefoon' : 'Customer service via email and phone'
+                desc: locale === 'nl' ? 'Technische ondersteuning via mail' : 'Technical support via email'
               },
             ].map((item, i) => (
               <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">
@@ -452,33 +451,6 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Commercial Banner */}
-          <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 text-center text-white">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              {locale === 'nl' 
-                ? 'Laat uw toestel vakkundig repareren!' 
-                : 'Get your device repaired by experts!'}
-            </h3>
-            <p className="text-white/80 mb-8 max-w-xl mx-auto">
-              {locale === 'nl'
-                ? 'Van schermreparaties tot batterijvervanging. Ons ervaren team helpt u snel en vakkundig. Ook voor onderdelen zelf repareren!'
-                : 'From screen repairs to battery replacement. Our experienced team helps you quickly and professionally. Also for DIY parts!'}
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link 
-                href="/account/register" 
-                className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all inline-flex items-center gap-2"
-              >
-                {locale === 'nl' ? 'Gratis Account Aanmaken' : 'Create Free Account'} <ArrowRight size={18} />
-              </Link>
-              <Link 
-                href="/products" 
-                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-all"
-              >
-                {locale === 'nl' ? 'Bekijk Assortiment' : 'View Products'}
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
       </ScrollReveal>

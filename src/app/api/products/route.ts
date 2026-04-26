@@ -14,16 +14,26 @@ async function ensureTable(sql: any) {
       description TEXT DEFAULT '',
       description_en TEXT DEFAULT '',
       price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      original_price DECIMAL(10,2),
       compare_price DECIMAL(10,2),
       category TEXT NOT NULL,
       subcategory TEXT DEFAULT '',
+      brand TEXT DEFAULT '',
       sku TEXT UNIQUE NOT NULL,
       image TEXT DEFAULT '',
       images TEXT[] DEFAULT '{}',
       in_stock BOOLEAN DEFAULT true,
+      stock INTEGER DEFAULT 0,
       featured BOOLEAN DEFAULT false,
       is_new BOOLEAN DEFAULT false,
-      created_at TIMESTAMP DEFAULT NOW()
+      status TEXT DEFAULT 'active',
+      condition TEXT DEFAULT 'new',
+      compatible_models TEXT[] DEFAULT '{}',
+      ms_sku TEXT,
+      ms_source TEXT,
+      ms_last_sync TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
 }

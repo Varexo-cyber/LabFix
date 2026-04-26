@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment } from '@/lib/store';
 import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench } from 'lucide-react';
 import ImageSlideshow from '@/components/ImageSlideshow';
+import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
 import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
 import { normalizeImageUrl } from '@/lib/utils';
@@ -32,18 +33,22 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [dbCategories, setDbCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [dbInitialized, setDbInitialized] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [creatingNews, setCreatingNews] = useState(false);
   const [newsForm, setNewsForm] = useState({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', images: [] as string[], published: true });
   const [uploadingNewsImage, setUploadingNewsImage] = useState(false);
+  const [savingNews, setSavingNews] = useState(false);
+  const [newsToast, setNewsToast] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({show: false, message: '', type: 'success'});
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -93,6 +98,28 @@ export default function AdminPage() {
     setAuthenticated(isAdminAuthenticated());
     loadData();
   }, []);
+
+  // Load database categories for product forms
+  useEffect(() => {
+    const loadDbCategories = async () => {
+      try {
+        const res = await fetch('/api/brands');
+        const data = await res.json();
+        if (data.success && data.brands.length > 0) {
+          setDbCategories(data.brands);
+        }
+      } catch (error) {
+        console.log('Using fallback categories');
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    loadDbCategories();
+  }, []);
+
+  // Use database categories if available, otherwise fallback to hardcoded
+  const productCategories = dbCategories.length > 0 ? dbCategories : brandCategories;
 
   useEffect(() => {
     if (activeTab === 'newsletter') {
@@ -234,7 +261,9 @@ export default function AdminPage() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
           <div className="text-center mb-6">
-            <img src="/logo.png" alt="LabFix" className="h-12 w-auto mx-auto mb-4" />
+            <div className="bg-white rounded-lg px-4 py-2 shadow-sm inline-block mb-4">
+              <img src="/logo.png" alt="LabFix" className="h-12 w-auto mx-auto" />
+            </div>
             <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
             <p className="text-gray-500 text-sm">LabFix Beheer</p>
           </div>
@@ -318,6 +347,22 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteSubscriber = async (id: string) => {
+    if (!confirm('Weet je zeker dat je deze abonnee wilt verwijderen?')) return;
+    
+    try {
+      const res = await fetch(`/api/newsletter?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSubscribers(prev => prev.filter(sub => sub.id !== id));
+        alert('Abonnee verwijderd');
+      } else {
+        alert('Verwijderen mislukt');
+      }
+    } catch {
+      alert('Verwijderen mislukt');
+    }
+  };
+
   // Repair appointment handlers
   const handleApproveRepair = async (id: string) => {
     try {
@@ -374,7 +419,9 @@ export default function AdminPage() {
       <div className="bg-primary-600 text-white animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src="/logo.png" alt="LabFix" className="h-8 w-auto brightness-0 invert" />
+            <div className="bg-white rounded-lg px-3 py-1 shadow-sm">
+              <img src="/logo.png" alt="LabFix" className="h-10 w-auto" />
+            </div>
             <span className="text-sm font-medium text-blue-200">Admin</span>
           </div>
           <div className="flex items-center gap-4">
@@ -415,6 +462,9 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('contact')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'contact' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <MessageCircle size={16} /> Contact ({contactMessages.filter(m => m.status === 'unread').length})
             </button>
+            <button onClick={() => setActiveTab('import')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'import' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <Database size={16} /> Import
+            </button>
           </div>
         </div>
       </div>
@@ -451,6 +501,13 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* ============= MOBILESENTRIX IMPORT TAB ============= */}
+        {activeTab === 'import' && (
+          <div className="max-w-7xl mx-auto px-4 pb-8 animate-fade-in-up">
+            <MobileSentrixImport />
+          </div>
+        )}
 
         {/* ============= PRODUCTS TAB ============= */}
         {activeTab === 'products' && (<div className="animate-fade-in-up">
@@ -504,13 +561,17 @@ export default function AdminPage() {
                       value={formData.category.split('/')[0] || formData.category} 
                       onChange={(e) => {
                         const brand = e.target.value;
-                        const firstSub = brandCategories.find(b => b.slug === brand)?.subcategories[0]?.slug || '';
+                        const firstSub = productCategories.find(b => b.slug === brand)?.subcategories?.[0]?.slug || '';
                         setFormData({ ...formData, category: brand, subcategory: firstSub });
                       }}
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                      {brandCategories.map((brand) => (
-                        <option key={brand.slug} value={brand.slug}>{brand.name}</option>
-                      ))}
+                      {categoriesLoading ? (
+                        <option>Loading...</option>
+                      ) : (
+                        productCategories.map((brand) => (
+                          <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                        ))
+                      )}
                     </select>
                   </div>
                   <div>
@@ -520,7 +581,7 @@ export default function AdminPage() {
                       onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
                       <option value="">-- Kies productlijn --</option>
-                      {(brandCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category))?.subcategories || []).map((sub) => (
+                      {(productCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category))?.subcategories || []).map((sub: any) => (
                         <option key={sub.slug} value={sub.slug}>{sub.name}</option>
                       ))}
                     </select>
@@ -533,9 +594,9 @@ export default function AdminPage() {
                       className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
                       <option value="">-- Optioneel --</option>
                       {(() => {
-                        const brand = brandCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category));
-                        const sub = brand?.subcategories.find(s => s.slug === formData.subcategory);
-                        return (sub?.models || []).map((model) => (
+                        const brand = productCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category));
+                        const sub = brand?.subcategories.find((s: any) => s.slug === formData.subcategory);
+                        return (sub?.models || []).map((model: any) => (
                           <option key={model.slug} value={model.slug}>{model.name}</option>
                         ));
                       })()}
@@ -684,9 +745,13 @@ export default function AdminPage() {
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
               className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500">
               <option value="">Alle categorieën</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.slug}>{cat.name}</option>
-              ))}
+              {categoriesLoading ? (
+                <option>Laden...</option>
+              ) : (
+                productCategories.map((brand) => (
+                  <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                ))
+              )}
             </select>
           </div>
           <button onClick={startCreate} className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 transition-colors flex items-center gap-2 text-sm font-semibold">
@@ -1047,12 +1112,21 @@ export default function AdminPage() {
                 <h3 className="font-semibold text-gray-700 mb-4">Abonnees ({subscribers.length})</h3>
                 <div className="overflow-y-auto max-h-96">
                   {subscribers.map((sub) => (
-                    <div key={sub.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                    <div key={sub.id} className="flex justify-between items-center py-2 border-b last:border-0 group">
                       <div>
                         <p className="font-medium text-sm">{sub.email}</p>
                         <p className="text-xs text-gray-500">{sub.company_name}</p>
                       </div>
-                      <span className="text-xs text-gray-400">{new Date(sub.subscribed_at).toLocaleDateString('nl-NL')}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">{new Date(sub.subscribed_at).toLocaleDateString('nl-NL')}</span>
+                        <button
+                          onClick={() => handleDeleteSubscriber(sub.id)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                          title="Verwijder abonnee"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {subscribers.length === 0 && (
@@ -1235,22 +1309,45 @@ export default function AdminPage() {
                     <button
                       onClick={async () => {
                         if (!newsForm.title) { alert('Vul een titel in'); return; }
-                        if (editingNews) {
-                          await updateNews({ ...editingNews, ...newsForm });
-                        } else {
-                          await createNews(newsForm);
+                        setSavingNews(true);
+                        try {
+                          if (editingNews) {
+                            await updateNews({ ...editingNews, ...newsForm });
+                            setNewsToast({show: true, message: 'Nieuwsartikel succesvol bijgewerkt!', type: 'success'});
+                          } else {
+                            await createNews(newsForm);
+                            setNewsToast({show: true, message: 'Nieuwsartikel succesvol aangemaakt!', type: 'success'});
+                          }
+                          const articles = await fetchNews();
+                          setNewsArticles(articles);
+                          setTimeout(() => {
+                            setCreatingNews(false);
+                            setEditingNews(null);
+                            setNewsForm({ title: '', titleEn: '', summary: '', summaryEn: '', content: '', contentEn: '', image: '', images: [], published: true });
+                          }, 500);
+                        } catch (error) {
+                          setNewsToast({show: true, message: 'Er is iets misgegaan. Probeer opnieuw.', type: 'error'});
+                        } finally {
+                          setSavingNews(false);
+                          setTimeout(() => setNewsToast(prev => ({...prev, show: false})), 3000);
                         }
-                        const articles = await fetchNews();
-                        setNewsArticles(articles);
-                        setCreatingNews(false);
-                        setEditingNews(null);
                       }}
-                      className="bg-primary-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-600 flex items-center gap-2"
+                      disabled={savingNews}
+                      className="bg-primary-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-600 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                     >
-                      <Save size={16} /> {editingNews ? 'Opslaan' : 'Aanmaken'}
+                      {savingNews ? (
+                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> {editingNews ? 'Opslaan...' : 'Aanmaken...'}</>
+                      ) : (
+                        <><Save size={16} /> {editingNews ? 'Opslaan' : 'Aanmaken'}</>
+                      )}
                     </button>
-                    <button onClick={() => { setCreatingNews(false); setEditingNews(null); }}
-                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300">Annuleren</button>
+                    <button 
+                      onClick={() => { setCreatingNews(false); setEditingNews(null); }}
+                      disabled={savingNews}
+                      className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                    >
+                      Annuleren
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1650,7 +1747,22 @@ export default function AdminPage() {
           </div>
         )}
 
+
       </div>
+
+      {/* Toast Notification */}
+      {newsToast.show && (
+        <div className={`fixed top-4 right-4 z-50 transition-all duration-500 transform ${newsToast.show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl ${newsToast.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white min-w-[300px]`}>
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              {newsToast.type === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
+            </div>
+            <div>
+              <p className="font-semibold">{newsToast.message}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Custom Confirmation Modal */}
       {confirmModal.isOpen && (

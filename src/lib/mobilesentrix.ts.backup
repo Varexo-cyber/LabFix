@@ -1,0 +1,247 @@
+// Mobile Sentrix API Integration
+// API Documentation: https://docs.mobilesentrix.com
+
+const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu';
+const CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
+
+interface ApiConfig {
+  baseUrl: string;
+  consumerKey: string;
+}
+
+// Mobile Sentrix Product Structure
+export interface MSProduct {
+  id: string;
+  sku: string;
+  name: string;
+  description?: string;
+  category: string;
+  subcategory?: string;
+  brand: string;
+  model?: string;
+  price: number;
+  currency: string;
+  stock_quantity: number;
+  stock_status: 'in_stock' | 'out_of_stock' | 'backorder';
+  images: string[];
+  specifications?: Record<string, string>;
+  condition?: 'new' | 'refurbished' | 'oem';
+  warranty_months?: number;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  barcode?: string;
+  compatible_models?: string[];
+  last_updated: string;
+}
+
+export interface MSInventoryItem {
+  product_id: string;
+  sku: string;
+  quantity: number;
+  reserved_quantity: number;
+  available_quantity: number;
+  warehouse_location?: string;
+  last_synced: string;
+}
+
+export interface MSPriceUpdate {
+  product_id: string;
+  sku: string;
+  old_price: number;
+  new_price: number;
+  currency: string;
+  effective_date: string;
+}
+
+// API Client Class
+class MobileSentrixApi {
+  private config: ApiConfig;
+
+  constructor(config?: Partial<ApiConfig>) {
+    this.config = {
+      baseUrl: config?.baseUrl || API_BASE_URL,
+      consumerKey: config?.consumerKey || CONSUMER_KEY,
+    };
+  }
+
+  // Generic API request method
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.config.baseUrl}/rest/V1${endpoint}`;
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${this.config.consumerKey}`,
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Mobile Sentrix API Error: ${response.status} - ${error}`);
+    }
+
+    return response.json();
+  }
+
+  // Get all products with pagination
+  async getProducts(page = 1, pageSize = 100): Promise<MSProduct[]> {
+    return this.request<MSProduct[]>(
+      `/products?searchCriteria[pageSize]=${pageSize}&searchCriteria[currentPage]=${page}`
+    );
+  }
+
+  // Get single product by SKU
+  async getProductBySku(sku: string): Promise<MSProduct> {
+    return this.request<MSProduct>(`/products/${sku}`);
+  }
+
+  // Get products by category
+  async getProductsByCategory(category: string): Promise<MSProduct[]> {
+    return this.request<MSProduct[]>(
+      `/products?searchCriteria[filterGroups][0][filters][0][field]=category&searchCriteria[filterGroups][0][filters][0][value]=${category}`
+    );
+  }
+
+  // Get products by brand
+  async getProductsByBrand(brand: string): Promise<MSProduct[]> {
+    return this.request<MSProduct[]>(
+      `/products?searchCriteria[filterGroups][0][filters][0][field]=brand&searchCriteria[filterGroups][0][filters][0][value]=${brand}`
+    );
+  }
+
+  // Get inventory/stock for all products
+  async getInventory(): Promise<MSInventoryItem[]> {
+    return this.request<MSInventoryItem[]>('/stockItems');
+  }
+
+  // Get inventory for specific product
+  async getProductInventory(sku: string): Promise<MSInventoryItem> {
+    return this.request<MSInventoryItem>(`/stockItems/${sku}`);
+  }
+
+  // Get price updates since a specific date
+  async getPriceUpdates(sinceDate: string): Promise<MSPriceUpdate[]> {
+    return this.request<MSPriceUpdate[]>(
+      `/price-updates?since=${sinceDate}`
+    );
+  }
+
+  // Search products
+  async searchProducts(query: string): Promise<MSProduct[]> {
+    return this.request<MSProduct[]>(
+      `/products?searchCriteria[filterGroups][0][filters][0][field]=name&searchCriteria[filterGroups][0][filters][0][value]=%25${query}%25&searchCriteria[filterGroups][0][filters][0][conditionType]=like`
+    );
+  }
+
+  // Get all categories
+  async getCategories(): Promise<string[]> {
+    return this.request<string[]>('/categories');
+  }
+
+  // Get all brands
+  async getBrands(): Promise<string[]> {
+    return this.request<string[]>('/brands');
+  }
+
+  // Test API connection
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.request('/products?searchCriteria[pageSize]=1');
+      return true;
+    } catch (error) {
+      console.error('Mobile Sentrix API connection failed:', error);
+      return false;
+    }
+  }
+}
+
+// Export singleton instance
+export const mobileSentrixApi = new MobileSentrixApi();
+
+// Export class for custom instances
+export { MobileSentrixApi };
+
+// Helper functions for product mapping
+export function mapMobileSentrixToLabFix(
+  msProduct: MSProduct,
+  priceMarkup: number = 0 // Percentage markup (e.g., 20 = 20%)
+): {
+  name: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  category: string;
+  brand: string;
+  sku: string;
+  stock: number;
+  images: string[];
+  compatibleModels: string[];
+  condition: string;
+} {
+  // Calculate price with markup
+  const originalPrice = msProduct.price;
+  const markupMultiplier = 1 + (priceMarkup / 100);
+  const price = Math.round(originalPrice * markupMultiplier * 100) / 100;
+
+  return {
+    name: msProduct.name,
+    description: msProduct.description || '',
+    price,
+    originalPrice,
+    category: mapCategory(msProduct.category, msProduct.subcategory),
+    brand: mapBrand(msProduct.brand),
+    sku: msProduct.sku,
+    stock: msProduct.stock_quantity,
+    images: msProduct.images || [],
+    compatibleModels: msProduct.compatible_models || [],
+    condition: msProduct.condition || 'new',
+  };
+}
+
+// Map Mobile Sentrix categories to LabFix categories
+function mapCategory(category: string, subcategory?: string): string {
+  const categoryMap: Record<string, string> = {
+    'screens': 'schermen',
+    'batteries': 'batterijen',
+    'charging': 'oplaad',
+    'cameras': 'cameras',
+    'housing': 'behuizing',
+    'tools': 'gereedschap',
+    'accessories': 'accessoires',
+    'parts': 'onderdelen',
+  };
+
+  return categoryMap[category.toLowerCase()] || category.toLowerCase();
+}
+
+// Map Mobile Sentrix brands to LabFix brands
+function mapBrand(brand: string): string {
+  const brandMap: Record<string, string> = {
+    'apple': 'apple',
+    'samsung': 'samsung',
+    'google': 'google',
+    'huawei': 'huawei',
+    'xiaomi': 'xiaomi',
+    'oneplus': 'oneplus',
+    'motorola': 'motorola',
+    'nokia': 'nokia',
+    'sony': 'sony',
+    'lg': 'lg',
+    'htc': 'htc',
+    'asus': 'asus',
+  };
+
+  return brandMap[brand.toLowerCase()] || brand.toLowerCase();
+}
