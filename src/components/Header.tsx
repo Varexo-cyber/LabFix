@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
@@ -40,6 +40,9 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{type: string; label: string; sublabel?: string; url: string}[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -94,14 +97,14 @@ export default function Header() {
 
   // Always use hardcoded brandCategories as primary source (has all subcategories & models)
   // Merge with any NEW brands from database that don't exist in hardcoded data
-  const categories = (() => {
+  const categories = useMemo(() => {
     const hardcoded = brandCategories.filter(b => b.slug !== 'tje');
     if (!dbCategories) return hardcoded;
     // Add any db brands not in hardcoded
     const hardcodedSlugs = new Set(hardcoded.map(b => b.slug));
     const newDbBrands = dbCategories.filter(b => !hardcodedSlugs.has(b.slug) && b.slug !== 'tje');
     return [...hardcoded, ...newDbBrands];
-  })();
+  }, [dbCategories]);
   // Only Apple and Samsung in main nav, ALL phone brands go to "Meer"
   const navBrands = categories.filter(b => b.slug === 'apple' || b.slug === 'samsung');
   const moreBrands = categories;
@@ -119,9 +122,85 @@ export default function Header() {
     return () => { if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current); };
   }, []);
 
+  // Close search dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Live search across all categories
+  useEffect(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (q.length < 2) { setSearchResults([]); setShowSearchDropdown(false); return; }
+    
+    const results: {type: string; label: string; sublabel?: string; url: string}[] = [];
+
+    // Search phone brands, subcategories, models
+    for (const brand of categories) {
+      if (brand.name.toLowerCase().includes(q) || brand.nameEn.toLowerCase().includes(q)) {
+        results.push({ type: 'Merk', label: brand.name, url: `/products?brand=${brand.slug}` });
+      }
+      for (const sub of brand.subcategories || []) {
+        if (sub.name.toLowerCase().includes(q) || sub.nameEn.toLowerCase().includes(q)) {
+          results.push({ type: 'Categorie', label: sub.name, sublabel: brand.name, url: `/products?brand=${brand.slug}&sub=${sub.slug}` });
+        }
+        for (const model of sub.models || []) {
+          if (model.name.toLowerCase().includes(q)) {
+            results.push({ type: 'Model', label: model.name, sublabel: `${brand.name} › ${sub.name}`, url: `/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}` });
+          }
+        }
+      }
+    }
+
+    // Search PC parts
+    for (const cat of pcPartsCategories) {
+      if (cat.name.toLowerCase().includes(q) || cat.nameEn.toLowerCase().includes(q)) {
+        results.push({ type: 'PC Onderdeel', label: cat.name, url: `/products?pcpart=${cat.slug}` });
+      }
+      for (const sub of cat.subcategories || []) {
+        if (sub.name.toLowerCase().includes(q) || sub.nameEn.toLowerCase().includes(q)) {
+          results.push({ type: 'PC Onderdeel', label: sub.name, sublabel: cat.name, url: `/products?pcpart=${cat.slug}&sub=${sub.slug}` });
+        }
+      }
+    }
+
+    // Search PC accessories
+    for (const cat of pcAccessoryCategories) {
+      if (cat.name.toLowerCase().includes(q) || cat.nameEn.toLowerCase().includes(q)) {
+        results.push({ type: 'PC Accessoire', label: cat.name, url: `/products?pcacc=${cat.slug}` });
+      }
+      for (const sub of cat.subcategories || []) {
+        if (sub.name.toLowerCase().includes(q) || sub.nameEn.toLowerCase().includes(q)) {
+          results.push({ type: 'PC Accessoire', label: sub.name, sublabel: cat.name, url: `/products?pcacc=${cat.slug}&sub=${sub.slug}` });
+        }
+      }
+    }
+
+    // Search accessories
+    for (const cat of accessoryCategories) {
+      if (cat.name.toLowerCase().includes(q) || cat.nameEn.toLowerCase().includes(q)) {
+        results.push({ type: 'Accessoire', label: cat.name, url: `/products?accessory=${cat.slug}` });
+      }
+      for (const sub of cat.subcategories || []) {
+        if (sub.name.toLowerCase().includes(q) || sub.nameEn.toLowerCase().includes(q)) {
+          results.push({ type: 'Accessoire', label: sub.name, sublabel: cat.name, url: `/products?accessory=${cat.slug}&sub=${sub.slug}` });
+        }
+      }
+    }
+
+    setSearchResults(results.slice(0, 12));
+    setShowSearchDropdown(results.length > 0);
+  }, [searchQuery, categories]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setShowSearchDropdown(false);
       window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
     }
   };
@@ -204,13 +283,14 @@ export default function Header() {
               <img src="/logo.png" alt="LabFix" className="h-24 w-auto" />
             </Link>
 
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl">
-              <div className="flex w-full">
+            {/* Search Bar with Live Dropdown */}
+            <div ref={searchRef} className="hidden md:block flex-1 max-w-xl relative">
+              <form onSubmit={handleSearch} className="flex w-full">
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
+                  onFocus={() => { if (searchResults.length > 0) setShowSearchDropdown(true); }}
                   placeholder={t('nav.search')}
                   className="flex-1 border-2 border-r-0 border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:border-primary-500"
                 />
@@ -220,8 +300,37 @@ export default function Header() {
                 >
                   <Search size={20} />
                 </button>
-              </div>
-            </form>
+              </form>
+              {/* Live Search Dropdown */}
+              {showSearchDropdown && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white rounded-b-lg shadow-xl border border-gray-200 z-[100] max-h-[400px] overflow-y-auto mt-0.5">
+                  {searchResults.map((result, i) => (
+                    <Link
+                      key={i}
+                      href={result.url}
+                      onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-primary-50 transition-colors border-b border-gray-50 last:border-b-0"
+                    >
+                      <span className="text-[10px] font-bold uppercase bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+                        {result.type}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{result.label}</p>
+                        {result.sublabel && <p className="text-xs text-gray-400 truncate">{result.sublabel}</p>}
+                      </div>
+                      <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
+                    </Link>
+                  ))}
+                  <Link
+                    href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                    onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}
+                    className="block px-4 py-3 text-center text-sm font-medium text-primary-600 hover:bg-primary-50 border-t border-gray-200"
+                  >
+                    {locale === 'nl' ? `Alle resultaten voor "${searchQuery}"` : `All results for "${searchQuery}"`} →
+                  </Link>
+                </div>
+              )}
+            </div>
 
             {/* Right icons */}
             <div className="flex items-center gap-4">
@@ -236,9 +345,9 @@ export default function Header() {
                   <span className="text-xs">{t('auth.login')}</span>
                 </Link>
               )}
-              <Link href="/repair" className="flex flex-col items-center bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-xl shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 border-2 border-red-400">
-                <Wrench size={20} className="animate-pulse" />
-                <span className="text-xs font-bold">{locale === 'nl' ? 'Reparatie' : 'Repair'}</span>
+              <Link href="/repair" className="flex flex-col items-center bg-gradient-to-r from-red-500 to-red-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 border-2 border-red-400 animate-attention animate-glow-red">
+                <Wrench size={22} className="animate-pulse" />
+                <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">{locale === 'nl' ? 'Reparatie' : 'Repair'}</span>
               </Link>
               <Link href="/cart" className="flex flex-col items-center text-gray-600 hover:text-primary-500 relative">
                 <ShoppingCart size={22} />
@@ -320,7 +429,7 @@ export default function Header() {
                     <div className="h-[500px]">
                       {/* TAB 1: Quick Selector */}
                       {megaTab === 'selector' && (
-                        <div className="p-6 w-[420px] mx-auto">
+                        <div className="p-6 w-[420px] mx-auto animate-fade-in">
                           <div className="text-center mb-6">
                             <h3 className="text-xl font-bold text-primary-600">{locale === 'nl' ? 'Zoek je onderdeel' : 'Find your part'}</h3>
                             <p className="text-sm text-gray-500 mt-1">{locale === 'nl' ? 'Selecteer stap voor stap' : 'Step by step selection'}</p>
@@ -341,17 +450,68 @@ export default function Header() {
                               className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 cursor-pointer"
                             >
                               <option value="">{locale === 'nl' ? 'Kies je merk' : 'Choose your brand'}</option>
-                              {Array.from(new Map([...brandCategories, ...moreBrands].map(b => [b.slug, b])).values()).sort((a, b) => a.name.localeCompare(b.name)).map((brand) => (
-                                <option key={brand.slug} value={brand.slug}>
-                                  {brand.name}
-                                </option>
-                              ))}
+                              {(() => {
+                                const popularSlugs = ['apple', 'samsung', 'google', 'huawei', 'xiaomi', 'oneplus'];
+                                const allBrands = Array.from(new Map(categories.map(b => [b.slug, b])).values());
+                                const popular = popularSlugs.map(s => allBrands.find(b => b.slug === s)).filter(Boolean) as typeof allBrands;
+                                const rest = allBrands.filter(b => !popularSlugs.includes(b.slug)).sort((a, b) => a.name.localeCompare(b.name));
+                                return (
+                                  <>
+                                    <optgroup label={locale === 'nl' ? '⭐ Populaire merken' : '⭐ Popular brands'}>
+                                      {popular.map(brand => (
+                                        <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                                      ))}
+                                    </optgroup>
+                                    <optgroup label={locale === 'nl' ? 'Alle merken' : 'All brands'}>
+                                      {rest.map(brand => (
+                                        <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                                      ))}
+                                    </optgroup>
+                                    <optgroup label={locale === 'nl' ? 'PC & Overig' : 'PC & Other'}>
+                                      {pcPartsCategories.map(cat => (
+                                        <option key={`pc-${cat.slug}`} value={`pc-parts-${cat.slug}`}>{cat.name}</option>
+                                      ))}
+                                      {pcAccessoryCategories.map(cat => (
+                                        <option key={`pca-${cat.slug}`} value={`pc-acc-${cat.slug}`}>{cat.name}</option>
+                                      ))}
+                                    </optgroup>
+                                  </>
+                                );
+                              })()}
                             </select>
                           </div>
 
                           {/* Step 2: Kies je model */}
                           {selectedBrand && (() => {
-                            const brand = [...brandCategories, ...moreBrands].find(b => b.slug === selectedBrand);
+                            // Check if it's a PC parts/accessory category
+                            const isPcParts = selectedBrand.startsWith('pc-parts-');
+                            const isPcAcc = selectedBrand.startsWith('pc-acc-');
+                            if (isPcParts || isPcAcc) {
+                              const catSlug = selectedBrand.replace('pc-parts-', '').replace('pc-acc-', '');
+                              const source = isPcParts ? pcPartsCategories : pcAccessoryCategories;
+                              const cat = source.find(c => c.slug === catSlug);
+                              if (!cat || !cat.subcategories || cat.subcategories.length === 0) return null;
+                              return (
+                                <div className="mb-4">
+                                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{locale === 'nl' ? 'Kies subcategorie' : 'Choose subcategory'}</label>
+                                  <select
+                                    value={selectedSubcategory || ''}
+                                    onChange={(e) => {
+                                      setSelectedSubcategory(e.target.value || null);
+                                      setSelectedModel(null);
+                                      setSelectorStep(e.target.value ? 3 : 2);
+                                    }}
+                                    className="w-full p-3 border border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:ring-2 focus:ring-primary-500 focus:border-primary-500 cursor-pointer"
+                                  >
+                                    <option value="">{locale === 'nl' ? 'Kies subcategorie' : 'Choose subcategory'}</option>
+                                    {cat.subcategories.map((sub) => (
+                                      <option key={sub.slug} value={sub.slug}>{sub.name}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              );
+                            }
+                            const brand = categories.find(b => b.slug === selectedBrand);
                             return brand ? (
                               <div className="mb-4">
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{locale === 'nl' ? 'Kies je model' : 'Choose your model'}</label>
@@ -377,8 +537,8 @@ export default function Header() {
                           })()}
 
                           {/* Step 3: Kies je serie */}
-                          {selectedBrand && selectedSubcategory && (() => {
-                            const brand = [...brandCategories, ...moreBrands].find(b => b.slug === selectedBrand);
+                          {selectedBrand && selectedSubcategory && !selectedBrand.startsWith('pc-parts-') && !selectedBrand.startsWith('pc-acc-') && (() => {
+                            const brand = categories.find(b => b.slug === selectedBrand);
                             const subcategory = brand?.subcategories?.find(s => s.slug === selectedSubcategory);
                             return subcategory && subcategory.models.length > 0 ? (
                               <div className="mb-4">
@@ -419,9 +579,20 @@ export default function Header() {
                             <button
                               onClick={() => {
                                 if (selectedBrand) {
-                                  let url = `/products?brand=${selectedBrand}`;
-                                  if (selectedSubcategory) url += `&sub=${selectedSubcategory}`;
-                                  if (selectedModel) url += `&model=${selectedModel}`;
+                                  let url = '/products';
+                                  if (selectedBrand.startsWith('pc-parts-')) {
+                                    const catSlug = selectedBrand.replace('pc-parts-', '');
+                                    url += `?pcpart=${catSlug}`;
+                                    if (selectedSubcategory) url += `&sub=${selectedSubcategory}`;
+                                  } else if (selectedBrand.startsWith('pc-acc-')) {
+                                    const catSlug = selectedBrand.replace('pc-acc-', '');
+                                    url += `?pcacc=${catSlug}`;
+                                    if (selectedSubcategory) url += `&sub=${selectedSubcategory}`;
+                                  } else {
+                                    url += `?brand=${selectedBrand}`;
+                                    if (selectedSubcategory) url += `&sub=${selectedSubcategory}`;
+                                    if (selectedModel) url += `&model=${selectedModel}`;
+                                  }
                                   window.location.href = url;
                                   setOpenDropdown(null);
                                 }
@@ -441,7 +612,7 @@ export default function Header() {
 
                       {/* TAB 2: All Brands Mega Menu */}
                       {megaTab === 'brands' && (
-                        <div className="flex h-full">
+                        <div className="flex h-full animate-fade-in">
                           {/* Column 1: Brands */}
                           <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
                             <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
@@ -460,36 +631,100 @@ export default function Header() {
                                 />
                               </div>
                             </div>
-                            {categories.filter(brand => {
+                            {(() => {
                               const searchTerm = megaSearch.toLowerCase();
-                              if (!searchTerm) return true;
-                              return brand.name.toLowerCase().includes(searchTerm) || 
-                                     brand.nameEn.toLowerCase().includes(searchTerm) ||
-                                     brand.subcategories?.some(sub => 
-                                       sub.name.toLowerCase().includes(searchTerm) ||
-                                       sub.models.some(m => m.name.toLowerCase().includes(searchTerm))
-                                     );
-                            }).map((brand) => (
-                              <div
-                                key={brand.slug}
-                                onMouseEnter={() => { setHoveredMegaBrand(brand.slug); setHoveredMegaSub(null); }}
-                                className="relative"
-                              >
-                                <Link
-                                  href={`/products?brand=${brand.slug}`}
-                                  className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaBrand === brand.slug ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}
-                                  onClick={() => setOpenDropdown(null)}
-                                >
-                                  {locale === 'en' ? brand.nameEn : brand.name}
-                                  <ChevronRight size={14} className="text-gray-400" />
-                                </Link>
-                              </div>
-                            ))}
+                              const popularSlugs = ['apple', 'samsung', 'google', 'huawei', 'xiaomi', 'oneplus'];
+                              const filtered = categories.filter(brand => {
+                                if (!searchTerm) return true;
+                                return brand.name.toLowerCase().includes(searchTerm) || 
+                                       brand.nameEn.toLowerCase().includes(searchTerm) ||
+                                       brand.subcategories?.some(sub => 
+                                         sub.name.toLowerCase().includes(searchTerm) ||
+                                         sub.models.some(m => m.name.toLowerCase().includes(searchTerm))
+                                       );
+                              });
+                              const popular = popularSlugs.map(s => filtered.find(b => b.slug === s)).filter(Boolean) as typeof filtered;
+                              const rest = filtered.filter(b => !popularSlugs.includes(b.slug)).sort((a, b) => a.name.localeCompare(b.name));
+                              const sorted = [...popular, ...rest];
+                              
+                              const pcFiltered = [...pcPartsCategories, ...pcAccessoryCategories].filter(cat => {
+                                if (!searchTerm) return true;
+                                return cat.name.toLowerCase().includes(searchTerm) || cat.nameEn.toLowerCase().includes(searchTerm) ||
+                                  cat.subcategories?.some(sub => sub.name.toLowerCase().includes(searchTerm));
+                              });
+
+                              return (
+                                <>
+                                  {sorted.map((brand) => (
+                                    <div
+                                      key={brand.slug}
+                                      onMouseEnter={() => { setHoveredMegaBrand(brand.slug); setHoveredMegaSub(null); }}
+                                      className="relative"
+                                    >
+                                      <Link
+                                        href={`/products?brand=${brand.slug}`}
+                                        className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaBrand === brand.slug ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}
+                                        onClick={() => setOpenDropdown(null)}
+                                      >
+                                        {locale === 'en' ? brand.nameEn : brand.name}
+                                        <ChevronRight size={14} className="text-gray-400" />
+                                      </Link>
+                                    </div>
+                                  ))}
+                                  {pcFiltered.length > 0 && (
+                                    <>
+                                      <div className="px-3 py-2 bg-gray-100 text-xs font-bold text-gray-500 uppercase border-t border-b border-gray-200">
+                                        {locale === 'nl' ? 'PC & Overig' : 'PC & Other'}
+                                      </div>
+                                      {pcFiltered.map((cat) => (
+                                        <div
+                                          key={`pc-${cat.slug}`}
+                                          onMouseEnter={() => { setHoveredMegaBrand(`pc-${cat.slug}`); setHoveredMegaSub(null); }}
+                                          className="relative"
+                                        >
+                                          <div
+                                            className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 cursor-pointer ${hoveredMegaBrand === `pc-${cat.slug}` ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}
+                                          >
+                                            {locale === 'en' ? cat.nameEn : cat.name}
+                                            <ChevronRight size={14} className="text-gray-400" />
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
 
                           {/* Column 2: Subcategories */}
                           <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
                             {hoveredMegaBrand && (() => {
+                              // Handle PC categories
+                              if (hoveredMegaBrand.startsWith('pc-')) {
+                                const catSlug = hoveredMegaBrand.replace('pc-', '');
+                                const pcCat = [...pcPartsCategories, ...pcAccessoryCategories].find(c => c.slug === catSlug);
+                                if (!pcCat) return null;
+                                return (
+                                  <>
+                                    <div className="p-3 bg-gray-50 border-b">
+                                      <span className="text-sm font-bold text-primary-600">
+                                        {locale === 'en' ? pcCat.nameEn : pcCat.name}
+                                      </span>
+                                    </div>
+                                    {pcCat.subcategories?.map((sub) => (
+                                      <div
+                                        key={sub.slug}
+                                        onMouseEnter={() => setHoveredMegaSub(sub.slug)}
+                                        className={`px-3 py-2 text-sm cursor-pointer transition-colors ${hoveredMegaSub === sub.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}
+                                      >
+                                        {locale === 'en' ? sub.nameEn : sub.name}
+                                        {sub.description && <p className="text-xs text-gray-400">{sub.description}</p>}
+                                      </div>
+                                    ))}
+                                  </>
+                                );
+                              }
                               const activeBrand = categories.find(b => b.slug === hoveredMegaBrand);
                               if (!activeBrand) return null;
                               const searchTerm = megaSearch.toLowerCase();
@@ -584,7 +819,7 @@ export default function Header() {
 
                       {/* TAB 3: Accessories */}
                       {megaTab === 'accessories' && (
-                        <div className="flex h-full">
+                        <div className="flex h-full animate-fade-in">
                           {/* Column 1: Categories */}
                           <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
                             <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
@@ -1520,9 +1755,9 @@ export default function Header() {
                   )}
                 </div>
               ))}
-              <Link href="/repair" className="block mx-3 my-2 px-4 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl shadow-lg flex items-center justify-center gap-3 text-lg font-bold hover:from-primary-600 hover:to-primary-700 transition-all transform active:scale-95" onClick={() => setMobileMenuOpen(false)}>
-                <Wrench size={24} className="animate-pulse" />
-                {locale === 'nl' ? 'Reparatie Aanvragen' : 'Repair Request'}
+              <Link href="/repair" className="block mx-3 my-3 px-4 py-5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-xl flex items-center justify-center gap-3 text-xl font-bold hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 animate-attention animate-glow-red border-2 border-red-400" onClick={() => setMobileMenuOpen(false)}>
+                <Wrench size={28} className="animate-pulse" />
+                {locale === 'nl' ? '🔧 Reparatie Aanvragen' : '🔧 Repair Request'}
               </Link>
               <Link href="/about" className="block px-4 py-3 hover:bg-gray-50 border-t" onClick={() => setMobileMenuOpen(false)}>
                 {t('nav.about')}

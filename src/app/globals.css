@@ -94,6 +94,19 @@ body {
   50% { box-shadow: 0 0 40px rgba(30,64,175,0.4); }
 }
 
+@keyframes attention-bounce {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.05) translateY(-2px); }
+  20% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.03) translateY(-1px); }
+  40% { transform: scale(1) translateY(0); }
+}
+
+@keyframes glow-red {
+  0%, 100% { box-shadow: 0 0 5px rgba(239,68,68,0.4), 0 0 10px rgba(239,68,68,0.2); }
+  50% { box-shadow: 0 0 15px rgba(239,68,68,0.7), 0 0 25px rgba(239,68,68,0.4); }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease-out forwards;
   opacity: 0;
@@ -139,6 +152,16 @@ body {
 .delay-300 { animation-delay: 0.3s; }
 .delay-400 { animation-delay: 0.4s; }
 .delay-500 { animation-delay: 0.5s; }
+
+/* Attention-grabbing animations for important CTAs */
+.animate-attention {
+  animation: attention-bounce 2s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-glow-red {
+  animation: glow-red 2s ease-in-out infinite;
+}
 .delay-600 { animation-delay: 0.6s; }
 .delay-700 { animation-delay: 0.7s; }
 .delay-800 { animation-delay: 0.8s; }

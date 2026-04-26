@@ -5,9 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
 import { fetchProducts, Product } from '@/lib/store';
-import { Filter, Grid3X3, List, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Filter, Grid3X3, List, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale } = useApp();
@@ -21,6 +21,13 @@ function ProductsPageContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
+  const [sidebarSearch, setSidebarSearch] = useState('');
+  const [expandedSections, setExpandedSections] = useState({
+    brands: true,
+    pcParts: false,
+    pcAcc: false,
+    accessories: false
+  });
 
   useEffect(() => {
     fetchProducts().then(setProducts);
@@ -125,69 +132,227 @@ function ProductsPageContent() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
         <aside className={`lg:w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-          <div className="bg-white rounded-xl shadow-md p-5 animate-fade-in-left">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-md p-4 animate-fade-in-left">
+            <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
               <Filter size={18} />
               {locale === 'nl' ? 'Categorieën' : 'Categories'}
             </h3>
+
+            {/* Compact Search */}
+            <div className="relative mb-3">
+              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={sidebarSearch}
+                onChange={(e) => setSidebarSearch(e.target.value)}
+                placeholder={locale === 'nl' ? 'Zoek categorie...' : 'Search category...'}
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500"
+              />
+              {sidebarSearch && (
+                <button onClick={() => setSidebarSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
             <div className="space-y-1">
               <button
-                onClick={() => { setSelectedBrand(''); setSelectedSub(''); }}
-                className={`block w-full text-left px-3 py-2 rounded transition-colors text-sm font-medium ${
+                onClick={() => { setSelectedBrand(''); setSelectedSub(''); setSidebarSearch(''); }}
+                className={`block w-full text-left px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
                   !selectedBrand ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
                 }`}
               >
                 {t('products.all')} ({products.length})
               </button>
-              {brandCategories.map((brand) => {
-                const brandCount = products.filter(p => p.category === brand.slug).length;
-                const isExpanded = expandedBrands.includes(brand.slug);
-                return (
-                  <div key={brand.slug}>
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(''); }}
-                        className={`flex-1 text-left px-3 py-2 rounded-l transition-colors text-sm font-medium ${
-                          selectedBrand === brand.slug && !selectedSub ? 'bg-primary-500 text-white' : selectedBrand === brand.slug ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-100'
-                        }`}
-                      >
-                        {locale === 'en' ? brand.nameEn : brand.name} {brandCount > 0 && <span className="text-xs opacity-70">({brandCount})</span>}
-                      </button>
-                      <button
-                        onClick={() => toggleBrandExpand(brand.slug)}
-                        className="px-2 py-2 hover:bg-gray-100 rounded-r transition-colors"
-                      >
-                        <ChevronDown size={14} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
-                    {isExpanded && (
-                      <div className="ml-3 border-l-2 border-gray-200 pl-2 space-y-0.5 mt-1 mb-1">
-                        {brand.subcategories.map((sub) => {
-                          const subCount = products.filter(p => p.category === brand.slug && p.subcategory === sub.slug).length;
-                          return (
+
+              {/* Section: Phone Brands */}
+              <div className="mt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, brands: !p.brands }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? '📱 Telefoon Merken' : '📱 Phone Brands'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.brands ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.brands && (
+                  <div className="max-h-[280px] overflow-y-auto space-y-0.5 mt-1">
+                    {brandCategories.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((brand) => {
+                      const brandCount = products.filter(p => p.category === brand.slug).length;
+                      const isExpanded = expandedBrands.includes(brand.slug);
+                      const hasMatch = !sidebarSearch || brand.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()));
+                      return (
+                        <div key={brand.slug}>
+                          <div className="flex items-center">
                             <button
-                              key={sub.slug}
-                              onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); }}
-                              className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-xs ${
-                                selectedBrand === brand.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                              onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === brand.slug ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
                             >
-                              {locale === 'en' ? sub.nameEn : sub.name} {subCount > 0 && <span className="opacity-70">({subCount})</span>}
+                              {locale === 'en' ? brand.nameEn : brand.name}
+                              {brandCount > 0 && <span className="text-xs text-gray-400 ml-1">({brandCount})</span>}
                             </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                            <button
+                              onClick={() => toggleBrandExpand(brand.slug)}
+                              className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
+                            >
+                              <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </button>
+                          </div>
+                          {isExpanded && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {brand.subcategories?.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedBrand === brand.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {locale === 'en' ? sub.nameEn : sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                )}
+              </div>
+
+              {/* Section: Accessories */}
+              <div className="mt-2 border-t pt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, accessories: !p.accessories }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? '🎧 Accessoires' : '🎧 Accessories'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.accessories ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.accessories && (
+                  <div className="space-y-0.5 mt-1">
+                    {accessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
+                      <div key={`acc-${cat.slug}`}>
+                        <button
+                          onClick={() => { setSelectedBrand(`acc-${cat.slug}`); setSelectedSub(''); }}
+                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
+                            selectedBrand === `acc-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          {locale === 'en' ? cat.nameEn : cat.name}
+                        </button>
+                        {selectedBrand === `acc-${cat.slug}` && cat.subcategories && (
+                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                              <button
+                                key={sub.slug}
+                                onClick={() => { setSelectedBrand(`acc-${cat.slug}`); setSelectedSub(sub.slug); }}
+                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {locale === 'en' ? sub.nameEn : sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section: PC Parts */}
+              <div className="mt-2 border-t pt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, pcParts: !p.pcParts }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? '� PC Onderdelen' : '� PC Parts'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.pcParts ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.pcParts && (
+                  <div className="space-y-0.5 mt-1">
+                    {pcPartsCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
+                      <div key={`pc-${cat.slug}`}>
+                        <button
+                          onClick={() => { setSelectedBrand(`pc-${cat.slug}`); setSelectedSub(''); }}
+                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
+                            selectedBrand === `pc-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          {locale === 'en' ? cat.nameEn : cat.name}
+                        </button>
+                        {selectedBrand === `pc-${cat.slug}` && cat.subcategories && (
+                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                              <button
+                                key={sub.slug}
+                                onClick={() => { setSelectedBrand(`pc-${cat.slug}`); setSelectedSub(sub.slug); }}
+                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {locale === 'en' ? sub.nameEn : sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section: PC Accessories */}
+              <div className="mt-2 border-t pt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, pcAcc: !p.pcAcc }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? '🖱️ PC Accessoires' : '🖱️ PC Accessories'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.pcAcc ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.pcAcc && (
+                  <div className="space-y-0.5 mt-1">
+                    {pcAccessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
+                      <div key={`pca-${cat.slug}`}>
+                        <button
+                          onClick={() => { setSelectedBrand(`pca-${cat.slug}`); setSelectedSub(''); }}
+                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
+                            selectedBrand === `pca-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                          }`}
+                        >
+                          {locale === 'en' ? cat.nameEn : cat.name}
+                        </button>
+                        {selectedBrand === `pca-${cat.slug}` && cat.subcategories && (
+                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                              <button
+                                key={sub.slug}
+                                onClick={() => { setSelectedBrand(`pca-${cat.slug}`); setSelectedSub(sub.slug); }}
+                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {locale === 'en' ? sub.nameEn : sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Price filter info */}
             <div className="mt-6 pt-4 border-t">
               <h4 className="font-semibold text-sm mb-2">{t('products.price')}</h4>
               <p className="text-xs text-gray-500">
-                {locale === 'nl' ? 'Alle prijzen zijn excl. BTW' : 'All prices are excl. VAT'}
+                {locale === 'nl' ? 'Alle prijzen zijn incl. btw' : 'All prices are incl. VAT'}
               </p>
             </div>
           </div>

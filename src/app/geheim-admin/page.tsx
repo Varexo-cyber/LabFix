@@ -356,19 +356,21 @@ export default function AdminPage() {
   };
 
   const handleDeleteSubscriber = async (id: string) => {
-    if (!confirm('Weet je zeker dat je deze abonnee wilt verwijderen?')) return;
-    
-    try {
-      const res = await fetch(`/api/newsletter?id=${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setSubscribers(prev => prev.filter(sub => sub.id !== id));
-        alert('Abonnee verwijderd');
-      } else {
-        alert('Verwijderen mislukt');
+    showConfirm(
+      'Abonnee verwijderen',
+      'Weet je zeker dat je deze abonnee wilt verwijderen?',
+      async () => {
+        try {
+          const res = await fetch(`/api/newsletter?id=${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            setSubscribers(prev => prev.filter(sub => sub.id !== id));
+          }
+        } catch {
+          // silently fail
+        }
+        closeConfirm();
       }
-    } catch {
-      alert('Verwijderen mislukt');
-    }
+    );
   };
 
   // Repair appointment handlers
