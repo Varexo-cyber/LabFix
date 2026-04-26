@@ -22,7 +22,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <Link href={`/products/${product.id}`}>
         <div className="relative overflow-hidden aspect-square bg-gray-50">
           <img
-            src={normalizeImageUrl(product.image)}
+            src={normalizeImageUrl(product.image || (product.images && product.images.length > 0 ? product.images[0] : ''))}
             alt={name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {

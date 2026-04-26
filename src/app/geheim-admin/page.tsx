@@ -190,10 +190,18 @@ export default function AdminPage() {
       return;
     }
 
+    // Auto-set main image from images array if not set
+    const saveData = {
+      ...formData,
+      image: formData.image || (formData.images && formData.images.length > 0 ? formData.images[0] : ''),
+      price: Number(formData.price),
+      comparePrice: formData.comparePrice ? Number(formData.comparePrice) : undefined,
+    };
+
     if (editing) {
-      await updateProduct({ ...editing, ...formData, price: Number(formData.price), comparePrice: formData.comparePrice ? Number(formData.comparePrice) : undefined });
+      await updateProduct({ ...editing, ...saveData });
     } else {
-      await createProduct({ ...formData, price: Number(formData.price), comparePrice: formData.comparePrice ? Number(formData.comparePrice) : undefined });
+      await createProduct(saveData);
     }
 
     const prods = await fetchProducts();

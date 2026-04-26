@@ -66,12 +66,12 @@ export default function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-8 bg-white rounded-xl shadow-md p-6 mb-12">
         {/* Images - Show slideshow if multiple images exist */}
         <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden animate-fade-in-left">
-          {product.images && product.images.length > 1 ? (
+          {product.images && product.images.length > 0 ? (
             <ImageSlideshow 
               images={product.images} 
               alt={name}
               className="w-full h-full"
-              showThumbnails={true}
+              showThumbnails={product.images.length > 1}
             />
           ) : (
             <img 
