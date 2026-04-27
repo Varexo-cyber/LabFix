@@ -14,6 +14,16 @@ export default function RepairPage() {
   const [selectedTime, setSelectedTime] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [pickupValid, setPickupValid] = useState(false);
+  
+  // Gratis ophalen alleen beschikbaar voor deze locaties
+  const allowedPickupLocations = [
+    'den haag', 'delft', 'rijswijk', 'zoetermeer', 'nootdorp', 
+    'pijnacker', 'leidschendam', 'wateringen', 'monster', 'poeldijk',
+    'naaldwijk', 'honselersdijk', "'s-gravenzande", 's-gravenzande',
+    'denhaag', 'rijswijkzh', 'pijnackernootdorp'
+  ];
   
   const [formData, setFormData] = useState<{
     name: string;
@@ -22,7 +32,7 @@ export default function RepairPage() {
     deviceType: string;
     deviceModel: string;
     problemDescription: string;
-    serviceType: 'bring_in' | 'shipping';
+    serviceType: 'pickup' | 'shipping';
     shippingAddress: string;
   }>({
     name: '',
@@ -31,9 +41,16 @@ export default function RepairPage() {
     deviceType: '',
     deviceModel: '',
     problemDescription: '',
-    serviceType: 'bring_in',
+    serviceType: 'shipping',
     shippingAddress: '',
   });
+
+  const checkPickupLocation = (location: string) => {
+    const normalized = location.toLowerCase().trim();
+    const isValid = allowedPickupLocations.some(loc => normalized.includes(loc));
+    setPickupValid(isValid);
+    return isValid;
+  };
 
   // Generate available dates (next 30 days, excluding weekends)
   const generateDates = () => {
@@ -149,7 +166,7 @@ export default function RepairPage() {
                 <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                 <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
                 <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
-                <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'bring_in' ? 'Langs brengen' : 'Opsturen'}</p>
+                <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'pickup' ? 'Ophalen' : 'Opsturen'}</p>
               </div>
             </div>
             <Link href="/" className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
@@ -352,16 +369,16 @@ export default function RepairPage() {
             
             <div className="grid md:grid-cols-2 gap-4 mb-8">
               <button
-                onClick={() => setFormData({ ...formData, serviceType: 'bring_in' })}
+                onClick={() => setFormData({ ...formData, serviceType: 'pickup' })}
                 className={`p-6 rounded-xl border-2 text-left transition-all ${
-                  formData.serviceType === 'bring_in' 
+                  formData.serviceType === 'pickup' 
                     ? 'border-primary-500 bg-primary-50' 
                     : 'border-gray-200 hover:border-primary-300'
                 }`}
               >
                 <MapPin size={32} className="text-primary-500 mb-3" />
-                <h3 className="font-bold text-lg mb-2">Langs Brengen</h3>
-                <p className="text-gray-600 text-sm">Breng uw apparaat langs bij onze locatie. Meestal binnen 1 werkdag gerepareerd.</p>
+                <h3 className="font-bold text-lg mb-2">Ophalen (Gratis)</h3>
+                <p className="text-gray-600 text-sm">Wij komen uw apparaat gratis ophalen bij u thuis. Alleen beschikbaar in bepaalde regio's.</p>
               </button>
               
               <button
@@ -374,13 +391,43 @@ export default function RepairPage() {
               >
                 <Package size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Opsturen</h3>
-                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. We retourneren gratis na reparatie.</p>
+                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. We repareren en sturen het gratis retour.</p>
               </button>
             </div>
 
+            {formData.serviceType === 'pickup' && (
+              <div className="mb-8">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Postcode / Plaats *</label>
+                <input
+                  type="text"
+                  value={pickupLocation}
+                  onChange={(e) => {
+                    setPickupLocation(e.target.value);
+                    checkPickupLocation(e.target.value);
+                  }}
+                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
+                  placeholder="Bijv. 2288 AA of Den Haag"
+                />
+                {pickupLocation && !pickupValid && (
+                  <p className="text-red-500 text-sm mt-2">
+                    Ophalen is helaas niet beschikbaar in deze regio. Kies "Opsturen" of neem contact op.
+                  </p>
+                )}
+                {pickupValid && (
+                  <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                    <CheckCircle size={16} />
+                    Gratis ophalen beschikbaar in deze regio!
+                  </p>
+                )}
+                <p className="text-gray-500 text-sm mt-2">
+                  Gratis ophalen beschikbaar in: Den Haag, Delft, Rijswijk, Zoetermeer, Nootdorp, Pijnacker, Leidschendam, Wateringen, Monster, Poeldijk, Naaldwijk, Honselersdijk, 's-Gravenzande
+                </p>
+              </div>
+            )}
+
             {formData.serviceType === 'shipping' && (
               <div className="mb-8">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Verzendadres *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Uw Adres *</label>
                 <textarea
                   name="shippingAddress"
                   value={formData.shippingAddress}
@@ -389,25 +436,6 @@ export default function RepairPage() {
                   className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
                   placeholder="Straat, huisnummer, postcode, stad"
                 />
-              </div>
-            )}
-
-            {formData.serviceType === 'bring_in' && (
-              <div className="bg-blue-50 rounded-xl p-6 mb-8">
-                <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                  <MapPin size={20} />
-                  Onze Locatie
-                </h3>
-                <p className="text-blue-700 mb-2">LabFix Repair Center</p>
-                <p className="text-blue-600 text-sm">Adres wordt na goedkeuring gedeeld</p>
-                <p className="text-blue-600 text-sm mt-2 flex items-center gap-2">
-                  <Phone size={16} />
-                  +31 6 5113 1133
-                </p>
-                <p className="text-blue-600 text-sm flex items-center gap-2">
-                  <Mail size={16} />
-                  info@labfix.nl
-                </p>
               </div>
             )}
 
@@ -422,7 +450,11 @@ export default function RepairPage() {
               <button
                 onClick={() => {
                   if (formData.serviceType === 'shipping' && !formData.shippingAddress) {
-                    setError('Vul uw verzendadres in');
+                    setError('Vul uw adres in');
+                    return;
+                  }
+                  if (formData.serviceType === 'pickup' && !pickupValid) {
+                    setError('Vul een geldige postcode/plaats in voor gratis ophalen');
                     return;
                   }
                   setError('');
@@ -430,104 +462,191 @@ export default function RepairPage() {
                 }}
                 className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
               >
-                Volgende: Datum & Tijd
+                {formData.serviceType === 'pickup' ? 'Volgende: Datum & Tijd' : 'Volgende: Verzend Informatie'}
                 <ChevronRight size={20} />
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Date & Time */}
+        {/* Step 3: Date & Time for Pickup / Shipping Info for Shipping */}
         {step === 3 && (
           <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Datum & Tijd</h2>
-            
-            {/* Date Selection */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                <Calendar size={20} className="text-primary-500" />
-                Kies een datum
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {availableDates.slice(0, 12).map((date) => (
+            {formData.serviceType === 'pickup' ? (
+              <>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Kies Datum & Tijd voor Ophalen</h2>
+                
+                {/* Date Selection */}
+                <div className="mb-8">
+                  <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <Calendar size={20} className="text-primary-500" />
+                    Kies een datum
+                  </label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {availableDates.slice(0, 12).map((date) => (
+                      <button
+                        key={date.value}
+                        onClick={() => setSelectedDate(date.value)}
+                        className={`p-3 rounded-lg text-center transition-all ${
+                          selectedDate === date.value
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        <div className="text-xs uppercase">{date.label.split(' ')[0]}</div>
+                        <div className="font-bold">{date.label.split(' ')[1]}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Time Selection */}
+                {selectedDate && (
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                      <Clock size={20} className="text-primary-500" />
+                      Kies een tijdstip
+                    </label>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                      {availableTimes.map((time) => (
+                        <button
+                          key={time}
+                          onClick={() => setSelectedTime(time)}
+                          className={`p-3 rounded-lg text-center font-medium transition-all ${
+                            selectedTime === time
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Summary */}
+                {selectedDate && selectedTime && (
+                  <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                    <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
+                      <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
+                      <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                      <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
+                      <p><span className="text-gray-500">Service:</span> Ophalen (Gratis)</p>
+                      <p><span className="text-gray-500">Locatie:</span> {pickupLocation}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4">
                   <button
-                    key={date.value}
-                    onClick={() => setSelectedDate(date.value)}
-                    className={`p-3 rounded-lg text-center transition-all ${
-                      selectedDate === date.value
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
+                    onClick={() => setStep(2)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
                   >
-                    <div className="text-xs uppercase">{date.label.split(' ')[0]}</div>
-                    <div className="font-bold">{date.label.split(' ')[1]}</div>
+                    <ChevronLeft size={20} />
+                    Terug
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Time Selection */}
-            {selectedDate && (
-              <div className="mb-8">
-                <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                  <Clock size={20} className="text-primary-500" />
-                  Kies een tijdstip
-                </label>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                  {availableTimes.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                      className={`p-3 rounded-lg text-center font-medium transition-all ${
-                        selectedTime === time
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
+                  <button
+                    onClick={() => {
+                      if (!selectedDate || !selectedTime) {
+                        setError('Selecteer een datum en tijd');
+                        return;
+                      }
+                      handleSubmit();
+                    }}
+                    disabled={loading || !selectedDate || !selectedTime}
+                    className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? 'Verzenden...' : 'Afspraak Bevestigen'}
+                    <CheckCircle size={20} />
+                  </button>
                 </div>
-              </div>
-            )}
-
-            {/* Summary */}
-            {selectedDate && selectedTime && (
-              <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
-                <div className="space-y-2 text-sm">
-                  <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
-                  <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
-                  <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                  <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
-                  <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'bring_in' ? 'Langs brengen' : 'Opsturen'}</p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Verzend Informatie</h2>
+                
+                {/* LabFix Address */}
+                <div className="bg-blue-50 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
+                    <MapPin size={20} />
+                    Verzend uw apparaat naar:
+                  </h3>
+                  <div className="bg-white rounded-lg p-4 mb-4">
+                    <p className="font-semibold text-gray-800">LabFix Repair Center</p>
+                    <p className="text-gray-600">Kerketuinenweg 163</p>
+                    <p className="text-gray-600">2288 AA Rijswijk ZH</p>
+                    <p className="text-gray-600">Nederland</p>
+                  </div>
+                  <p className="text-blue-700 text-sm mb-2">
+                    <Phone size={14} className="inline mr-1" />
+                    +31 6 5113 1133
+                  </p>
+                  <p className="text-blue-700 text-sm">
+                    <Mail size={14} className="inline mr-1" />
+                    info@labfix.nl
+                  </p>
                 </div>
-              </div>
-            )}
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => setStep(2)}
-                className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
-              >
-                <ChevronLeft size={20} />
-                Terug
-              </button>
-              <button
-                onClick={() => {
-                  if (!selectedDate || !selectedTime) {
-                    setError('Selecteer een datum en tijd');
-                    return;
-                  }
-                  handleSubmit();
-                }}
-                disabled={loading || !selectedDate || !selectedTime}
-                className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? 'Verzenden...' : 'Afspraak Bevestigen'}
-                <CheckCircle size={20} />
-              </button>
-            </div>
+                {/* Shipping Instructions */}
+                <div className="bg-amber-50 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+                    <Package size={20} />
+                    Verpakkingsadvies
+                  </h3>
+                  <ul className="text-amber-700 text-sm space-y-2">
+                    <li>• Gebruik een stevige doos met voldoende bescherming (bubble wrap, noppenfolie)</li>
+                    <li>• Zorg dat het apparaat niet kan bewegen tijdens transport</li>
+                    <li>• Vermeld duidelijk uw naam en ordernummer (na bevestiging) op de doos</li>
+                    <li>• Stuur de lader mee zodat we het apparaat kunnen testen</li>
+                    <li>• Geen originele doos? Gebruik kranten of foam ter bescherming</li>
+                  </ul>
+                </div>
+
+                {/* Important Note */}
+                <div className="bg-green-50 rounded-xl p-6 mb-8">
+                  <h3 className="font-bold text-green-800 mb-2 flex items-center gap-2">
+                    <CheckCircle size={20} />
+                    Belangrijk
+                  </h3>
+                  <p className="text-green-700 text-sm">
+                    U hoeft <strong>geen afspraak</strong> te maken voor opsturen. Stuur het apparaat op naar bovenstaand adres, 
+                    wij repareren het en sturen het gratis retour naar: <strong>{formData.shippingAddress}</strong>
+                  </p>
+                </div>
+
+                {/* Summary */}
+                <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                  <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
+                    <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
+                    <p><span className="text-gray-500">Service:</span> Opsturen</p>
+                    <p><span className="text-gray-500">Retouradres:</span> {formData.shippingAddress}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ChevronLeft size={20} />
+                    Terug
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {loading ? 'Verzenden...' : 'Aanvraag Versturen'}
+                    <CheckCircle size={20} />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

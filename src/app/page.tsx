@@ -60,36 +60,36 @@ export default function HomePage() {
   // MobileSentrix style hero slides - white/gray background with clean product images
   const heroSlides = [
     {
-      badge: 'Pre-owned Devices',
-      badgeIcon: '📱',
-      title: locale === 'nl' ? 'Grotere Marges met Sealed Apple Inventory' : 'Unlock Bigger Margins with Sealed Apple Inventory',
-      subtitle: locale === 'nl' ? 'iPhone Air • iPad 11 & Mini 7 • Watch 11, SE3, 10, & Ultra 2' : 'iPhone Air • iPad 11 & Mini 7 • Watch 11, SE3, 10, & Ultra 2',
+      badge: locale === 'nl' ? 'Computer Onderdelen' : 'Computer Parts',
+      badgeIcon: '�',
+      title: locale === 'nl' ? 'Premium Computer Onderdelen & Accessoires' : 'Premium Computer Parts & Accessories',
+      subtitle: locale === 'nl' ? 'PC Onderdelen • Laptop Accessoires • Reparatie Tools • Kabels & Adapters' : 'PC Parts • Laptop Accessories • Repair Tools • Cables & Adapters',
       features: [
-        { label: locale === 'nl' ? 'Volledig Getest' : 'Fully Tested', sub: locale === 'nl' ? '& Functioneel' : '& Functional' },
-        { label: locale === 'nl' ? 'Resale' : 'Resale', sub: locale === 'nl' ? 'Klaar' : 'Ready' },
-        { label: locale === 'nl' ? 'Retour' : 'Returns', sub: locale === 'nl' ? 'Mogelijk' : 'Possible' }
+        { label: locale === 'nl' ? 'Origineel' : 'Genuine', sub: locale === 'nl' ? '& OEM' : '& OEM' },
+        { label: locale === 'nl' ? 'Snelle' : 'Fast', sub: locale === 'nl' ? 'Levering' : 'Delivery' },
+        { label: locale === 'nl' ? 'Wholesale' : 'Wholesale', sub: locale === 'nl' ? 'Prijzen' : 'Prices' }
       ],
-      cta: locale === 'nl' ? 'Pre-order Sealed Apple Deals' : 'Pre-order Sealed Apple Deals',
-      link: '/products?brand=apple',
+      cta: locale === 'nl' ? 'Bekijk Onderdelen' : 'Shop Parts',
+      link: '/products',
       image: '/images/banners/phones-hero.jpg'
     },
     {
-      badge: 'iPhone Parts',
-      badgeIcon: '🔧',
-      title: locale === 'nl' ? 'Premium iPhone Onderdelen' : 'Premium iPhone Parts & Components',
-      subtitle: locale === 'nl' ? 'OEM Schermen • Batterijen • Camera\'s • Back Covers' : 'OEM Screens • Batteries • Cameras • Back Covers',
+      badge: locale === 'nl' ? 'PC Accessoires' : 'PC Accessories',
+      badgeIcon: '�',
+      title: locale === 'nl' ? 'Laptop & PC Accessoires' : 'Laptop & PC Accessories',
+      subtitle: locale === 'nl' ? 'OEM Schermen • Toetsenborden • Batterijen • Adapters' : 'OEM Screens • Keyboards • Batteries • Adapters',
       features: [
         { label: 'OEM', sub: 'Quality' },
         { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
         { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
       ],
-      cta: locale === 'nl' ? 'Bekijk iPhone Onderdelen' : 'Shop iPhone Parts',
-      link: '/products?brand=apple',
+      cta: locale === 'nl' ? 'Bekijk Accessoires' : 'Shop Accessories',
+      link: '/products',
       image: '/images/banners/iphone-parts.jpg'
     },
     {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
-      badgeIcon: '�',
+      badgeIcon: '🔧',
       title: locale === 'nl' ? 'Professionele Reparatie Service' : 'Professional Repair Service',
       subtitle: locale === 'nl' ? 'Smartphones • Tablets • Laptops • Snelle Service' : 'Smartphones • Tablets • Laptops • Fast Service',
       features: [
