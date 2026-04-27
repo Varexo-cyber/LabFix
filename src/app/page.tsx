@@ -60,10 +60,10 @@ export default function HomePage() {
   // MobileSentrix style hero slides - white/gray background with clean product images
   const heroSlides = [
     {
-      badge: locale === 'nl' ? 'Computer Onderdelen' : 'Computer Parts',
-      badgeIcon: '�',
-      title: locale === 'nl' ? 'Premium Computer Onderdelen & Accessoires' : 'Premium Computer Parts & Accessories',
-      subtitle: locale === 'nl' ? 'PC Onderdelen • Laptop Accessoires • Reparatie Tools • Kabels & Adapters' : 'PC Parts • Laptop Accessories • Repair Tools • Cables & Adapters',
+      badge: locale === 'nl' ? 'Telefoon Onderdelen' : 'Phone Parts',
+      badgeIcon: '📱',
+      title: locale === 'nl' ? 'Premium Telefoon Onderdelen & Accessoires' : 'Premium Phone Parts & Accessories',
+      subtitle: locale === 'nl' ? 'iPhone • Samsung • Huawei • Xiaomi • Schermen • Batterijen • Camera\'s' : 'iPhone • Samsung • Huawei • Xiaomi • Screens • Batteries • Cameras',
       features: [
         { label: locale === 'nl' ? 'Origineel' : 'Genuine', sub: locale === 'nl' ? '& OEM' : '& OEM' },
         { label: locale === 'nl' ? 'Snelle' : 'Fast', sub: locale === 'nl' ? 'Levering' : 'Delivery' },
@@ -74,18 +74,18 @@ export default function HomePage() {
       image: '/images/banners/phones-hero.jpg'
     },
     {
-      badge: locale === 'nl' ? 'PC Accessoires' : 'PC Accessories',
-      badgeIcon: '�',
-      title: locale === 'nl' ? 'Laptop & PC Accessoires' : 'Laptop & PC Accessories',
-      subtitle: locale === 'nl' ? 'OEM Schermen • Toetsenborden • Batterijen • Adapters' : 'OEM Screens • Keyboards • Batteries • Adapters',
+      badge: locale === 'nl' ? 'PC & Laptop Onderdelen' : 'PC & Laptop Parts',
+      badgeIcon: '💻',
+      title: locale === 'nl' ? 'Computer & Laptop Onderdelen' : 'Computer & Laptop Parts',
+      subtitle: locale === 'nl' ? 'PC Onderdelen • Laptop Accessoires • Reparatie Tools • Kabels' : 'PC Parts • Laptop Accessories • Repair Tools • Cables',
       features: [
         { label: 'OEM', sub: 'Quality' },
         { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
         { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
       ],
-      cta: locale === 'nl' ? 'Bekijk Accessoires' : 'Shop Accessories',
+      cta: locale === 'nl' ? 'Bekijk PC Onderdelen' : 'Shop PC Parts',
       link: '/products',
-      image: '/images/banners/iphone-parts.jpg'
+      image: '/images/products/laptop-parts.jpg'
     },
     {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
