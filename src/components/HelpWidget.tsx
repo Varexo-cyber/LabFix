@@ -34,90 +34,328 @@ interface BotMessage {
   isTyping?: boolean;
 }
 
-function getLabFixAnswer(question: string, nl: boolean): string {
+interface ConversationContext {
+  lastTopic: string | null;
+  lastBrand: string | null;
+  askedAboutShipping: boolean;
+  askedAboutPayment: boolean;
+  conversationTurn: number;
+  previousResponses: Set<string>;
+}
+
+function createContext(): ConversationContext {
+  return {
+    lastTopic: null,
+    lastBrand: null,
+    askedAboutShipping: false,
+    askedAboutPayment: false,
+    conversationTurn: 0,
+    previousResponses: new Set()
+  };
+}
+
+function classifyIntent(q: string): { intent: string; confidence: number; entities: string[] } {
+  const entities: string[] = [];
+  let intent = 'unknown';
+  let confidence = 0;
+  
+  // Entity extraction
+  const brandPatterns = [
+    { pattern: /\biphone\b|\bapple\b|\bipad\b|\bmacbook\b|\bairpod\b/, brand: 'Apple' },
+    { pattern: /\bsamsung\b|\bgalaxy\b/, brand: 'Samsung' },
+    { pattern: /\bhuawei\b/, brand: 'Huawei' },
+    { pattern: /\bxiaomi\b|\bmi\s/, brand: 'Xiaomi' },
+    { pattern: /\bgoogle\b|\bpixel\b/, brand: 'Google' },
+    { pattern: /\bmotorola\b|\bmoto\s/, brand: 'Motorola' },
+    { pattern: /\bsony\b|\bxperia\b/, brand: 'Sony' },
+    { pattern: /\blg\b/, brand: 'LG' },
+    { pattern: /\boneplus\b/, brand: 'OnePlus' },
+    { pattern: /\boppo\b/, brand: 'Oppo' },
+    { pattern: /\bvivo\b/, brand: 'Vivo' },
+    { pattern: /\bnokia\b/, brand: 'Nokia' },
+  ];
+  
+  for (const bp of brandPatterns) {
+    if (bp.pattern.test(q)) {
+      entities.push(bp.brand);
+    }
+  }
+  
+  // Product type detection
+  const productPatterns = [
+    { pattern: /\bscherm\b|\bscreen\b|\bdisplay\b|\blcd\b|\boled\b/, product: 'screen' },
+    { pattern: /\bbatterij\b|\bbattery\b|\baccu\b/, product: 'battery' },
+    { pattern: /\bcamera\b|\blens\b/, product: 'camera' },
+    { pattern: /\bback\s*cover\b|\bachterkant\b|\b housing\b/, product: 'back_cover' },
+    { pattern: /\bcharging\s*port\b|\bcharger\b|\b laad\b|\b oplaad\b/, product: 'charging' },
+    { pattern: /\bbutton\b|\bknoop\b|\bknop\b/, product: 'buttons' },
+    { pattern: /\bspeaker\b|\bspeaker\b/, product: 'speaker' },
+    { pattern: /\bmicrophone\b|\bmic\b/, product: 'microphone' },
+  ];
+  
+  for (const pp of productPatterns) {
+    if (pp.pattern.test(q)) {
+      entities.push(pp.product);
+    }
+  }
+  
+  // Intent classification with scoring
+  const intents: { [key: string]: RegExp[] } = {
+    'shipping': [/\bverzend|lever|bezorg|shipping|delivery|waneer\s*(komt|is)|hoe\s*lang\s*duurt|track/i],
+    'payment': [/\bbetal|payment|pay|ideal|klarna|bank|geld|kosten|prijs/i],
+    'returns': [/\bretour|return|terug|ruilen|omruilen|refund|terugsturen/i],
+    'warranty': [/\bgarantie|warranty|defect|stuk|kapot|werkt\s*niet/i],
+    'account': [/\bregistr|account|aanmeld|inlog|login|kvk|zakelijk|business/i],
+    'pricing': [/\bprijs|price|korting|discount|kosten|hoe\s*veel|wat\s*kost/i],
+    'order_status': [/\bbestell|order|status|waar\s*is|tracking|volg/i],
+    'product_info': [/\biphone|apple|samsung|galaxy|onderdeel|part|scherm|batterij|screen|battery|compatible|geschikt\s*voor/i],
+    'contact': [/\bcontact|email|telefoon|phone|bel|bereiken|spreken/i],
+    'about': [/\bwie|what\s*is|wat\s*is\s*labfix|about|bedrijf|company/i],
+    'greeting': [/\bhallo|hello|hi|hey|hoi|goedemorgen|goedemiddag/i],
+    'availability': [/\bop\s*voorraad|stock|available|beschikbaar|wanneer\s*weer/i],
+    'bulk': [/\bgroot|bulk|wholesale|staffel|hoeveelheid|quantity|reseller/i],
+    'compatibility': [/\bpass|compatible|geschikt|werkt\s*met|past\s*in|welke\s*onderdelen/i],
+  };
+  
+  let maxScore = 0;
+  for (const [int, patterns] of Object.entries(intents)) {
+    let score = 0;
+    for (const pattern of patterns) {
+      if (pattern.test(q)) score += 1;
+      // Check for multiple matches to increase confidence
+      const matches = q.match(pattern);
+      if (matches && matches.length > 1) score += 0.5;
+    }
+    if (score > maxScore) {
+      maxScore = score;
+      intent = int;
+    }
+  }
+  
+  confidence = Math.min(maxScore / 2, 1);
+  
+  return { intent, confidence, entities };
+}
+
+function generateSmartResponse(
+  question: string, 
+  nl: boolean, 
+  context: ConversationContext
+): { response: string; followUp: string | null } {
   const q = question.toLowerCase();
-
-  const outOfScope = /weer|voetbal|sport|politiek|recept|koken|film|muziek|game|crypto|bitcoin|aandelen|beleggen|dating|grap|mop|gedicht|verhaal/;
+  const { intent, entities } = classifyIntent(q);
+  
+  // Prevent duplicate responses
+  const responseKey = `${intent}-${entities.join('-')}`;
+  const isRepeat = context.previousResponses.has(responseKey);
+  context.previousResponses.add(responseKey);
+  context.conversationTurn++;
+  
+  let response = '';
+  let followUp = null;
+  
+  // Handle out-of-scope topics
+  const outOfScope = /\b(weer|voetbal|sport|politiek|recept|koken|film|muziek|game|crypto|bitcoin|aandelen|beleggen|dating|grap|mop|gedicht|verhaal|vacature|baan|werk)\b/i;
   if (outOfScope.test(q)) {
-    return nl
-      ? 'Sorry, ik kan alleen helpen met LabFix-gerelateerde vragen over onze producten, verzending, betalingen en services.'
-      : 'Sorry, I can only help with LabFix-related questions about our products, shipping, payments and services.';
+    return {
+      response: nl
+        ? 'Ik ben gespecialiseerd in LabFix producten en services. Ik kan je helpen met vragen over reparatieonderdelen, verzending, betalingen, garantie en ons zakelijke aanbod. Waarmee kan ik je van dienst zijn?'
+        : 'I specialize in LabFix products and services. I can help you with questions about repair parts, shipping, payments, warranty and our business offerings. How can I assist you?',
+      followUp: null
+    };
   }
+  
+  // Check for repeated questions with variation
+  if (isRepeat && context.conversationTurn > 1) {
+    if (intent === 'payment') {
+      response = nl
+        ? `Je vroeg al eerder over betalingen. Om samen te vatten: we accepteren iDEAL en Klarna voor zakelijke klanten. Prijzen zijn pas zichtbaar na registratie met een geldig KVK-nummer. Wil je meer weten over het registratieproces?`
+        : `You asked about payments before. To summarize: we accept iDEAL and Klarna for business customers. Prices are only visible after registration with a valid Chamber of Commerce number. Would you like to know more about the registration process?`;
+      followUp = nl ? 'Registratieproces uitleggen' : 'Explain registration process';
+      return { response, followUp };
+    }
+    if (intent === 'shipping') {
+      response = nl
+        ? `Je vroeg al eerder over verzending. Ik herhaal: we verzenden met DHL, FedEx, UPS, PostNL en DPD. Levertijd 1-3 werkdagen EU, gratis verzending vanaf €150. Wil je weten hoe je je bestelling kunt volgen?`
+        : `You asked about shipping before. To repeat: we ship with DHL, FedEx, UPS, PostNL and DPD. Delivery 1-3 business days EU, free shipping from €150. Want to know how to track your order?`;
+      followUp = nl ? 'Bestelling volgen' : 'Track order';
+      return { response, followUp };
+    }
+  }
+  
+  // Context-aware responses based on intent
+  switch (intent) {
+    case 'shipping':
+      context.askedAboutShipping = true;
+      const hasBrand = entities.some(e => ['Apple', 'Samsung', 'Huawei', 'Xiaomi'].includes(e));
+      if (hasBrand) {
+        const brand = entities.find(e => ['Apple', 'Samsung', 'Huawei', 'Xiaomi'].includes(e));
+        response = nl
+          ? `Voor ${brand}-onderdelen geldt onze standaard verzending: 1-3 werkdagen binnen de EU via DHL, FedEx, UPS, PostNL of DPD. Gratis verzending vanaf €150. Heb je haast? We kunnen ook express verzending regelen - neem hiervoor contact op.`
+          : `For ${brand} parts, our standard shipping applies: 1-3 business days within the EU via DHL, FedEx, UPS, PostNL or DPD. Free shipping from €150. In a hurry? We can arrange express shipping - contact us for this.`;
+      } else {
+        response = nl
+          ? `We verzenden dagelijks met DHL, FedEx, UPS, PostNL en DPD. Binnen Nederland meestal volgende dag, EU-wide 1-3 werkdagen. Vanaf €150 is verzending gratis. Je ontvangt automatisch een track & trace link zodra je bestelling verzonden is.`
+          : `We ship daily with DHL, FedEx, UPS, PostNL and DPD. Within the Netherlands usually next day, EU-wide 1-3 business days. Free shipping from €150. You automatically receive a track & trace link once your order ships.`;
+      }
+      followUp = nl ? 'Wat is de levertijd naar België?' : 'What is delivery time to Germany?';
+      break;
+      
+    case 'payment':
+      context.askedAboutPayment = true;
+      response = nl
+        ? `Voor zakelijke klanten bieden we iDEAL en Klarna als betaalmethoden. Prijzen zijn zichtbaar na registratie met je KVK-nummer. Voor grotere bestellingen (€1000+) kunnen we betalingstermijnen bespreken. Belangrijk: je moet ingelogd zijn om prijzen te zien.`
+        : `For business customers we offer iDEAL and Klarna. Prices are visible after registration with your Chamber of Commerce number. For larger orders (€1000+) we can discuss payment terms. Important: you must be logged in to see prices.`;
+      followUp = nl ? 'Hoe registreer ik mij?' : 'How do I register?';
+      break;
+      
+    case 'returns':
+      response = nl
+        ? `We hanteren een 30-dagen retourbeleid voor ongebruikte producten in originele verpakking. Voor defecte producten (DOA) geldt uiteraard gratis vervanging. Stuur een e-mail naar info@labfix.nl met je bestelnummer en reden van retour. Retourkosten zijn voor de klant, tenzij het onze fout is.`
+        : `We have a 30-day return policy for unused products in original packaging. For defective products (DOA), free replacement of course. Email info@labfix.nl with your order number and return reason. Return shipping is at customer cost, unless it's our error.`;
+      followUp = nl ? 'Product is defect bij ontvangst' : 'Product is defective on arrival';
+      break;
+      
+    case 'warranty':
+      const productType = entities.find(e => ['screen', 'battery', 'camera'].includes(e));
+      if (productType) {
+        response = nl
+          ? `Ja, al onze ${productType === 'screen' ? 'schermen' : productType === 'battery' ? 'batterijen' : 'camera\'s'} komen met garantie. Bij fabricagefouten of DOA (Dead On Arrival) vervangen we het product gratis. Garantie geldt niet voor beschadiging door verkeerd monteren. Neem binnen 14 dagen contact op bij problemen.`
+          : `Yes, all our ${productType}s come with warranty. For manufacturing defects or DOA we replace the product for free. Warranty doesn't cover damage from incorrect installation. Contact us within 14 days for issues.`;
+      } else {
+        response = nl
+          ? `Alle producten van LabFix hebben garantie. De duur varieert per productcategorie: schermen en batterijen hebben uitgebreide garantie op fabricagefouten. Bij DOA (defect bij aankomst) vervangen we direct. Bewaar altijd je bestelbevestiging als garantiebewijs.`
+          : `All LabFix products have warranty. Duration varies by category: screens and batteries have extensive warranty on manufacturing defects. For DOA we replace immediately. Always keep your order confirmation as proof of warranty.`;
+      }
+      followUp = nl ? 'Hoe claim ik garantie?' : 'How do I claim warranty?';
+      break;
+      
+    case 'account':
+      response = nl
+        ? `LabFix is exclusief voor zakelijke klanten (B2B). Registratie vereist een geldig KVK-nummer. Na goedkeuring (meestal binnen 24 uur) krijg je toegang tot onze prijzen en kun je bestellen. Registreren kan via de "Account" knop bovenaan de pagina. Zonder KVK-nummer kun je wel de site bekijken maar niet bestellen.`
+        : `LabFix is exclusively for business customers (B2B). Registration requires a valid Chamber of Commerce number. After approval (usually within 24 hours) you get access to our prices and can order. Register via the "Account" button at the top. Without a Chamber of Commerce number you can browse but not order.`;
+      followUp = nl ? 'Ik heb geen KVK-nummer' : 'I don\'t have a Chamber of Commerce number';
+      break;
+      
+    case 'pricing':
+      response = nl
+        ? `Onze prijzen zijn exclusief voor geregistreerde zakelijke klanten. Na registratie met KVK-nummer en goedkeuring zie je direct alle prijzen. We bieden staffelkortingen: hogere volumes = lagere prijzen per stuk. Voor grote projecten (100+ stuks) maken we graag een offerte op maat. Registreren is gratis.`
+        : `Our prices are exclusive to registered business customers. After registration with Chamber of Commerce number and approval, you immediately see all prices. We offer volume discounts: higher volumes = lower per-unit prices. For large projects (100+ units) we're happy to make a custom quote. Registration is free.`;
+      followUp = nl ? 'Registreren als klant' : 'Register as customer';
+      break;
+      
+    case 'order_status':
+      response = nl
+        ? `Je kunt je bestelling 24/7 volgen via "Mijn Account" > "Bestellingen". Daar zie je de huidige status en track & trace code. Heb je geen account aangemaakt tijdens bestelling? Neem dan contact op via info@labfix.nl met je bestelnummer. We reageren meestal binnen 2 uur op werkdagen.`
+        : `You can track your order 24/7 via "My Account" > "Orders". There you see current status and track & trace code. Didn't create an account during order? Contact info@labfix.nl with your order number. We usually respond within 2 hours on business days.`;
+      followUp = nl ? 'Track & trace werkt niet' : 'Track & trace not working';
+      break;
+      
+    case 'product_info':
+      const brand = entities.find(e => ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Google', 'Motorola'].includes(e));
+      const product = entities.find(e => ['screen', 'battery', 'camera', 'back_cover', 'charging'].includes(e));
+      
+      if (brand && product) {
+        response = nl
+          ? `Ja, we hebben ${product === 'screen' ? 'schermen' : product === 'battery' ? 'batterijen' : product === 'camera' ? 'camera\'s' : 'onderdelen'} voor ${brand}! Onze ${brand}-range is zeer uitgebreid: van de nieuwste modellen tot oudere series. Alle onderdelen worden getest op kwaliteit. Log in om prijzen en voorraad te zien. Twijfel je over compatibiliteit? Onze support helpt graag.`
+          : `Yes, we have ${product}s for ${brand}! Our ${brand} range is very extensive: from latest models to older series. All parts are quality tested. Log in to see prices and stock. Unsure about compatibility? Our support is happy to help.`;
+      } else if (brand) {
+        response = nl
+          ? `We hebben een uitgebreid assortiment ${brand}-onderdelen: schermen (LCD/OLED), batterijen, camera\'s, back covers, charging ports en meer. Van oudere modellen tot de nieuwste releases. Gebruik de zoekfunctie op de site of filter op merk om snel te vinden wat je zoekt. Heb je een specifiek modelnummer?`
+          : `We have an extensive range of ${brand} parts: screens (LCD/OLED), batteries, cameras, back covers, charging ports and more. From older models to latest releases. Use the search function or filter by brand to quickly find what you need. Do you have a specific model number?`;
+      } else if (product) {
+        response = nl
+          ? `We hebben ${product === 'screen' ? 'schermen' : product === 'battery' ? 'batterijen' : 'onderdelen'} voor vrijwel alle populaire merken: Apple, Samsung, Google, Huawei, Xiaomi, Motorola, en vele anderen. Zowel originele kwaliteit als premium compatible opties. Elk product wordt gecontroleerd op functionaliteit voor verzending.`
+          : `We have ${product}s for almost all popular brands: Apple, Samsung, Google, Huawei, Xiaomi, Motorola, and many others. Both original quality and premium compatible options. Every product is checked for functionality before shipping.`;
+      } else {
+        response = nl
+          ? `LabFix levert premium reparatieonderdelen voor smartphones, tablets en laptops. Ons assortiment omvat: schermen (LCD/OLED), batterijen, camera\'s, back covers, charging ports, knoppen en meer. We hebben onderdelen voor 100+ merken en 1000+ modellen. Alle producten zijn getest en hebben garantie.`
+          : `LabFix supplies premium repair parts for smartphones, tablets and laptops. Our range includes: screens (LCD/OLED), batteries, cameras, back covers, charging ports, buttons and more. We have parts for 100+ brands and 1000+ models. All products are tested and have warranty.`;
+      }
+      followUp = nl ? 'Wat is het verschil tussen LCD en OLED?' : 'What is the difference between LCD and OLED?';
+      break;
+      
+    case 'contact':
+      response = nl
+        ? `Je kunt ons op verschillende manieren bereiken:\n📧 Email: info@labfix.nl (antwoord binnen 2 uur op werkdagen)\n📱 WhatsApp: +31 6 5113 1133 (ook voor urgente vragen)\n📞 Telefoon: +31 6 5113 1133\n🕐 Beschikbaar: Ma-Vr 09:00-17:00\n\nVoor support vragen: support@labfix.nl\nVoor sales/offertes: sales@labfix.nl`
+        : `You can reach us in several ways:\n📧 Email: info@labfix.nl (reply within 2 hours on business days)\n📱 WhatsApp: +31 6 5113 1133 (also for urgent questions)\n📞 Phone: +31 6 5113 1133\n🕐 Available: Mon-Fri 09:00-17:00\n\nFor support: support@labfix.nl\nFor sales/quotes: sales@labfix.nl`;
+      followUp = nl ? 'Ik heb een dringende vraag' : 'I have an urgent question';
+      break;
+      
+    case 'about':
+      response = nl
+          ? `LabFix is een toonaangevende Nederlandse B2B groothandel gespecialiseerd in reparatieonderdelen voor mobiele apparaten. Sinds onze oprichting bedienen we professionele reparatiebedrijven door heel Europa.\n\nWat ons onderscheidt:\n✓ Ruimste assortiment (100+ merken, 50.000+ producten)\n✓ Strikte kwaliteitscontrole (elk product wordt getest)\n✓ Snelle levering (1-3 dagen EU)\n✓ Deskundige support (reparateurs met jaren ervaring)\n✓ Scherpe prijzen voor zakelijke klanten\n\nWe zijn meer dan een leverancier - we zijn je partner in reparatie.`
+          : `LabFix is a leading Dutch B2B wholesale company specialized in repair parts for mobile devices. Since our founding we serve professional repair shops throughout Europe.\n\nWhat sets us apart:\n✓ Widest range (100+ brands, 50,000+ products)\n✓ Strict quality control (every product tested)\n✓ Fast delivery (1-3 days EU)\n✓ Expert support (repairers with years of experience)\n✓ Sharp prices for business customers\n\nWe're more than a supplier - we're your repair partner.`;
+      followUp = nl ? 'Waar is LabFix gevestigd?' : 'Where is LabFix located?';
+      break;
+      
+    case 'availability':
+      response = nl
+        ? `Onze voorraad wordt real-time bijgewerkt. Producten gemarkeerd als "Op voorraad" zijn direct leverbaar. Is iets tijdelijk uitverkocht? Je kunt een mail alert instellen en we mailen zodra het weer beschikbaar is. De meeste populaire onderdelen (iPhone, Samsung schermen/batterijen) hebben we altijd op voorraad. Zeldzamere modellen soms binnen 2-3 dagen te leveren vanuit onze centrale voorraad.`
+        : `Our stock updates in real-time. Products marked "In stock" are immediately available. Something temporarily out of stock? You can set a mail alert and we'll email when available again. Most popular parts (iPhone, Samsung screens/batteries) we always have in stock. Rarer models sometimes available within 2-3 days from our central warehouse.`;
+      followUp = nl ? 'Product is uitverkocht' : 'Product is out of stock';
+      break;
+      
+    case 'bulk':
+      response = nl
+        ? `Als B2B groothandel zijn we gespecialiseerd in grotere volumes. Onze staffelkortingen werken als volgt:\n• 10-49 stuks: 5% korting\n• 50-99 stuks: 10% korting\n• 100-499 stuks: 15% korting\n• 500+ stuks: 20% korting of meer\n\nVoor projecten (bijv. 100+ schermen voor een refresh) maken we graag een maatwerk offerte. Neem contact op met sales@labfix.nl met je specificaties.`
+        : `As a B2B wholesaler we specialize in larger volumes. Our volume discounts work as follows:\n• 10-49 units: 5% discount\n• 50-99 units: 10% discount\n• 100-499 units: 15% discount\n• 500+ units: 20% discount or more\n\nFor projects (e.g. 100+ screens for a refresh) we're happy to make a custom quote. Contact sales@labfix.nl with your specifications.`;
+      followUp = nl ? 'Offerte aanvragen' : 'Request quote';
+      break;
+      
+    case 'compatibility':
+      response = nl
+        ? `Compatibiliteit is cruciaal bij reparatieonderdelen. Op onze productpagina\'s zie je exact welke modellen compatible zijn. Let op: zelfs binnen een serie (bijv. iPhone 14 / 14 Plus / 14 Pro / 14 Pro Max) zijn onderdelen vaak verschillend!\n\nTwijfel je? Onze support kan helpen met het vinden van het juiste onderdeel. Stuur een foto of modelnummer naar info@labfix.nl. We checken het gratis voor je voordat je bestelt.`
+        : `Compatibility is crucial with repair parts. On our product pages you see exactly which models are compatible. Note: even within a series (e.g. iPhone 14 / 14 Plus / 14 Pro / 14 Pro Max) parts are often different!\n\nUnsure? Our support can help find the right part. Send a photo or model number to info@labfix.nl. We check it free for you before you order.`;
+      followUp = nl ? 'Hoe vind ik mijn modelnummer?' : 'How do I find my model number?';
+      break;
+      
+    case 'greeting':
+      const greetings = nl ? [
+        'Hallo! Leuk je te spreken. Ik ben de LabFix AI-assistent en ik help je graag met alles wat met onze reparatieonderdelen en services te maken heeft. Wat kan ik voor je doen?',
+        'Goedendag! Welkom bij LabFix. Ik ben er om je te helpen met vragen over onze producten, verzending, betalingen of wat dan ook. Waar ben je naar op zoek?',
+        'Hoi! Ik ben de digitale helper van LabFix. Ik weet alles over ons assortiment van 50.000+ reparatieonderdelen. Stel me gerust je vraag!',
+      ] : [
+        'Hello! Nice to speak with you. I\'m the LabFix AI assistant and I\'m happy to help with everything related to our repair parts and services. What can I do for you?',
+        'Good day! Welcome to LabFix. I\'m here to help with questions about our products, shipping, payments or whatever you need. What are you looking for?',
+        'Hi! I\'m the digital helper of LabFix. I know all about our range of 50,000+ repair parts. Feel free to ask your question!',
+      ];
+      response = greetings[Math.floor(Math.random() * greetings.length)];
+      break;
+      
+    default:
+      // Check if this is a follow-up question
+      if (context.lastTopic) {
+        if (/ja|yes|graag|please|ok/.test(q)) {
+          if (context.lastTopic === 'shipping') {
+            response = nl
+              ? `Top! Om je bestelling te volgen: log in op je account en ga naar "Mijn Account" > "Bestellingen". Daar zie je alle details en de track & trace code. Werkt de tracking niet? Soms duurt het 24 uur voordat het systeem update. Neem gerust contact op als je hulp nodig hebt!`
+              : `Great! To track your order: log in to your account and go to "My Account" > "Orders". There you see all details and the track & trace code. Tracking not working? Sometimes it takes 24 hours for the system to update. Feel free to contact us if you need help!`;
+          } else if (context.lastTopic === 'payment') {
+            response = nl
+              ? `Perfect! Om te registreren: klik op "Account" bovenaan de pagina, kies "Registreren" en vul je bedrijfsgegevens + KVK-nummer in. We keuren meestal binnen 24 uur goed. Daarna kun je direct bestellen en zie je alle prijzen.`
+              : `Perfect! To register: click "Account" at the top of the page, choose "Register" and fill in your company details + Chamber of Commerce number. We usually approve within 24 hours. Then you can order immediately and see all prices.`;
+          }
+        }
+      }
+      
+      if (!response) {
+        response = nl
+          ? `Ik begrijp je vraag, maar wil zeker weten dat ik je goed help. Kun je iets specifieker zijn? Bijvoorbeeld:\n• "Wat kost een iPhone 15 scherm?"\n• "Hoe snel leveren jullie naar België?"\n• "Hoe registreer ik mijn bedrijf?"\n• "Hebben jullie batterijen voor Samsung Galaxy S24?"\n\nOf type "help" voor een overzicht van wat ik allemaal weet.`
+          : `I understand your question, but want to make sure I help you well. Could you be more specific? For example:\n• "What does an iPhone 15 screen cost?"\n• "How fast do you deliver to Germany?"\n• "How do I register my company?"\n• "Do you have batteries for Samsung Galaxy S24?"\n\nOr type "help" for an overview of what I know.`;
+      }
+  }
+  
+  context.lastTopic = intent !== 'unknown' ? intent : context.lastTopic;
+  context.lastBrand = entities.find(e => ['Apple', 'Samsung', 'Huawei', 'Xiaomi', 'Google', 'Motorola'].includes(e)) || context.lastBrand;
+  
+  return { response, followUp };
+}
 
-  if (/verzend|shipping|lever|deliver|bezorg/.test(q)) {
-    return nl
-      ? 'We verzenden via DHL, FedEx, UPS, PostNL en DPD. Gratis verzending bij bestellingen boven €150. Levertijd is 1-3 werkdagen binnen de EU.'
-      : 'We ship via DHL, FedEx, UPS, PostNL and DPD. Free shipping on orders above €150. Delivery time is 1-3 business days within the EU.';
-  }
-  if (/betal|payment|pay|ideal|visa|mastercard|paypal/.test(q)) {
-    return nl
-      ? 'We accepteren Visa, Mastercard, PayPal, iDEAL, Bancontact, SEPA, Apple Pay, Google Pay, Klarna en bankoverschrijving.'
-      : 'We accept Visa, Mastercard, PayPal, iDEAL, Bancontact, SEPA, Apple Pay, Google Pay, Klarna and bank transfer.';
-  }
-  if (/retour|return|terugstuur|refund/.test(q)) {
-    return nl
-      ? '30 dagen retourbeleid op ongebruikte producten in originele verpakking. Neem contact op via info@labfix.nl om een retour aan te vragen.'
-      : '30-day return policy on unused products in original packaging. Contact info@labfix.nl to request a return.';
-  }
-  if (/garantie|warranty/.test(q)) {
-    return nl
-      ? 'Al onze onderdelen hebben garantie. Als een product defect is, neem contact op met ons supportteam voor een vervanging.'
-      : 'All our parts come with warranty. If a product is defective, contact our support team for a replacement.';
-  }
-  if (/registr|account|aanmeld|sign.?up|kvk/.test(q)) {
-    return nl
-      ? 'LabFix is alleen voor zakelijke klanten. Om je te registreren heb je een geldig KVK-nummer nodig. Ga naar de registratiepagina op onze website.'
-      : 'LabFix is for business customers only. You need a valid Chamber of Commerce number to register. Go to the registration page on our website.';
-  }
-  if (/prijs|price|korting|discount/.test(q)) {
-    return nl
-      ? 'Onze prijzen zijn zichtbaar na registratie en inloggen. We bieden staffelkortingen bij grotere bestellingen. Neem contact op voor een offerte.'
-      : 'Our prices are visible after registration and login. We offer volume discounts on larger orders. Contact us for a quote.';
-  }
-  if (/bestell|order|track/.test(q)) {
-    return nl
-      ? 'Je kunt je bestellingen volgen via je account op onze website. Ga naar "Mijn Account" > "Bestellingen" om de status te zien.'
-      : 'You can track your orders through your account on our website. Go to "My Account" > "Orders" to see the status.';
-  }
-  if (/iphone|apple|ipad|macbook|airpod|watch/.test(q)) {
-    return nl
-      ? 'We hebben onderdelen voor alle Apple producten: iPhone (5 t/m 16 Pro Max), iPad (alle generaties), MacBook Pro/Air, Apple Watch en AirPods. Bekijk ons assortiment onder het merk Apple.'
-      : 'We carry parts for all Apple products: iPhone (5 through 16 Pro Max), iPad (all generations), MacBook Pro/Air, Apple Watch and AirPods. Browse our Apple brand section.';
-  }
-  if (/samsung|galaxy/.test(q)) {
-    return nl
-      ? 'We hebben onderdelen voor Samsung Galaxy S-serie (S5 t/m S26), A-serie, Z Fold/Flip, Note-serie, Tab-serie en meer. Bekijk ons Samsung assortiment.'
-      : 'We carry parts for Samsung Galaxy S-series (S5 through S26), A-series, Z Fold/Flip, Note series, Tab series and more. Browse our Samsung section.';
-  }
-  if (/contact|email|telefoon|phone|bel/.test(q)) {
-    return nl
-      ? 'Je kunt ons bereiken via: E-mail: info@labfix.nl | Telefoon/WhatsApp: +31 6 5113 1133 | Ma-Vr 09:00-17:00.'
-      : 'You can reach us via: Email: info@labfix.nl | Phone/WhatsApp: +31 6 5113 1133 | Mon-Fri 09:00-17:00.';
-  }
-  if (/wie|what|wat is labfix|about/.test(q)) {
-    return nl
-      ? 'LabFix is een Nederlandse B2B groothandel in reparatieonderdelen voor smartphones, tablets en laptops. We leveren door heel Europa aan professionele reparateurs.'
-      : 'LabFix is a Dutch B2B wholesale supplier of repair parts for smartphones, tablets and laptops. We deliver throughout Europe to professional repair shops.';
-  }
-  if (/scherm|screen|display|lcd|oled/.test(q)) {
-    return nl
-      ? 'We hebben schermen (LCD/OLED) voor alle populaire merken: Apple, Samsung, Huawei, Google, Xiaomi, Motorola en meer. Zowel origineel als compatibel. Bekijk ons productassortiment.'
-      : 'We carry screens (LCD/OLED) for all popular brands: Apple, Samsung, Huawei, Google, Xiaomi, Motorola and more. Both original and compatible. Browse our product range.';
-  }
-  if (/batterij|battery|accu/.test(q)) {
-    return nl
-      ? 'We leveren batterijen voor alle populaire smartphone en tablet modellen. Hoge kwaliteit met garantie. Bekijk ons assortiment in de productcatalogus.'
-      : 'We supply batteries for all popular smartphone and tablet models. High quality with warranty. Check our product catalog.';
-  }
-  if (/hallo|hello|hi|hey|hoi/.test(q)) {
-    return nl
-      ? 'Hallo! Ik ben de LabFix assistent. Ik kan je helpen met vragen over onze producten, verzending, betalingen, retourzendingen en meer. Wat wil je weten?'
-      : 'Hello! I\'m the LabFix assistant. I can help you with questions about our products, shipping, payments, returns and more. What would you like to know?';
-  }
-
-  return nl
-    ? 'Ik kan je helpen met vragen over LabFix producten, verzending, betalingen, retouren, garantie en registratie. Stel gerust een specifiekere vraag! Voor complexere vragen, neem contact op via info@labfix.nl.'
-    : 'I can help you with questions about LabFix products, shipping, payments, returns, warranty and registration. Feel free to ask a more specific question! For complex inquiries, contact info@labfix.nl.';
+function getLabFixAnswer(question: string, nl: boolean, context?: ConversationContext): string {
+  const ctx = context || createContext();
+  const result = generateSmartResponse(question, nl, ctx);
+  return result.response;
 }
 
 export default function HelpWidget() {
@@ -134,8 +372,21 @@ export default function HelpWidget() {
   const widgetRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const contextRef = useRef<ConversationContext>(createContext());
 
   const nl = locale === 'nl';
+
+  // Handle close with context reset for bot
+  const handleClose = () => {
+    setIsOpen(false);
+    if (activeTab === 'bot') {
+      setTimeout(() => {
+        contextRef.current = createContext();
+        setBotMessages([]);
+        setBotInput('');
+      }, 300);
+    }
+  };
 
   useEffect(() => {
     fetchNews().then(articles => setNewsArticles(articles.filter(a => a.published)));
@@ -144,12 +395,12 @@ export default function HelpWidget() {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (widgetRef.current && !widgetRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
+        handleClose();
       }
     }
     if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, activeTab]);
 
   useEffect(() => {
     if (chatEndRef.current && botMessages.length > 0) {
@@ -169,10 +420,6 @@ export default function HelpWidget() {
     };
   }, []);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
-
   const handleTabChange = (newTab: WidgetTab) => {
     if (newTab === activeTab || isAnimating) return;
     setIsAnimating(true);
@@ -191,8 +438,8 @@ export default function HelpWidget() {
     setTimeout(() => {
       setIsTyping(true);
       
-      // Get the answer
-      const answer = getLabFixAnswer(userMsg, nl);
+      // Get the answer with context
+      const answer = getLabFixAnswer(userMsg, nl, contextRef.current);
       
       // Simulate "thinking" time with loading dots (1-2 seconds)
       const thinkingTime = 1000 + Math.random() * 1000; // 1-2 seconds

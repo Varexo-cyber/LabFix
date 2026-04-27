@@ -49,6 +49,11 @@ export default function HomePage() {
     vivo: '/images/logos/brands/vivo.svg',
     asus: '/images/logos/brands/asus.svg',
     lenovo: '/images/logos/brands/lenovo.png',
+    oneplus: '/images/logos/brands/oneplus.png',
+    motorola: '/images/logos/brands/motorola.svg',
+    hp: '/images/logos/brands/hp.svg',
+    dell: '/images/logos/brands/dell.svg',
+    microsoft: '/images/logos/brands/microsoft.svg',
   };
 
   // Show top brands - mix of phones and computers
@@ -571,30 +576,34 @@ export default function HomePage() {
               {locale === 'nl' ? 'Alle Grote Merken' : 'All Major Brands'}
             </h2>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10">
             {[
-              { name: 'Apple', logo: '/images/logos/brands/apple.svg' },
-              { name: 'Samsung', logo: '/images/logos/brands/samsung.svg' },
-              { name: 'Google', logo: '/images/logos/brands/google.svg' },
-              { name: 'Huawei', logo: '/images/logos/brands/huawei.svg' },
-              { name: 'Xiaomi', logo: '/images/logos/brands/xiaomi.svg' },
-              { name: 'OnePlus', logo: '/images/logos/brands/oneplus.png' },
-              { name: 'Motorola', logo: '/images/logos/brands/motorola.svg' },
-              { name: 'ASUS', logo: '/images/logos/brands/asus.svg' },
-              { name: 'Lenovo', logo: '/images/logos/brands/lenovo.png' },
-              { name: 'HP', logo: '/images/logos/brands/hp.svg' },
-              { name: 'Dell', logo: '/images/logos/brands/dell.svg' },
-              { name: 'Microsoft', logo: '/images/logos/brands/microsoft.svg' },
+              { name: 'Apple', logo: brandLogos.apple },
+              { name: 'Samsung', logo: brandLogos.samsung },
+              { name: 'Google', logo: brandLogos.google },
+              { name: 'Huawei', logo: brandLogos.huawei },
+              { name: 'Xiaomi', logo: brandLogos.xiaomi },
+              { name: 'OnePlus', logo: brandLogos.oneplus },
+              { name: 'Motorola', logo: brandLogos.motorola },
+              { name: 'ASUS', logo: brandLogos.asus },
+              { name: 'Lenovo', logo: brandLogos.lenovo },
+              { name: 'HP', logo: brandLogos.hp },
+              { name: 'Dell', logo: brandLogos.dell },
+              { name: 'Microsoft', logo: brandLogos.microsoft },
             ].map((brand, i) => (
-              <div key={brand.name} className="text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default group">
+              <div key={brand.name} className="text-center text-gray-400 hover:text-primary-500 transition-colors duration-300 cursor-default group flex flex-col items-center w-16">
                 <div className="mx-auto mb-2 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <img
                     src={brand.logo}
-                    alt={`${brand.name} logo`}
+                    alt={`${brand.name}`}
                     className="w-full h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                    loading="eager"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 </div>
-                <p className="font-medium text-xs">{brand.name}</p>
+                <p className="font-medium text-xs leading-tight">{brand.name}</p>
               </div>
             ))}
           </div>

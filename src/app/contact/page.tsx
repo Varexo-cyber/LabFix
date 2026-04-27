@@ -122,7 +122,8 @@ export default function ContactPage() {
                 <MapPin className="text-accent-500 flex-shrink-0 mt-1" size={20} />
                 <div>
                   <p className="font-semibold">LabFix</p>
-                  <p className="text-gray-600">{t('footer.address')}</p>
+                  <p className="text-gray-600">Leyweg 303</p>
+                  <p className="text-gray-600">2545CK Den Haag</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -143,6 +144,18 @@ export default function ContactPage() {
             <div className="space-y-2 text-blue-100">
               <p>{locale === 'nl' ? 'Maandag - Vrijdag: 09:00 - 17:00' : 'Monday - Friday: 09:00 - 17:00'}</p>
               <p>{locale === 'nl' ? 'Zaterdag - Zondag: Gesloten' : 'Saturday - Sunday: Closed'}</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-md p-8 animate-fade-in-right delay-600">
+            <h3 className="text-xl font-bold mb-4">
+              {locale === 'nl' ? 'Bedrijfsgegevens' : 'Company Details'}
+            </h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <p><span className="font-semibold">KvK:</span> 42035906</p>
+              <p><span className="font-semibold">BTW:</span> NL005445900B06</p>
+              <p><span className="font-semibold">Bank:</span> NL36INGB0115171061</p>
+              <p><span className="font-semibold">{locale === 'nl' ? 'T.n.v.' : 'Attn:'}</span> LabFix</p>
             </div>
           </div>
         </div>

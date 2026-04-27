@@ -48,6 +48,10 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpenBrand, setMobileOpenBrand] = useState<string | null>(null);
   const [mobileOpenSub, setMobileOpenSub] = useState<string | null>(null);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [mobileMoreBrand, setMobileMoreBrand] = useState<string | null>(null);
+  const [mobileMoreSub, setMobileMoreSub] = useState<string | null>(null);
+  const [mobileMoreTab, setMobileMoreTab] = useState<'brands' | 'accessories' | 'pc-parts' | 'pc-accessories'>('brands');
   const [hoveredSub, setHoveredSub] = useState<string | null>(null);
   const [hoveredMegaBrand, setHoveredMegaBrand] = useState<string | null>(null);
   const [hoveredMegaSub, setHoveredMegaSub] = useState<string | null>(null);
@@ -457,17 +461,17 @@ export default function Header() {
                                 const rest = allBrands.filter(b => !popularSlugs.includes(b.slug)).sort((a, b) => a.name.localeCompare(b.name));
                                 return (
                                   <>
-                                    <optgroup label={locale === 'nl' ? '⭐ Populaire merken' : '⭐ Popular brands'}>
+                                    <optgroup label={locale === 'nl' ? 'POPULAIRE MERKEN' : 'POPULAR BRANDS'}>
                                       {popular.map(brand => (
                                         <option key={brand.slug} value={brand.slug}>{brand.name}</option>
                                       ))}
                                     </optgroup>
-                                    <optgroup label={locale === 'nl' ? 'Alle merken' : 'All brands'}>
+                                    <optgroup label={locale === 'nl' ? 'ALLE MERKEN' : 'ALL BRANDS'}>
                                       {rest.map(brand => (
                                         <option key={brand.slug} value={brand.slug}>{brand.name}</option>
                                       ))}
                                     </optgroup>
-                                    <optgroup label={locale === 'nl' ? 'PC & Overig' : 'PC & Other'}>
+                                    <optgroup label={locale === 'nl' ? 'PC & LAPTOP ONDERDELEN' : 'PC & LAPTOP PARTS'}>
                                       {pcPartsCategories.map(cat => (
                                         <option key={`pc-${cat.slug}`} value={`pc-parts-${cat.slug}`}>{cat.name}</option>
                                       ))}
@@ -1694,7 +1698,8 @@ export default function Header() {
               <Link href="/products" className="block px-4 py-3 hover:bg-gray-50 font-semibold" onClick={() => setMobileMenuOpen(false)}>
                 {t('nav.allProducts')}
               </Link>
-              {brandCategories.map((brand) => (
+              {/* Main phone brands: Apple & Samsung only */}
+              {brandCategories.filter(b => b.slug === 'apple' || b.slug === 'samsung').map((brand) => (
                 <div key={brand.slug} className="border-t">
                   <button
                     className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 font-medium text-left"
@@ -1755,6 +1760,149 @@ export default function Header() {
                   )}
                 </div>
               ))}
+              
+              {/* More dropdown for mobile */}
+              <div className="border-t">
+                <button
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 font-medium text-left"
+                  onClick={() => { setMobileMoreOpen(!mobileMoreOpen); setMobileMoreBrand(null); setMobileMoreSub(null); }}
+                >
+                  {locale === 'nl' ? 'Meer' : 'More'}
+                  <ChevronDown size={16} className={`transition-transform ${mobileMoreOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {mobileMoreOpen && (
+                  <div className="bg-gray-50">
+                    {/* Tabs */}
+                    <div className="flex overflow-x-auto border-b">
+                      {[
+                        { key: 'brands', label: locale === 'nl' ? 'Merken' : 'Brands' },
+                        { key: 'accessories', label: locale === 'nl' ? 'Accessoires' : 'Accessories' },
+                        { key: 'pc-parts', label: locale === 'nl' ? 'PC-Onderdelen' : 'PC Parts' },
+                        { key: 'pc-accessories', label: locale === 'nl' ? 'PC-Accessoires' : 'PC Accessories' },
+                      ].map((tab) => (
+                        <button
+                          key={tab.key}
+                          onClick={() => { setMobileMoreTab(tab.key as any); setMobileMoreBrand(null); setMobileMoreSub(null); }}
+                          className={`flex-shrink-0 px-3 py-2 text-xs font-medium ${mobileMoreTab === tab.key ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500'}`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Tab Content */}
+                    <div className="p-2">
+                      {/* Brands Tab - All except Apple/Samsung */}
+                      {mobileMoreTab === 'brands' && (
+                        <div className="space-y-1">
+                          {brandCategories.filter(b => b.slug !== 'apple' && b.slug !== 'samsung').map((brand) => (
+                            <div key={brand.slug}>
+                              <button
+                                className="w-full flex items-center justify-between px-2 py-2 text-sm hover:bg-gray-100 text-left rounded"
+                                onClick={() => { setMobileMoreBrand(mobileMoreBrand === brand.slug ? null : brand.slug); setMobileMoreSub(null); }}
+                              >
+                                {locale === 'en' ? brand.nameEn : brand.name}
+                                {brand.subcategories?.length > 0 && <ChevronDown size={14} className={`transition-transform ${mobileMoreBrand === brand.slug ? 'rotate-180' : ''}`} />}
+                              </button>
+                              {mobileMoreBrand === brand.slug && brand.subcategories && (
+                                <div className="ml-2 border-l-2 border-gray-200 pl-2 mt-1">
+                                  <Link
+                                    href={`/products?brand=${brand.slug}`}
+                                    className="block py-1 text-xs font-semibold text-primary-600"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    {locale === 'nl' ? `Alle ${brand.name}` : `All ${brand.nameEn}`}
+                                  </Link>
+                                  {brand.subcategories.map((sub) => (
+                                    <div key={sub.slug}>
+                                      <button
+                                        className="w-full flex items-center justify-between py-1 text-xs text-gray-700 text-left"
+                                        onClick={() => { setMobileMoreSub(mobileMoreSub === sub.slug ? null : sub.slug); }}
+                                      >
+                                        {locale === 'en' ? sub.nameEn : sub.name}
+                                        {sub.models.length > 0 && <ChevronDown size={12} className={`transition-transform ${mobileMoreSub === sub.slug ? 'rotate-180' : ''}`} />}
+                                      </button>
+                                      {mobileMoreSub === sub.slug && sub.models.length > 0 && (
+                                        <div className="ml-2 border-l border-gray-200 pl-2">
+                                          <Link
+                                            href={`/products?brand=${brand.slug}&sub=${sub.slug}`}
+                                            className="block py-1 text-[10px] font-semibold text-primary-600"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                          >
+                                            {locale === 'nl' ? `Alle ${sub.name}` : `All ${sub.nameEn}`}
+                                          </Link>
+                                          {sub.models.map((model) => (
+                                            <Link
+                                              key={model.slug}
+                                              href={`/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}`}
+                                              className="block py-1 text-[10px] text-gray-600"
+                                              onClick={() => setMobileMenuOpen(false)}
+                                            >
+                                              {model.name}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Accessories Tab */}
+                      {mobileMoreTab === 'accessories' && (
+                        <div className="space-y-1">
+                          {accessoryCategories.map((cat) => (
+                            <Link
+                              key={cat.slug}
+                              href={`/products?category=${cat.slug}`}
+                              className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* PC Parts Tab */}
+                      {mobileMoreTab === 'pc-parts' && (
+                        <div className="space-y-1">
+                          {pcPartsCategories.map((cat) => (
+                            <Link
+                              key={cat.slug}
+                              href={`/products?category=${cat.slug}`}
+                              className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* PC Accessories Tab */}
+                      {mobileMoreTab === 'pc-accessories' && (
+                        <div className="space-y-1">
+                          {pcAccessoryCategories.map((cat) => (
+                            <Link
+                              key={cat.slug}
+                              href={`/products?category=${cat.slug}`}
+                              className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               <Link href="/repair" className="block mx-3 my-3 px-4 py-5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-xl flex items-center justify-center gap-3 text-xl font-bold hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 animate-attention animate-glow-red border-2 border-red-400" onClick={() => setMobileMenuOpen(false)}>
                 <Wrench size={28} className="animate-pulse" />
                 {locale === 'nl' ? '🔧 Reparatie Aanvragen' : '🔧 Repair Request'}

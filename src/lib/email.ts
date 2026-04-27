@@ -84,6 +84,9 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
       </div>
       <div style="background:#1e293b;padding:16px;text-align:center">
         <p style="color:#94a3b8;margin:0;font-size:12px">© ${new Date().getFullYear()} LabFix - Alle rechten voorbehouden</p>
+        <p style="color:#64748b;margin:8px 0 0;font-size:11px">
+          Leyweg 303, 2545CK Den Haag | KvK: 42035906 | BTW: NL005445900B06 | Bank: NL36INGB0115171061
+        </p>
       </div>
     </div>
   `;
@@ -112,12 +115,13 @@ export async function sendAdminEmail(to: string, subject: string, message: strin
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
       <div style="background:#1e40af;padding:24px;text-align:center">
         <h1 style="color:#fff;margin:0">LabFix</h1>
+        <p style="color:#93c5fd;margin:4px 0 0;font-size:12px">Leyweg 303, 2545CK Den Haag | KvK: 42035906 | BTW: NL005445900B06</p>
       </div>
       <div style="padding:24px;background:#fff">
         ${message.split('\n').map(line => `<p>${line}</p>`).join('')}
       </div>
       <div style="background:#1e293b;padding:16px;text-align:center">
-        <p style="color:#94a3b8;margin:0;font-size:12px">© ${new Date().getFullYear()} LabFix</p>
+        <p style="color:#94a3b8;margin:0;font-size:12px">© ${new Date().getFullYear()} LabFix | Bank: NL36INGB0115171061</p>
       </div>
     </div>
   `;

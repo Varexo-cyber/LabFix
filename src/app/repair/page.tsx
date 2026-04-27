@@ -52,7 +52,8 @@ export default function RepairPage() {
     return isValid;
   };
 
-  // Generate available dates (next 30 days, excluding weekends)
+  // Generate available dates for pickup (only Fri, Sat, Sun, Mon from 11:00-18:00)
+  // Day: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
   const generateDates = () => {
     const dates = [];
     const today = new Date();
@@ -60,7 +61,8 @@ export default function RepairPage() {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const day = date.getDay();
-      if (day !== 0 && day !== 6) { // Exclude weekends
+      // Only allow Friday(5), Saturday(6), Sunday(0), Monday(1)
+      if (day === 0 || day === 1 || day === 5 || day === 6) {
         dates.push({
           value: date.toISOString().split('T')[0],
           label: date.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
@@ -71,7 +73,7 @@ export default function RepairPage() {
   };
 
   const availableDates = generateDates();
-  const availableTimes = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  const availableTimes = ['11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -378,7 +380,7 @@ export default function RepairPage() {
               >
                 <MapPin size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Ophalen (Gratis)</h3>
-                <p className="text-gray-600 text-sm">Wij komen uw apparaat gratis ophalen bij u thuis. Alleen beschikbaar in bepaalde regio's.</p>
+                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis (vrijdag, zat, zon, maandag). Volgende dag brengen we het weer terug. Complexe reparaties worden in onze werkplaats uitgevoerd.</p>
               </button>
               
               <button
@@ -391,7 +393,7 @@ export default function RepairPage() {
               >
                 <Package size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Opsturen</h3>
-                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. We repareren en sturen het gratis retour.</p>
+                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. Na goedkeuring van uw aanvraag ontvangt u het verzendadres via email. We repareren en sturen het gratis retour.</p>
               </button>
             </div>
 
@@ -427,6 +429,11 @@ export default function RepairPage() {
 
             {formData.serviceType === 'shipping' && (
               <div className="mb-8">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Belangrijk:</strong> Na goedkeuring van uw aanvraag ontvangt u het exacte verzendadres en verpakkingsinstructies via email.
+                  </p>
+                </div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Uw Adres *</label>
                 <textarea
                   name="shippingAddress"
@@ -474,7 +481,12 @@ export default function RepairPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
             {formData.serviceType === 'pickup' ? (
               <>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Kies Datum & Tijd voor Ophalen</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Kies Ophalen Datum & Tijd</h2>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>Let op:</strong> Wij komen uw apparaat ophalen bij u thuis. Volgende dag brengen we het gerepareerd weer terug. Alleen beschikbaar op vrijdag, zaterdag, zondag en maandag.
+                  </p>
+                </div>
                 
                 {/* Date Selection */}
                 <div className="mb-8">

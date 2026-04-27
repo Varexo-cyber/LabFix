@@ -71,23 +71,23 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-2">
               {/* FedEx */}
               <div className="bg-white rounded-md h-9 w-16 flex items-center justify-center px-1">
-                <img src="/images/logos/fedex.svg" alt="FedEx" className="h-5 w-auto" />
+                <img src="/images/logos/fedex.svg" alt="FedEx" className="h-5 w-auto" loading="eager" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
               </div>
               {/* UPS */}
               <div className="bg-[#351C15] rounded-md h-9 w-12 flex items-center justify-center">
-                <img src="/images/logos/ups.svg" alt="UPS" className="h-6 w-auto" />
+                <img src="/images/logos/ups.svg" alt="UPS" className="h-6 w-auto" loading="eager" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
               </div>
               {/* PostNL */}
               <div className="bg-white rounded-md h-9 w-16 flex items-center justify-center px-1.5">
-                <img src="/images/logos/postnl.svg" alt="PostNL" className="h-5 w-auto" />
+                <img src="/images/logos/postnl.svg" alt="PostNL" className="h-5 w-auto" loading="eager" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
               </div>
               {/* DHL */}
               <div className="bg-[#FFCC00] rounded-md h-9 w-14 flex items-center justify-center">
-                <img src="/images/logos/dhl.svg" alt="DHL" className="h-4 w-auto" />
+                <img src="/images/logos/dhl.svg" alt="DHL" className="h-4 w-auto" loading="eager" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
               </div>
               {/* DPD */}
               <div className="bg-[#DC0032] rounded-md h-9 w-12 flex items-center justify-center">
-                <img src="/images/logos/dpd.svg" alt="DPD" className="h-4 w-auto" />
+                <img src="/images/logos/dpd.svg" alt="DPD" className="h-5 w-auto" loading="eager" onError={(e) => {(e.target as HTMLImageElement).style.display='none'}} />
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function Footer() {
               <li>
                 <Link href="/contact" className="flex items-center gap-2 hover:text-white transition-colors">
                   <MapPinIcon size={15} className="text-gray-400" />
-                  {locale === 'nl' ? 'Locatie' : 'Location'}
+                  {locale === 'nl' ? 'Leyweg 303, Den Haag' : 'Leyweg 303, The Hague'}
                 </Link>
               </li>
               <li>
@@ -210,54 +210,9 @@ export default function Footer() {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-wrap items-center justify-center gap-4">
-            {/* VISA */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/visa.svg" alt="Visa" className="h-5 w-auto" />
-            </div>
-
-            {/* Mastercard */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/mastercard.svg" alt="Mastercard" className="h-5 w-auto" />
-            </div>
-
-            {/* PayPal */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/paypal.svg" alt="PayPal" className="h-5 w-auto" />
-            </div>
-
-            {/* Apple Pay */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/applepay.svg" alt="Apple Pay" className="h-5 w-auto" />
-            </div>
-
-            {/* Google Pay */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/googlepay.svg" alt="Google Pay" className="h-4 w-auto" />
-            </div>
-
-            {/* AMEX */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/amex.svg" alt="American Express" className="h-5 w-auto" />
-            </div>
-
-            {/* SEPA */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/sepa.svg" alt="SEPA" className="h-5 w-auto" />
-            </div>
-
-            {/* Bank Transfer */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/banktransfer.svg" alt="Bank Transfer" className="h-5 w-auto" />
-            </div>
-
             {/* iDEAL */}
             <div className="bg-black rounded-lg h-8 px-2 flex items-center">
               <img src="/images/logos/ideal.svg" alt="iDEAL" className="h-5 w-auto" />
-            </div>
-
-            {/* Bancontact */}
-            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
-              <img src="/images/logos/bancontact.svg" alt="Bancontact" className="h-5 w-auto" />
             </div>
 
             {/* Klarna */}
@@ -282,9 +237,12 @@ export default function Footer() {
             </div>
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-4">
-                <span>{t('footer.kvk')}: 12345678</span>
-                <span>BTW: NL123456789B01</span>
+                <span>{t('footer.kvk')}: 42035906</span>
+                <span>BTW: NL005445900B06</span>
               </div>
+              <p className="text-xs text-gray-500">
+                Bank: NL36INGB0115171061 (LabFix)
+              </p>
               <p className="text-[11px] text-gray-600">
                 {locale === 'nl' ? 'Medemogelijk gemaakt door' : 'Made possible by'}{' '}
                 <a href="https://varexo.nl" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
