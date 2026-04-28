@@ -35,13 +35,6 @@ function findPrice(p: any): number {
 }
 
 export async function GET(request: NextRequest) {
-  const hasAccessToken = process.env.MOBILESENTRIX_ACCESS_TOKEN && process.env.MOBILESENTRIX_ACCESS_TOKEN !== 'your_access_token_here';
-  const hasAccessTokenSecret = process.env.MOBILESENTRIX_ACCESS_TOKEN_SECRET && process.env.MOBILESENTRIX_ACCESS_TOKEN_SECRET !== 'your_access_token_secret_here';
-  
-  if (!hasAccessToken || !hasAccessTokenSecret) {
-    return NextResponse.json({ success: false, error: 'API credentials incompleet', products: [] }, { status: 503 });
-  }
-  
   try {
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('categoryId');

@@ -1,10 +1,10 @@
 /**
  * Mobile Sentrix API Integration
  * OAuth 1.0a Authentication Implementation
- * API Base: https://www.mobilesentrix.eu/api/rest/
+ * API Base: https://www.mobilesentrix.com/api/rest/
  * 
  * REQUIRED ENVIRONMENT VARIABLES:
- * - MOBILESENTRIX_API_URL (default: https://www.mobilesentrix.eu)
+ * - MOBILESENTRIX_API_URL (default: https://www.mobilesentrix.com)
  * - MOBILESENTRIX_CONSUMER_KEY
  * - MOBILESENTRIX_CONSUMER_SECRET  
  * - MOBILESENTRIX_ACCESS_TOKEN
@@ -14,7 +14,7 @@
 import crypto from 'crypto';
 
 // API Configuration
-const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu';
+const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.com';
 const CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
 const CONSUMER_SECRET = process.env.MOBILESENTRIX_CONSUMER_SECRET || '';
 const ACCESS_TOKEN = process.env.MOBILESENTRIX_ACCESS_TOKEN || '';

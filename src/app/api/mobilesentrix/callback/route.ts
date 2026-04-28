@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
             <h3>Volgende stap: Haal de Access Token op</h3>
             <ol>
               <li>Open Postman of een API tool</li>
-              <li>Maak een <code>POST</code> request naar:<br><code>https://www.mobilesentrix.eu/oauth/authorize/identifiercallback</code></li>
+              <li>Maak een <code>POST</code> request naar:<br><code>https://www.mobilesentrix.com/oauth/authorize/identifiercallback</code></li>
               <li>Header: <code>Content-Type: application/json</code></li>
               <li>Body (JSON):
 <pre style="background:#1e293b;color:#e2e8f0;padding:15px;border-radius:8px;overflow-x:auto;">

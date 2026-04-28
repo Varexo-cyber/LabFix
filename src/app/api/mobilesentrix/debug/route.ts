@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu';
+const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.com';
 const CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
 const CONSUMER_SECRET = process.env.MOBILESENTRIX_CONSUMER_SECRET || '';
 const ACCESS_TOKEN = process.env.MOBILESENTRIX_ACCESS_TOKEN || '';
