@@ -39,21 +39,14 @@ function generateOAuthSignature(
   consumerSecret: string,
   tokenSecret: string
 ): string {
-  const sortedParams = Object.keys(params)
-    .sort()
-    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-    .join('&');
-  
-  const signatureBaseString = `${method.toUpperCase()}&${encodeURIComponent(url)}&${encodeURIComponent(sortedParams)}`;
-  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
-  
-  return crypto.createHmac('sha1', signingKey).update(signatureBaseString).digest('base64');
+  // Mobilesentrix only supports PLAINTEXT signature method
+  // Format: consumer_secret&token_secret
+  return `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
 }
 
 function createOAuthHeader(
   method: string,
-  endpoint: string,
-  queryParams: Record<string, string> = {}
+  endpoint: string
 ): string {
   const url = `${API_BASE_URL}/api/rest${endpoint}`;
   const timestamp = generateTimestamp();
@@ -62,11 +55,10 @@ function createOAuthHeader(
   const oauthParams: Record<string, string> = {
     oauth_consumer_key: CONSUMER_KEY,
     oauth_token: ACCESS_TOKEN,
-    oauth_signature_method: 'HMAC-SHA1',
+    oauth_signature_method: 'PLAINTEXT',
     oauth_timestamp: timestamp,
     oauth_nonce: nonce,
     oauth_version: '1.0',
-    ...queryParams,
   };
   
   const signature = generateOAuthSignature(
@@ -97,8 +89,16 @@ async function apiRequest<T>(
   body?: any,
   queryParams: Record<string, string> = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}/api/rest${endpoint}`;
-  const oauthHeader = createOAuthHeader(method, endpoint, queryParams);
+  // Build URL with query params
+  let url = `${API_BASE_URL}/api/rest${endpoint}`;
+  if (Object.keys(queryParams).length > 0) {
+    const qs = Object.entries(queryParams)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+    url += (url.includes('?') ? '&' : '?') + qs;
+  }
+  
+  const oauthHeader = createOAuthHeader(method, endpoint);
   
   const headers: Record<string, string> = {
     'Authorization': oauthHeader,
@@ -117,12 +117,14 @@ async function apiRequest<T>(
   if (body && method !== 'GET') {
     options.body = JSON.stringify(body);
   }
-  
+
+  console.log(`[MS API] ${method} ${url}`);
   const response = await fetch(url, options);
   
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Mobile Sentrix API Error ${response.status}: ${errorText}`);
+    console.error(`[MS API] Error ${response.status}:`, errorText.substring(0, 200));
+    throw new Error(`Mobile Sentrix API Error ${response.status}: ${errorText.substring(0, 200)}`);
   }
   
   return response.json();
@@ -290,20 +292,12 @@ export async function getCategoryById(id: string): Promise<MSCategory> {
 
 export async function getProducts(
   page: number = 1,
-  pageSize: number = 100,
-  filters?: Record<string, string>
+  pageSize: number = 100
 ): Promise<MSProduct[]> {
   const params: Record<string, string> = {
-    'searchCriteria[currentPage]': page.toString(),
-    'searchCriteria[pageSize]': pageSize.toString(),
+    'limit': pageSize.toString(),
+    'page': page.toString(),
   };
-  
-  if (filters) {
-    Object.entries(filters).forEach(([key, value]) => {
-      params[`searchCriteria[filterGroups][0][filters][0][${key}]`] = value;
-    });
-  }
-  
   return apiRequest<MSProduct[]>('/products', 'GET', undefined, params);
 }
 
@@ -311,29 +305,99 @@ export async function getProductBySku(sku: string): Promise<MSProduct> {
   return apiRequest<MSProduct>(`/products/${sku}`, 'GET');
 }
 
-export async function searchProducts(query: string): Promise<MSProduct[]> {
-  const params = {
-    'searchCriteria[filterGroups][0][filters][0][field]': 'name',
-    'searchCriteria[filterGroups][0][filters][0][value]': `%${query}%`,
-    'searchCriteria[filterGroups][0][filters][0][conditionType]': 'like',
+export async function searchProducts(query: string, pageSize: number = 100): Promise<MSProduct[]> {
+  // Magento 1.x REST filter format
+  const params: Record<string, string> = {
+    'limit': pageSize.toString(),
+    'page': '1',
+    'filter[0][attribute]': 'name',
+    'filter[0][like]': `%${query}%`,
   };
   return apiRequest<MSProduct[]>('/products', 'GET', undefined, params);
 }
 
 export async function getProductsByBrand(brand: string): Promise<MSProduct[]> {
-  const params = {
-    'searchCriteria[filterGroups][0][filters][0][field]': 'brand',
-    'searchCriteria[filterGroups][0][filters][0][value]': brand,
+  const params: Record<string, string> = {
+    'limit': '100',
+    'page': '1',
+    'filter[0][attribute]': 'manufacturer',
+    'filter[0][eq]': brand,
   };
   return apiRequest<MSProduct[]>('/products', 'GET', undefined, params);
 }
 
-export async function getProductsByCategory(categoryId: string): Promise<MSProduct[]> {
-  const params = {
-    'searchCriteria[filterGroups][0][filters][0][field]': 'category_id',
-    'searchCriteria[filterGroups][0][filters][0][value]': categoryId,
+export async function getProductsByCategory(categoryId: string, page: number = 1, pageSize: number = 100): Promise<MSProduct[]> {
+  // Magento 1.x REST format: /products with limit, page, and category_id
+  const params: Record<string, string> = {
+    'limit': pageSize.toString(),
+    'page': page.toString(),
+    'category_id': categoryId,
   };
   return apiRequest<MSProduct[]>('/products', 'GET', undefined, params);
+}
+
+function toProductArray(result: any): any[] {
+  let products: any[] = [];
+  if (Array.isArray(result)) {
+    products = result;
+  } else if (result && typeof result === 'object') {
+    products = Object.values(result);
+  }
+  return products.filter((p: any) => p && typeof p === 'object' && (p.sku || p.entity_id || p.name));
+}
+
+// Fetch ALL products across all pages (up to maxPages)
+export async function getAllProducts(maxPages: number = 100, pageSize: number = 100): Promise<any[]> {
+  const allProducts: any[] = [];
+  
+  for (let page = 1; page <= maxPages; page++) {
+    console.log(`[MS API] Fetching all products page ${page}...`);
+    try {
+      const result = await getProducts(page, pageSize);
+      const filtered = toProductArray(result);
+      
+      console.log(`[MS API] Page ${page}: got ${filtered.length} products`);
+      if (filtered.length === 0) break;
+      allProducts.push(...filtered);
+      
+      if (filtered.length < pageSize) break;
+    } catch (error: any) {
+      console.error(`[MS API] Error on page ${page}:`, error?.message);
+      break;
+    }
+  }
+  
+  console.log(`[MS API] Total products fetched: ${allProducts.length}`);
+  return allProducts;
+}
+
+// Fetch ALL products from a category across all pages
+export async function getAllProductsByCategory(categoryId: string, maxPages: number = 100, pageSize: number = 100): Promise<any[]> {
+  const allProducts: any[] = [];
+  
+  for (let page = 1; page <= maxPages; page++) {
+    console.log(`[MS API] Fetching category ${categoryId} page ${page}...`);
+    try {
+      const result = await getProductsByCategory(categoryId, page, pageSize);
+      const filtered = toProductArray(result);
+      
+      console.log(`[MS API] Category ${categoryId} page ${page}: got ${filtered.length} products`);
+      if (filtered.length === 0) break;
+      allProducts.push(...filtered);
+      
+      if (filtered.length < pageSize) break;
+    } catch (error: any) {
+      console.error(`[MS API] Error on category page ${page}:`, error?.message);
+      // If first page fails, try without category filter
+      if (page === 1) {
+        console.log(`[MS API] Category filter might not be supported, try without`);
+      }
+      break;
+    }
+  }
+  
+  console.log(`[MS API] Total category products fetched: ${allProducts.length}`);
+  return allProducts;
 }
 
 // ==========================================

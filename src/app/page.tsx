@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import ScrollReveal from '@/components/ScrollReveal';
 import { fetchProducts, Product, fetchNews, NewsArticle } from '@/lib/store';
 import {
-  Truck, Shield, Headphones, CreditCard, ArrowRight, Smartphone, Wrench,
+  Truck, Shield, CreditCard, ArrowRight, Smartphone, Wrench,
   Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock,
   CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles,
   ShieldCheck
@@ -248,71 +248,6 @@ export default function HomePage() {
       </section>
       </ScrollReveal>
 
-      {/* Quality Standards Section */}
-      <ScrollReveal animation="fade-up">
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-            <div className="grid lg:grid-cols-2 gap-0">
-              {/* Left Content */}
-              <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-                <div className="mb-6">
-                  {/* Colored Dots */}
-                  <div className="flex items-center gap-1 mb-4">
-                    <div className="flex gap-1">
-                      <span className="w-3 h-3 rounded-full bg-orange-400"></span>
-                      <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                      <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-                    </div>
-                    <div className="flex gap-1 ml-1">
-                      <span className="w-3 h-3 rounded-full bg-gray-400"></span>
-                      <span className="w-3 h-3 rounded-full bg-gray-600"></span>
-                      <span className="w-3 h-3 rounded-full bg-teal-400"></span>
-                    </div>
-                  </div>
-                  <p className="text-gray-500 text-sm mb-2">{locale === 'nl' ? 'Ontdek Onze' : 'Discover Our'}</p>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                    {locale === 'nl' ? 'Kwaliteitsnormen' : 'Quality Standards'}
-                  </h2>
-                </div>
-                <Link href="/products" className="inline-block text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors">
-                  {locale === 'nl' 
-                    ? 'Ontdek alle kwaliteiten die ons onderscheiden →' 
-                    : 'Discover all the qualities that set us apart →'}
-                </Link>
-                
-                {/* LABFIX Technology Badge */}
-                <div className="mb-8">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-cyan-500 font-bold text-lg tracking-wider">AQ7</span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-gray-800 font-bold text-lg tracking-wider">TECHNOLOGY</span>
-                  </div>
-                  <p className="text-gray-600 text-sm mb-1">
-                    {locale === 'nl' ? 'Ongeëvenaarde Kwaliteit en Betrouwbaarheid' : 'Unmatched Quality and Reliability'}
-                  </p>
-                  <p className="text-gray-500 text-xs">
-                    {locale === 'nl' 
-                      ? 'Topklasse materialen en strenge kwaliteitscontrole voor betrouwbare prestaties.'
-                      : 'Top-tier materials and rigorous Quality control for reliable performance.'}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Right - Product Images Grid */}
-              <div className="bg-gray-50 p-8 md:p-12 flex items-center justify-center">
-                <img 
-                  src="/images/products/iphone-screen.jpg" 
-                  alt="iPhone Parts"
-                  className="rounded-2xl shadow-xl w-full max-w-md object-contain"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      </ScrollReveal>
-
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
         <ScrollReveal animation="stagger">
@@ -439,12 +374,6 @@ export default function HomePage() {
                 stat: locale === 'nl' ? 'A+' : 'A+',
                 title: locale === 'nl' ? 'Kwaliteit' : 'Quality',
                 desc: locale === 'nl' ? 'Uitstekende kwaliteit onderdelen' : 'Excellent quality parts'
-              },
-              { 
-                icon: <Headphones size={40} />, 
-                stat: locale === 'nl' ? 'Support' : 'Support',
-                title: locale === 'nl' ? 'Service' : 'Service',
-                desc: locale === 'nl' ? 'Technische ondersteuning via mail' : 'Technical support via email'
               },
             ].map((item, i) => (
               <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">

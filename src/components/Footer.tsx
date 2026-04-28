@@ -235,15 +235,16 @@ export default function Footer() {
                   : 'All trademarks are properties of their respective holders. LabFix does not own or make claim to trademarks used on this website.'}
               </p>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-4">
-                <span>{t('footer.kvk')}: 42035906</span>
-                <span>BTW: NL005445900B06</span>
+            <div className="flex flex-col items-start sm:items-end gap-2">
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm text-gray-400">
+                <span className="text-gray-500">{t('footer.kvk')}:</span>
+                <span>42035906</span>
+                <span className="text-gray-500">BTW:</span>
+                <span>NL005445900B06</span>
+                <span className="text-gray-500">Bank:</span>
+                <span>NL36INGB0115171061</span>
               </div>
-              <p className="text-xs text-gray-500">
-                Bank: NL36INGB0115171061 (LabFix)
-              </p>
-              <p className="text-[11px] text-gray-600">
+              <p className="text-xs text-gray-600 mt-1">
                 {locale === 'nl' ? 'Medemogelijk gemaakt door' : 'Made possible by'}{' '}
                 <a href="https://varexo.nl" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white transition-colors">
                   Varexo

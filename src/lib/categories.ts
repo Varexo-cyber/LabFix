@@ -1337,6 +1337,35 @@ export function getAllCategoryOptions(): { value: string; label: string; brand: 
   return options;
 }
 
+// Helper: Combine ALL category systems into one unified BrandCategory[] format for admin forms
+export function getAllProductCategories(): BrandCategory[] {
+  const convertAccessory = (cats: AccessoryCategory[], prefix: string): BrandCategory[] =>
+    cats.map(cat => ({
+      slug: `${prefix}${cat.slug}`,
+      name: cat.name,
+      nameEn: cat.nameEn,
+      subcategories: cat.subcategories.map(sub => ({
+        slug: sub.slug,
+        name: sub.name,
+        nameEn: sub.nameEn,
+        models: [] as ModelItem[],
+      })),
+    }));
+
+  return [
+    ...brandCategories,
+    // Accessoires section header
+    { slug: '_section_acc', name: '── 🎧 ACCESSOIRES ──', nameEn: '── 🎧 ACCESSORIES ──', subcategories: [] },
+    ...convertAccessory(accessoryCategories, 'acc-'),
+    // PC Onderdelen section header
+    { slug: '_section_pc', name: '── 💻 PC ONDERDELEN ──', nameEn: '── 💻 PC PARTS ──', subcategories: [] },
+    ...convertAccessory(pcPartsCategories, 'pc-'),
+    // PC Accessoires section header
+    { slug: '_section_pca', name: '── 🖱️ PC ACCESSOIRES ──', nameEn: '── 🖱️ PC ACCESSORIES ──', subcategories: [] },
+    ...convertAccessory(pcAccessoryCategories, 'pca-'),
+  ];
+}
+
 // ==================== ACCESSORIES CATEGORY SYSTEM ====================
 // Accessories organized by brand and model compatibility
 

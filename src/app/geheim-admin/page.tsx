@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
-import { brandCategories, getAllCategoryOptions } from '@/lib/categories';
+import { brandCategories, getAllCategoryOptions, getAllProductCategories } from '@/lib/categories';
 import { normalizeImageUrl } from '@/lib/utils';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
@@ -34,7 +34,7 @@ export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [dbCategories, setDbCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [dbInitialized, setDbInitialized] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
@@ -118,8 +118,8 @@ export default function AdminPage() {
     loadDbCategories();
   }, []);
 
-  // Use database categories if available, otherwise fallback to hardcoded
-  const productCategories = dbCategories.length > 0 ? dbCategories : brandCategories;
+  // Always use the complete category list from categories.ts (brands + accessories + PC parts + PC accessories)
+  const productCategories = getAllProductCategories();
 
   useEffect(() => {
     if (activeTab === 'newsletter') {
@@ -579,7 +579,9 @@ export default function AdminPage() {
                         <option>Loading...</option>
                       ) : (
                         productCategories.map((brand) => (
-                          <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                          brand.slug.startsWith('_section_') 
+                            ? <option key={brand.slug} disabled style={{fontWeight:'bold',color:'#666'}}>{brand.name}</option>
+                            : <option key={brand.slug} value={brand.slug}>{brand.name}</option>
                         ))
                       )}
                     </select>
@@ -759,7 +761,9 @@ export default function AdminPage() {
                 <option>Laden...</option>
               ) : (
                 productCategories.map((brand) => (
-                  <option key={brand.slug} value={brand.slug}>{brand.name}</option>
+                  brand.slug.startsWith('_section_')
+                    ? <option key={brand.slug} disabled style={{fontWeight:'bold',color:'#666'}}>{brand.name}</option>
+                    : <option key={brand.slug} value={brand.slug}>{brand.name}</option>
                 ))
               )}
             </select>

@@ -21,6 +21,7 @@ function ProductsPageContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
+  const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [expandedSections, setExpandedSections] = useState({
     brands: true,
@@ -48,6 +49,10 @@ function ProductsPageContent() {
 
   const toggleBrandExpand = (slug: string) => {
     setExpandedBrands(prev => prev.includes(slug) ? prev.filter(b => b !== slug) : [...prev, slug]);
+  };
+
+  const toggleSubExpand = (key: string) => {
+    setExpandedSubs(prev => prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]);
   };
 
   const filteredProducts = useMemo(() => {
@@ -201,17 +206,48 @@ function ProductsPageContent() {
                           </div>
                           {isExpanded && (
                             <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                              {brand.subcategories?.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
-                                <button
-                                  key={sub.slug}
-                                  onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); }}
-                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                    selectedBrand === brand.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {locale === 'en' ? sub.nameEn : sub.name}
-                                </button>
-                              ))}
+                              {brand.subcategories?.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || s.models?.some(m => m.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((sub) => {
+                                const subKey = `${brand.slug}/${sub.slug}`;
+                                const isSubExpanded = expandedSubs.includes(subKey);
+                                const hasModels = sub.models && sub.models.length > 0;
+                                return (
+                                  <div key={sub.slug}>
+                                    <div className="flex items-center">
+                                      <button
+                                        onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(''); }}
+                                        className={`flex-1 text-left px-2 py-1 rounded-l transition-colors text-xs ${
+                                          selectedBrand === brand.slug && selectedSub === sub.slug && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                        }`}
+                                      >
+                                        {locale === 'en' ? sub.nameEn : sub.name}
+                                      </button>
+                                      {hasModels && (
+                                        <button
+                                          onClick={() => toggleSubExpand(subKey)}
+                                          className="px-1.5 py-1 hover:bg-gray-100 rounded-r transition-colors"
+                                        >
+                                          <ChevronDown size={10} className={`transition-transform text-gray-400 ${isSubExpanded ? 'rotate-180' : ''}`} />
+                                        </button>
+                                      )}
+                                    </div>
+                                    {isSubExpanded && hasModels && (
+                                      <div className="ml-2 border-l border-gray-100 pl-2 space-y-0.5">
+                                        {sub.models.filter(m => !sidebarSearch || m.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((model) => (
+                                          <button
+                                            key={model.slug}
+                                            onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(model.slug); }}
+                                            className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
+                                              selectedModel === model.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
+                                            }`}
+                                          >
+                                            {model.name}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -232,33 +268,47 @@ function ProductsPageContent() {
                 </button>
                 {expandedSections.accessories && (
                   <div className="space-y-0.5 mt-1">
-                    {accessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
-                      <div key={`acc-${cat.slug}`}>
-                        <button
-                          onClick={() => { setSelectedBrand(`acc-${cat.slug}`); setSelectedSub(''); }}
-                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
-                            selectedBrand === `acc-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          {locale === 'en' ? cat.nameEn : cat.name}
-                        </button>
-                        {selectedBrand === `acc-${cat.slug}` && cat.subcategories && (
-                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                    {accessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
+                      const catKey = `acc-${cat.slug}`;
+                      const isExpanded = expandedBrands.includes(catKey);
+                      return (
+                        <div key={catKey}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </button>
+                            {cat.subcategories && cat.subcategories.length > 0 && (
                               <button
-                                key={sub.slug}
-                                onClick={() => { setSelectedBrand(`acc-${cat.slug}`); setSelectedSub(sub.slug); }}
-                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                }`}
+                                onClick={() => toggleBrandExpand(catKey)}
+                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
                               >
-                                {locale === 'en' ? sub.nameEn : sub.name}
+                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                               </button>
-                            ))}
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {isExpanded && cat.subcategories && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {locale === 'en' ? sub.nameEn : sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -274,33 +324,47 @@ function ProductsPageContent() {
                 </button>
                 {expandedSections.pcParts && (
                   <div className="space-y-0.5 mt-1">
-                    {pcPartsCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
-                      <div key={`pc-${cat.slug}`}>
-                        <button
-                          onClick={() => { setSelectedBrand(`pc-${cat.slug}`); setSelectedSub(''); }}
-                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
-                            selectedBrand === `pc-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          {locale === 'en' ? cat.nameEn : cat.name}
-                        </button>
-                        {selectedBrand === `pc-${cat.slug}` && cat.subcategories && (
-                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                    {pcPartsCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
+                      const catKey = `pc-${cat.slug}`;
+                      const isExpanded = expandedBrands.includes(catKey);
+                      return (
+                        <div key={catKey}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </button>
+                            {cat.subcategories && cat.subcategories.length > 0 && (
                               <button
-                                key={sub.slug}
-                                onClick={() => { setSelectedBrand(`pc-${cat.slug}`); setSelectedSub(sub.slug); }}
-                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                }`}
+                                onClick={() => toggleBrandExpand(catKey)}
+                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
                               >
-                                {locale === 'en' ? sub.nameEn : sub.name}
+                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                               </button>
-                            ))}
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {isExpanded && cat.subcategories && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {locale === 'en' ? sub.nameEn : sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -316,33 +380,47 @@ function ProductsPageContent() {
                 </button>
                 {expandedSections.pcAcc && (
                   <div className="space-y-0.5 mt-1">
-                    {pcAccessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => (
-                      <div key={`pca-${cat.slug}`}>
-                        <button
-                          onClick={() => { setSelectedBrand(`pca-${cat.slug}`); setSelectedSub(''); }}
-                          className={`block w-full text-left px-3 py-1.5 rounded transition-colors text-sm ${
-                            selectedBrand === `pca-${cat.slug}` ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                          }`}
-                        >
-                          {locale === 'en' ? cat.nameEn : cat.name}
-                        </button>
-                        {selectedBrand === `pca-${cat.slug}` && cat.subcategories && (
-                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                            {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                    {pcAccessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
+                      const catKey = `pca-${cat.slug}`;
+                      const isExpanded = expandedBrands.includes(catKey);
+                      return (
+                        <div key={catKey}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </button>
+                            {cat.subcategories && cat.subcategories.length > 0 && (
                               <button
-                                key={sub.slug}
-                                onClick={() => { setSelectedBrand(`pca-${cat.slug}`); setSelectedSub(sub.slug); }}
-                                className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                  selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                }`}
+                                onClick={() => toggleBrandExpand(catKey)}
+                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
                               >
-                                {locale === 'en' ? sub.nameEn : sub.name}
+                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                               </button>
-                            ))}
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {isExpanded && cat.subcategories && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {locale === 'en' ? sub.nameEn : sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

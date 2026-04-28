@@ -1,25 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Download, RefreshCw, Package, TrendingUp, CheckCircle, AlertCircle, ExternalLink, Play, Settings, ChevronDown, ChevronUp, Search } from 'lucide-react';
-
-interface ImportStats {
-  total_imported: number;
-  published: number;
-  drafts: number;
-  synced_last_24h: number;
-}
-
-interface ImportedProduct {
-  id: string;
-  name: string;
-  sku: string;
-  price: number;
-  stock: number;
-  status: string;
-  ms_last_sync: string;
-  created_at: string;
-}
+import React, { useState, useEffect, useMemo } from 'react';
+import { Download, RefreshCw, Package, TrendingUp, CheckCircle, AlertCircle, ExternalLink, Play, Settings, Search, Edit3 } from 'lucide-react';
+import { brandCategories } from '@/lib/categories';
 
 interface MSCategory {
   entity_id: string;
@@ -32,106 +15,158 @@ interface MSProduct {
   entity_id: string;
   sku: string;
   name: string;
-  price: string;
+  price: number;
   stock_qty: number;
   is_in_stock: boolean;
   image_url: string;
+  brand: string;
+  description: string;
+}
+
+// Build flat list of ALL categories from hierarchical brandCategories
+function buildCategoryOptions(): { value: string; label: string; depth: number }[] {
+  const options: { value: string; label: string; depth: number }[] = [];
+  for (const brand of brandCategories) {
+    options.push({ value: brand.slug, label: brand.name, depth: 0 });
+    for (const sub of brand.subcategories) {
+      options.push({ value: `${brand.slug}/${sub.slug}`, label: `${brand.name} > ${sub.name}`, depth: 1 });
+      for (const model of sub.models) {
+        options.push({ value: `${brand.slug}/${sub.slug}/${model.slug}`, label: `${brand.name} > ${sub.name} > ${model.name}`, depth: 2 });
+      }
+    }
+  }
+  return options;
 }
 
 export default function MobileSentrixImport() {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<boolean | null>(null);
-  const [stats, setStats] = useState<ImportStats | null>(null);
-  const [recentImports, setRecentImports] = useState<ImportedProduct[]>([]);
   
-  // Categories
-  const [categories, setCategories] = useState<MSCategory[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  // MS Categories (source)
+  const [msCategories, setMsCategories] = useState<MSCategory[]>([]);
+  const [msCategoriesLoading, setMsCategoriesLoading] = useState(false);
+  const [selectedMsCategory, setSelectedMsCategory] = useState<string>('');
+  
+  // Target LabFix category
+  const [targetCategory, setTargetCategory] = useState<string>('');
+  const [categorySearch, setCategorySearch] = useState('');
+  const allCategoryOptions = useMemo(() => buildCategoryOptions(), []);
   
   // Products
   const [products, setProducts] = useState<MSProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [customNames, setCustomNames] = useState<Record<string, string>>({});
+  const [customPrices, setCustomPrices] = useState<Record<string, string>>({});
+  const [editingPrice, setEditingPrice] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [loadedPages, setLoadedPages] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   
   // Import settings
   const [priceMarkup, setPriceMarkup] = useState(20);
-  const [autoPublish, setAutoPublish] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
   const [importProgress, setImportProgress] = useState<{current: number; total: number} | null>(null);
 
-  // Load stats and categories on mount
   useEffect(() => {
-    loadStats();
-    loadCategories();
+    loadMsCategories();
   }, []);
 
-  const loadStats = async () => {
-    try {
-      const res = await fetch('/api/mobilesentrix/import');
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data.stats);
-        setRecentImports(data.recentImports);
-      }
-    } catch (error) {
-      console.error('Failed to load import stats:', error);
-    }
-  };
-
-  const loadCategories = async () => {
-    setCategoriesLoading(true);
+  const loadMsCategories = async () => {
+    setMsCategoriesLoading(true);
     try {
       const res = await fetch('/api/mobilesentrix/categories');
       if (res.ok) {
         const data = await res.json();
-        setCategories(data.categories || []);
+        setMsCategories(data.categories || []);
       }
     } catch (error) {
       console.error('Failed to load categories:', error);
     }
-    setCategoriesLoading(false);
+    setMsCategoriesLoading(false);
   };
 
   const loadProducts = async (categoryId: string, page: number = 1, append: boolean = false) => {
     setProductsLoading(true);
+    if (!append) {
+      setProducts([]);
+      setSelectedProducts(new Set());
+      setCustomNames({});
+      setCustomPrices({});
+    }
     try {
-      const res = await fetch(`/api/mobilesentrix/products?categoryId=${categoryId}&page=${page}&pageSize=50`);
+      const catParam = categoryId === 'all' ? '' : `&categoryId=${categoryId}`;
+      const res = await fetch(`/api/mobilesentrix/products?page=${page}&pageSize=100${catParam}`);
       if (res.ok) {
         const data = await res.json();
-        const newProducts = data.products || [];
+        const newProducts = Array.isArray(data.products) ? data.products : [];
         if (append) {
           setProducts(prev => [...prev, ...newProducts]);
         } else {
           setProducts(newProducts);
-          setSelectedProducts(new Set()); // Clear selection on new category
         }
-        setHasMore(newProducts.length === 50);
-        setCurrentPage(page);
+        setLoadedPages(page);
+        setHasMore(newProducts.length >= 100);
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Onbekende fout' }));
+        console.error('Products API error:', err);
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Failed to load products:', error);
+      setHasMore(false);
     }
     setProductsLoading(false);
   };
 
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+  const loadAllProducts = async (categoryId: string) => {
+    setProductsLoading(true);
+    setProducts([]);
+    setSelectedProducts(new Set());
+    setCustomNames({});
+    setCustomPrices({});
+    
+    let page = 1;
+    let allProducts: MSProduct[] = [];
+    let keepGoing = true;
+    
+    while (keepGoing) {
+      try {
+        const catParam = categoryId === 'all' ? '' : `&categoryId=${categoryId}`;
+        const res = await fetch(`/api/mobilesentrix/products?page=${page}&pageSize=100${catParam}`);
+        if (res.ok) {
+          const data = await res.json();
+          const newProducts = Array.isArray(data.products) ? data.products : [];
+          if (newProducts.length === 0) {
+            keepGoing = false;
+          } else {
+            allProducts = [...allProducts, ...newProducts];
+            setProducts([...allProducts]);
+            setLoadedPages(page);
+            page++;
+            if (newProducts.length < 100) keepGoing = false;
+          }
+        } else {
+          keepGoing = false;
+        }
+      } catch {
+        keepGoing = false;
+      }
+    }
+    
+    setHasMore(false);
+    setProductsLoading(false);
+  };
+
+  const handleMsCategoryChange = (categoryId: string) => {
+    setSelectedMsCategory(categoryId);
     if (categoryId) {
-      loadProducts(categoryId, 1, false);
+      loadProducts(categoryId);
     } else {
       setProducts([]);
       setSelectedProducts(new Set());
-    }
-  };
-
-  const loadMore = () => {
-    if (selectedCategory && hasMore && !productsLoading) {
-      loadProducts(selectedCategory, currentPage + 1, true);
     }
   };
 
@@ -147,19 +182,19 @@ export default function MobileSentrixImport() {
     });
   };
 
+  const safeProducts = Array.isArray(products) ? products : [];
+  const filteredProducts = safeProducts.filter(p => 
+    (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const selectAll = () => {
-    const visibleProducts = filteredProducts.map(p => p.entity_id);
-    setSelectedProducts(new Set(visibleProducts));
+    setSelectedProducts(new Set(filteredProducts.map(p => p.entity_id)));
   };
 
   const deselectAll = () => {
     setSelectedProducts(new Set());
   };
-
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const testConnection = async () => {
     setTesting(true);
@@ -179,66 +214,76 @@ export default function MobileSentrixImport() {
       setImportResult({ error: 'Selecteer minimaal 1 product om te importeren' });
       return;
     }
+    if (!targetCategory) {
+      setImportResult({ error: 'Kies een LabFix categorie voor de import' });
+      return;
+    }
 
     setLoading(true);
     setImportResult(null);
-    setImportProgress({ current: 0, total: selectedProducts.size });
     
-    const productsToImport = products.filter(p => selectedProducts.has(p.entity_id));
-    const imported = [];
-    const errors = [];
+    const productsToImport = safeProducts
+      .filter(p => selectedProducts.has(p.entity_id))
+      .map(p => ({
+        ...p,
+        customName: customNames[p.entity_id] || p.name,
+        price: customPrices[p.entity_id] ? parseFloat(customPrices[p.entity_id]) : p.price,
+        targetCategory,
+      }));
 
-    // Import one by one to show progress
-    for (let i = 0; i < productsToImport.length; i++) {
-      const product = productsToImport[i];
-      setImportProgress({ current: i + 1, total: productsToImport.length });
-      
+    setImportProgress({ current: 0, total: productsToImport.length });
+
+    // Import in batches of 5
+    const batchSize = 5;
+    let totalImported = 0;
+    let totalErrors = 0;
+    const allErrors: any[] = [];
+
+    for (let i = 0; i < productsToImport.length; i += batchSize) {
+      const batch = productsToImport.slice(i, i + batchSize);
+      setImportProgress({ current: Math.min(i + batchSize, productsToImport.length), total: productsToImport.length });
+
       try {
         const res = await fetch('/api/mobilesentrix/import', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            products: [{
-              entity_id: product.entity_id,
-              sku: product.sku,
-              name: product.name,
-              price: product.price,
-              stock_qty: product.stock_qty,
-              is_in_stock: product.is_in_stock,
-              image_url: product.image_url,
-            }],
-            priceMarkup: priceMarkup,
-            autoPublish: autoPublish,
+            products: batch,
+            priceMarkup,
+            targetCategory,
           }),
         });
         
         const data = await res.json();
-        if (data.success) {
-          imported.push(product);
-        } else {
-          errors.push({ sku: product.sku, error: data.error });
-        }
+        totalImported += data.imported || 0;
+        totalErrors += data.errors || 0;
+        if (data.errorDetails) allErrors.push(...data.errorDetails);
       } catch (error: any) {
-        errors.push({ sku: product.sku, error: error.message });
+        totalErrors += batch.length;
+        allErrors.push({ error: error.message });
       }
     }
     
     setImportResult({
-      success: errors.length === 0,
-      message: `${imported.length} producten geïmporteerd${errors.length > 0 ? ` (${errors.length} fouten)` : ''}`,
-      imported: imported.length,
-      errors: errors.length,
-      errorDetails: errors,
+      success: totalErrors === 0,
+      message: `${totalImported} producten geïmporteerd${totalErrors > 0 ? ` (${totalErrors} fouten)` : ''}`,
+      imported: totalImported,
+      errors: totalErrors,
+      errorDetails: allErrors,
     });
     
-    if (imported.length > 0) {
-      loadStats();
-      // Clear selection after successful import
+    if (totalImported > 0) {
       setSelectedProducts(new Set());
     }
     
     setLoading(false);
     setImportProgress(null);
+  };
+
+  const formatPrice = (price: number | string) => {
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(num) || num === 0) return '—';
+    return `$${num.toFixed(2)}`;
   };
 
   return (
@@ -262,40 +307,6 @@ export default function MobileSentrixImport() {
         </div>
       </div>
 
-      {/* Stats */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <div className="flex items-center gap-2 text-gray-500 mb-1">
-              <Package size={18} />
-              <span className="text-sm">Totaal Geïmporteerd</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{stats.total_imported}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <div className="flex items-center gap-2 text-green-600 mb-1">
-              <CheckCircle size={18} />
-              <span className="text-sm">Gepubliceerd</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{stats.published}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <div className="flex items-center gap-2 text-orange-600 mb-1">
-              <Settings size={18} />
-              <span className="text-sm">Drafts</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{stats.drafts}</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <div className="flex items-center gap-2 text-blue-600 mb-1">
-              <RefreshCw size={18} />
-              <span className="text-sm">Sync 24u</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-800">{stats.synced_last_24h}</p>
-          </div>
-        </div>
-      )}
-
       <div className="grid md:grid-cols-2 gap-6">
         {/* Connection Test */}
         <div className="bg-white rounded-xl shadow-md p-6">
@@ -312,22 +323,16 @@ export default function MobileSentrixImport() {
             className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
             {testing ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                Verbinden...
-              </>
+              <><RefreshCw size={18} className="animate-spin" /> Verbinden...</>
             ) : (
-              <>
-                <ExternalLink size={18} />
-                Test Verbinding
-              </>
+              <><ExternalLink size={18} /> Test Verbinding</>
             )}
           </button>
           {testResult !== null && (
             <div className={`mt-3 p-3 rounded-lg flex items-center gap-2 ${testResult ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
               {testResult ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
               <span className="text-sm font-medium">
-                {testResult ? 'Verbinding succesvol!' : 'Verbinding mislukt. Check je API key.'}
+                {testResult ? 'Verbinding succesvol!' : 'Verbinding mislukt. Check je API credentials.'}
               </span>
             </div>
           )}
@@ -341,25 +346,60 @@ export default function MobileSentrixImport() {
           </h3>
           
           <div className="space-y-4">
+            {/* MS Source Category */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Selecteer Categorie
+                Bron Categorie (MobileSentrix)
               </label>
               <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
+                value={selectedMsCategory}
+                onChange={(e) => handleMsCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                disabled={categoriesLoading}
+                disabled={msCategoriesLoading}
               >
-                <option value="">{categoriesLoading ? 'Laden...' : 'Kies een categorie'}</option>
-                {categories.map((cat) => (
+                <option value="">{msCategoriesLoading ? 'Laden...' : 'Kies een MS categorie'}</option>
+                <option value="all">📦 ALLE PRODUCTEN (volledig assortiment)</option>
+                {msCategories.map((cat) => (
                   <option key={cat.entity_id} value={cat.entity_id}>
-                    {cat.name} {cat.children_count > 0 && `(${cat.children_count} subcategorieën)`}
+                    {cat.name}
                   </option>
                 ))}
               </select>
             </div>
 
+            {/* Target LabFix Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Doel Categorie (LabFix webshop)
+              </label>
+              <input
+                type="text"
+                placeholder="Zoek categorie..."
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-1 text-sm"
+              />
+              <select
+                value={targetCategory}
+                onChange={(e) => setTargetCategory(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                size={6}
+              >
+                <option value="">-- Kies een categorie --</option>
+                {allCategoryOptions
+                  .filter(cat => !categorySearch || cat.label.toLowerCase().includes(categorySearch.toLowerCase()))
+                  .map((cat) => (
+                  <option key={cat.value} value={cat.value} style={{ paddingLeft: cat.depth * 16 }}>
+                    {cat.depth === 0 ? `📁 ${cat.label}` : cat.depth === 1 ? `  📂 ${cat.label.split(' > ').pop()}` : `    📄 ${cat.label.split(' > ').pop()}`}
+                  </option>
+                ))}
+              </select>
+              {targetCategory && (
+                <p className="text-xs text-blue-600 mt-1">Gekozen: <strong>{allCategoryOptions.find(c => c.value === targetCategory)?.label || targetCategory}</strong></p>
+              )}
+            </div>
+
+            {/* Price Markup */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Prijs Marge (%)
@@ -375,42 +415,23 @@ export default function MobileSentrixImport() {
                 <span className="text-sm text-gray-500">Winstmarge bovenop inkoopprijs</span>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="autoPublish"
-                checked={autoPublish}
-                onChange={(e) => setAutoPublish(e.target.checked)}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="autoPublish" className="text-sm text-gray-700">
-                Automatisch publiceren (anders als draft importeren)
-              </label>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Products Selection */}
-      {selectedCategory && (
+      {selectedMsCategory && (
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-800 flex items-center gap-2">
               <Package size={18} />
-              Producten ({filteredProducts.length} van {products.length})
+              Producten ({filteredProducts.length} van {safeProducts.length})
             </h3>
             <div className="flex items-center gap-2">
-              <button
-                onClick={selectAll}
-                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
+              <button onClick={selectAll} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                 Selecteer alles
               </button>
-              <button
-                onClick={deselectAll}
-                className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
+              <button onClick={deselectAll} className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                 Deselecteer alles
               </button>
             </div>
@@ -428,83 +449,149 @@ export default function MobileSentrixImport() {
             />
           </div>
 
-          {/* Selected count */}
           {selectedProducts.size > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg">
-              <span className="font-medium">{selectedProducts.size}</span> producten geselecteerd voor import
+            <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg flex items-center justify-between">
+              <span><span className="font-medium">{selectedProducts.size}</span> producten geselecteerd</span>
+              <span className="text-sm">Categorie: <strong>{allCategoryOptions.find(c => c.value === targetCategory)?.label || targetCategory}</strong></span>
             </div>
           )}
 
-          {/* Products grid */}
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {filteredProducts.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                {productsLoading ? 'Producten laden...' : 'Geen producten gevonden'}
-              </p>
-            ) : (
-              filteredProducts.map((product) => (
-                <div
-                  key={product.entity_id}
-                  onClick={() => toggleProductSelection(product.entity_id)}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedProducts.has(product.entity_id)
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
-                  }`}
+          {productsLoading && safeProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <RefreshCw size={32} className="animate-spin text-blue-600 mb-3" />
+              <span className="text-gray-700 font-medium">Alle producten laden van MobileSentrix...</span>
+              <span className="text-gray-500 text-sm mt-1">Dit kan even duren (alle pagina's worden opgehaald)</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">
+                  <strong>{safeProducts.length}</strong> producten geladen
+                  {searchQuery && ` — ${filteredProducts.length} resultaten`}
+                </span>
+                <button
+                  onClick={() => {
+                    const all = new Set(filteredProducts.map((p: MSProduct) => p.entity_id));
+                    setSelectedProducts(prev => prev.size === all.size ? new Set() : all);
+                  }}
+                  className="text-sm text-blue-600 hover:underline"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedProducts.has(product.entity_id)}
-                    onChange={() => toggleProductSelection(product.entity_id)}
-                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-12 h-12 object-contain bg-white rounded"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800 truncate">{product.name}</p>
-                    <p className="text-sm text-gray-500">SKU: {product.sku}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-800">${parseFloat(product.price).toFixed(2)}</p>
-                    <p className={`text-sm ${product.is_in_stock ? 'text-green-600' : 'text-red-600'}`}>
-                      {product.is_in_stock ? `✓ ${product.stock_qty} op voorraad` : '✗ Niet op voorraad'}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                  {selectedProducts.size === filteredProducts.length ? 'Deselecteer alles' : 'Selecteer alles'}
+                </button>
+              </div>
+              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                {filteredProducts.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">Geen producten gevonden</p>
+                ) : (
+                  filteredProducts.map((product) => (
+                    <div
+                      key={product.entity_id}
+                      className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                        selectedProducts.has(product.entity_id)
+                          ? 'bg-blue-50 border border-blue-200'
+                          : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.has(product.entity_id)}
+                        onChange={() => toggleProductSelection(product.entity_id)}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                      />
+                      {product.image_url && (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-12 h-12 object-contain bg-white rounded"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        {editingName === product.entity_id ? (
+                          <input
+                            type="text"
+                            value={customNames[product.entity_id] ?? product.name}
+                            onChange={(e) => setCustomNames(prev => ({ ...prev, [product.entity_id]: e.target.value }))}
+                            onBlur={() => setEditingName(null)}
+                            onKeyDown={(e) => e.key === 'Enter' && setEditingName(null)}
+                            autoFocus
+                            className="w-full px-2 py-1 border rounded text-sm focus:outline-none focus:border-blue-500"
+                          />
+                        ) : (
+                          <p 
+                            className="font-medium text-gray-800 truncate cursor-pointer hover:text-blue-600 flex items-center gap-1"
+                            onClick={(e) => { e.stopPropagation(); setEditingName(product.entity_id); }}
+                            title="Klik om naam aan te passen"
+                          >
+                            {customNames[product.entity_id] || product.name}
+                            <Edit3 size={12} className="text-gray-400 flex-shrink-0" />
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {editingPrice === product.entity_id ? (
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={customPrices[product.entity_id] ?? product.price}
+                            onChange={(e) => setCustomPrices(prev => ({ ...prev, [product.entity_id]: e.target.value }))}
+                            onBlur={() => setEditingPrice(null)}
+                            onKeyDown={(e) => e.key === 'Enter' && setEditingPrice(null)}
+                            autoFocus
+                            className="w-24 px-2 py-1 border rounded text-sm text-right focus:outline-none focus:border-blue-500"
+                          />
+                        ) : (
+                          <p 
+                            className="font-medium text-gray-800 cursor-pointer hover:text-blue-600"
+                            onClick={(e) => { e.stopPropagation(); setEditingPrice(product.entity_id); }}
+                            title="Klik om prijs aan te passen"
+                          >
+                            {formatPrice(customPrices[product.entity_id] ? parseFloat(customPrices[product.entity_id]) : product.price)}
+                            <Edit3 size={10} className="inline ml-1 text-gray-400" />
+                          </p>
+                        )}
+                        <p className={`text-sm ${product.is_in_stock ? 'text-green-600' : 'text-red-600'}`}>
+                          {product.is_in_stock 
+                            ? `${product.stock_qty > 0 ? product.stock_qty + ' op voorraad' : 'Op voorraad'}` 
+                            : 'Niet op voorraad'}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
-          {/* Load more */}
-          {hasMore && !searchQuery && (
-            <button
-              onClick={loadMore}
-              disabled={productsLoading}
-              className="w-full mt-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-            >
-              {productsLoading ? (
-                <>
-                  <RefreshCw size={18} className="animate-spin" />
-                  Laden...
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={18} />
-                  Meer producten laden
-                </>
+              {/* Pagination buttons */}
+              {hasMore && !productsLoading && (
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => loadProducts(selectedMsCategory, loadedPages + 1, true)}
+                    className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download size={16} /> Volgende 100 laden (pagina {loadedPages + 1})
+                  </button>
+                  <button
+                    onClick={() => loadAllProducts(selectedMsCategory)}
+                    className="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Package size={16} /> ALLES laden
+                  </button>
+                </div>
               )}
-            </button>
+              {productsLoading && safeProducts.length > 0 && (
+                <div className="flex items-center justify-center py-4 gap-2">
+                  <RefreshCw size={18} className="animate-spin text-blue-600" />
+                  <span className="text-gray-600">Meer producten laden... (pagina {loadedPages + 1}, {safeProducts.length} geladen)</span>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
 
       {/* Import Button */}
-      {selectedCategory && (
+      {selectedMsCategory && (
         <div className="bg-white rounded-xl shadow-md p-6">
           <button
             onClick={startImport}
@@ -519,68 +606,28 @@ export default function MobileSentrixImport() {
             ) : (
               <>
                 <Play size={24} />
-                Importeer {selectedProducts.size} Producten
+                Importeer {selectedProducts.size} Producten naar {allCategoryOptions.find(c => c.value === targetCategory)?.label || 'categorie'}
               </>
             )}
           </button>
 
           {importResult && (
-            <div className={`mt-4 p-4 rounded-lg ${importResult.error ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+            <div className={`mt-4 p-4 rounded-lg ${importResult.errors > 0 ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
               <div className="flex items-start gap-2">
-                {importResult.error ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
+                {importResult.errors > 0 ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
                 <div>
-                  <p className="font-medium">
-                    {importResult.error ? 'Import Mislukt' : importResult.message}
-                  </p>
-                  {importResult.imported !== undefined && (
-                    <p className="text-sm mt-1">
-                      {importResult.imported} producten geïmporteerd
-                      {importResult.errors > 0 && ` (${importResult.errors} fouten)`}
-                    </p>
+                  <p className="font-medium">{importResult.message}</p>
+                  {importResult.errorDetails?.length > 0 && (
+                    <ul className="text-sm mt-2 space-y-1">
+                      {importResult.errorDetails.slice(0, 5).map((e: any, i: number) => (
+                        <li key={i}>{e.sku}: {e.error}</li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Recent Imports */}
-      {recentImports.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Recent Geïmporteerde Producten</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-3 text-sm font-medium text-gray-500">Naam</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-gray-500">SKU</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-gray-500">Prijs</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-gray-500">Voorraad</th>
-                  <th className="text-left py-2 px-3 text-sm font-medium text-gray-500">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentImports.slice(0, 10).map((product) => (
-                  <tr key={product.id} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="py-2 px-3 text-sm">{product.name}</td>
-                    <td className="py-2 px-3 text-sm font-mono text-gray-500">{product.sku}</td>
-                    <td className="py-2 px-3 text-sm">€{product.price}</td>
-                    <td className="py-2 px-3 text-sm">{product.stock}</td>
-                    <td className="py-2 px-3">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        product.status === 'active' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-orange-100 text-orange-700'
-                      }`}>
-                        {product.status === 'active' ? 'Gepubliceerd' : 'Draft'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       )}
     </div>
