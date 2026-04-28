@@ -10,7 +10,7 @@ import {
   Truck, Shield, CreditCard, ArrowRight, Smartphone, Wrench,
   Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock,
   CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles,
-  ShieldCheck
+  ShieldCheck, Headphones
 } from 'lucide-react';
 import { brandCategories } from '@/lib/categories';
 
@@ -299,15 +299,15 @@ export default function HomePage() {
               },
               {
                 icon: <Package size={32} />,
-                title: locale === 'nl' ? 'Retail Ready' : 'Retail Ready',
-                desc: locale === 'nl' ? 'Accessoires en onderdelen klaar voor verkoop in uw winkel.' : 'Accessories and parts ready for sale in your store.',
+                title: locale === 'nl' ? 'Snelle Service' : 'Fast Service',
+                desc: locale === 'nl' ? 'De meeste reparaties binnen 1 uur terwijl u wacht.' : 'Most repairs done within 1 hour while you wait.',
                 image: '/images/banners/iphone-parts.jpg',
                 bg: 'bg-gradient-to-br from-rose-500 to-pink-600'
               },
               {
                 icon: <Wrench size={32} />,
-                title: locale === 'nl' ? 'Tools & Supplies' : 'Tools & Supplies',
-                desc: locale === 'nl' ? 'Professioneel gereedschap voor elke reparatie.' : 'Professional tools for every repair.',
+                title: locale === 'nl' ? 'Vakkundige Reparatie' : 'Expert Repair',
+                desc: locale === 'nl' ? 'Professionele reparateurs met jarenlange ervaring.' : 'Professional repairers with years of experience.',
                 image: '/images/banners/repair-tools.jpg',
                 bg: 'bg-gradient-to-br from-emerald-500 to-green-600'
               }
@@ -374,6 +374,12 @@ export default function HomePage() {
                 stat: locale === 'nl' ? 'A+' : 'A+',
                 title: locale === 'nl' ? 'Kwaliteit' : 'Quality',
                 desc: locale === 'nl' ? 'Uitstekende kwaliteit onderdelen' : 'Excellent quality parts'
+              },
+              { 
+                icon: <Headphones size={40} />, 
+                stat: locale === 'nl' ? 'Support' : 'Support',
+                title: locale === 'nl' ? 'Service' : 'Service',
+                desc: locale === 'nl' ? 'Klantenservice via Email en WhatsApp' : 'Customer support via Email and WhatsApp'
               },
             ].map((item, i) => (
               <div key={i} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow">
