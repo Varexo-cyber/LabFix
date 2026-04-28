@@ -379,8 +379,8 @@ export default function RepairPage() {
                 }`}
               >
                 <MapPin size={32} className="text-primary-500 mb-3" />
-                <h3 className="font-bold text-lg mb-2">Ophalen (Gratis)</h3>
-                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis (vrijdag, zat, zon, maandag). Volgende dag brengen we het weer terug. Complexe reparaties worden in onze werkplaats uitgevoerd.</p>
+                <h3 className="font-bold text-lg mb-2">Ophalen</h3>
+                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug. Complexe reparaties worden in onze werkplaats uitgevoerd.</p>
               </button>
               
               <button
@@ -418,12 +418,9 @@ export default function RepairPage() {
                 {pickupValid && (
                   <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
                     <CheckCircle size={16} />
-                    Gratis ophalen beschikbaar in deze regio!
+                    Ophalen beschikbaar in deze regio!
                   </p>
                 )}
-                <p className="text-gray-500 text-sm mt-2">
-                  Gratis ophalen beschikbaar in: Den Haag, Delft, Rijswijk, Zoetermeer, Nootdorp, Pijnacker, Leidschendam, Wateringen, Monster, Poeldijk, Naaldwijk, Honselersdijk, 's-Gravenzande
-                </p>
               </div>
             )}
 
@@ -461,7 +458,7 @@ export default function RepairPage() {
                     return;
                   }
                   if (formData.serviceType === 'pickup' && !pickupValid) {
-                    setError('Vul een geldige postcode/plaats in voor gratis ophalen');
+                    setError('Vul een geldige postcode/plaats in voor ophalen');
                     return;
                   }
                   setError('');
@@ -484,7 +481,7 @@ export default function RepairPage() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Kies Ophalen Datum & Tijd</h2>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-sm text-blue-800">
-                    <strong>Let op:</strong> Wij komen uw apparaat ophalen bij u thuis. Volgende dag brengen we het gerepareerd weer terug. Alleen beschikbaar op vrijdag, zaterdag, zondag en maandag.
+                    <strong>Let op:</strong> Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug.
                   </p>
                 </div>
                 
@@ -546,7 +543,7 @@ export default function RepairPage() {
                       <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
                       <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                       <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
-                      <p><span className="text-gray-500">Service:</span> Ophalen (Gratis)</p>
+                      <p><span className="text-gray-500">Service:</span> Ophalen</p>
                       <p><span className="text-gray-500">Locatie:</span> {pickupLocation}</p>
                     </div>
                   </div>
