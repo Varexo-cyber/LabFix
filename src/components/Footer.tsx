@@ -138,12 +138,6 @@ export default function Footer() {
             <ul className="space-y-3 text-sm mb-6">
               <li>
                 <Link href="/contact" className="flex items-center gap-2 hover:text-white transition-colors">
-                  <MapPinIcon size={15} className="text-gray-400" />
-                  {locale === 'nl' ? 'Leyweg 303, Den Haag' : 'Leyweg 303, The Hague'}
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="flex items-center gap-2 hover:text-white transition-colors">
                   <Phone size={15} className="text-gray-400" />
                   {locale === 'nl' ? 'Telefoon' : 'Phone'}
                 </Link>
@@ -218,6 +212,16 @@ export default function Footer() {
             {/* Klarna */}
             <div className="bg-[#FFB3C7] rounded-lg h-8 px-2 flex items-center">
               <img src="/images/logos/klarna.svg" alt="Klarna" className="h-5 w-auto" />
+            </div>
+
+            {/* Apple Pay */}
+            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
+              <img src="/images/logos/applepay.svg" alt="Apple Pay" className="h-5 w-auto" />
+            </div>
+
+            {/* Google Pay */}
+            <div className="bg-white rounded-lg h-8 px-2 flex items-center">
+              <img src="/images/logos/googlepay.svg" alt="Google Pay" className="h-5 w-auto" />
             </div>
           </div>
         </div>

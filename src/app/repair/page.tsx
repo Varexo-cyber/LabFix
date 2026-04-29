@@ -302,7 +302,7 @@ export default function RepairPage() {
             {/* File Upload */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Foto's van het probleem (optioneel)
+                Foto's van het probleem *
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors">
                 <input
@@ -353,6 +353,10 @@ export default function RepairPage() {
                   setError('Vul alle verplichte velden in');
                   return;
                 }
+                if (attachments.length === 0) {
+                  setError('Upload minimaal 1 foto van het probleem');
+                  return;
+                }
                 setError('');
                 setStep(2);
               }}
@@ -380,7 +384,7 @@ export default function RepairPage() {
               >
                 <MapPin size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Ophalen</h3>
-                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug. Complexe reparaties worden in onze werkplaats uitgevoerd.</p>
+                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug.</p>
               </button>
               
               <button

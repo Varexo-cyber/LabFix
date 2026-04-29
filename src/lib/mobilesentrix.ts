@@ -102,7 +102,17 @@ async function apiRequest<T>(
   
   const headers: Record<string, string> = {
     'Authorization': oauthHeader,
-    'Accept': 'application/json',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9,nl;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Referer': 'https://www.mobilesentrix.com/',
+    'Origin': 'https://www.mobilesentrix.com',
+    'Connection': 'keep-alive',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'Cache-Control': 'no-cache',
   };
   
   if (body && method !== 'GET') {
@@ -118,13 +128,19 @@ async function apiRequest<T>(
     options.body = JSON.stringify(body);
   }
 
+  // DEBUG LOGGING
   console.log(`[MS API] ${method} ${url}`);
+  console.log(`[MS API] Headers:`, JSON.stringify(headers, null, 2));
+  
   const response = await fetch(url, options);
+  
+  console.log(`[MS API] Response status: ${response.status} ${response.statusText}`);
+  console.log(`[MS API] Response headers:`, Object.fromEntries(response.headers.entries()));
   
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`[MS API] Error ${response.status}:`, errorText.substring(0, 200));
-    throw new Error(`Mobile Sentrix API Error ${response.status}: ${errorText.substring(0, 200)}`);
+    console.error(`[MS API] Error ${response.status} full text:`, errorText.substring(0, 500));
+    throw new Error(`Mobile Sentrix API Error ${response.status}: ${errorText.substring(0, 500)}`);
   }
   
   return response.json();

@@ -118,14 +118,6 @@ export default function ContactPage() {
           <div className="bg-white rounded-xl shadow-md p-8 animate-fade-in-right delay-200">
             <h2 className="text-xl font-bold mb-6">{t('footer.contact')}</h2>
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <MapPin className="text-accent-500 flex-shrink-0 mt-1" size={20} />
-                <div>
-                  <p className="font-semibold">LabFix</p>
-                  <p className="text-gray-600">Leyweg 303</p>
-                  <p className="text-gray-600">2545CK Den Haag</p>
-                </div>
-              </div>
               <div className="flex items-center gap-3">
                 <Mail className="text-accent-500 flex-shrink-0" size={20} />
                 <a href="mailto:info@labfix.nl" className="text-primary-500 hover:underline">info@labfix.nl</a>
