@@ -6,23 +6,21 @@
  * REQUIRED ENVIRONMENT VARIABLES:
  * - MOBILESENTRIX_API_URL (default: https://www.mobilesentrix.com)
  * - MOBILESENTRIX_CONSUMER_KEY
- * - MOBILESENTRIX_CONSUMER_SECRET  
+ * - MOBILESENTRIX_CONSUMER_SECRET
  * - MOBILESENTRIX_ACCESS_TOKEN
  * - MOBILESENTRIX_ACCESS_TOKEN_SECRET
+ * - MOBILESENTRIX_PROXY_URL (Cloudflare Worker proxy)
  */
-
-import crypto from 'crypto';
 
 // API Configuration
 const API_BASE_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.com';
+const PROXY_URL = process.env.MOBILESENTRIX_PROXY_URL || 'https://mobilesentrix-proxy.lucky-bread-36a0.workers.dev';
 const CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
 const CONSUMER_SECRET = process.env.MOBILESENTRIX_CONSUMER_SECRET || '';
 const ACCESS_TOKEN = process.env.MOBILESENTRIX_ACCESS_TOKEN || '';
 const ACCESS_TOKEN_SECRET = process.env.MOBILESENTRIX_ACCESS_TOKEN_SECRET || '';
 
-// ==========================================
-// OAUTH 1.0a HELPER FUNCTIONS
-// ==========================================
+import crypto from 'crypto';
 
 function generateNonce(): string {
   return crypto.randomBytes(16).toString('hex');
@@ -39,8 +37,6 @@ function generateOAuthSignature(
   consumerSecret: string,
   tokenSecret: string
 ): string {
-  // Mobilesentrix only supports PLAINTEXT signature method
-  // Format: consumer_secret&token_secret
   return `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
 }
 
@@ -89,53 +85,30 @@ async function apiRequest<T>(
   body?: any,
   queryParams: Record<string, string> = {}
 ): Promise<T> {
-  // Build URL with query params
-  let url = `${API_BASE_URL}/api/rest${endpoint}`;
-  if (Object.keys(queryParams).length > 0) {
-    const qs = Object.entries(queryParams)
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-      .join('&');
-    url += (url.includes('?') ? '&' : '?') + qs;
-  }
-  
   const oauthHeader = createOAuthHeader(method, endpoint);
   
-  const headers: Record<string, string> = {
-    'Authorization': oauthHeader,
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.9,nl;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Referer': 'https://www.mobilesentrix.com/',
-    'Origin': 'https://www.mobilesentrix.com',
-    'Connection': 'keep-alive',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-    'Cache-Control': 'no-cache',
-  };
-  
-  if (body && method !== 'GET') {
-    headers['Content-Type'] = 'application/json';
-  }
-  
-  const options: RequestInit = {
+  // Use Cloudflare Worker proxy to bypass Cloudflare blocking
+  const proxyBody = {
+    endpoint,
+    oauthHeader,
     method,
-    headers,
+    queryParams,
+    apiBaseUrl: API_BASE_URL,
   };
   
-  if (body && method !== 'GET') {
-    options.body = JSON.stringify(body);
-  }
-
   // DEBUG LOGGING
-  console.log(`[MS API] ${method} ${url}`);
-  console.log(`[MS API] Headers:`, JSON.stringify(headers, null, 2));
+  console.log(`[MS API] Proxying ${method} ${endpoint} via Cloudflare Worker`);
+  console.log(`[MS API] Proxy URL: ${PROXY_URL}`);
   
-  const response = await fetch(url, options);
+  const response = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(proxyBody),
+  });
   
-  console.log(`[MS API] Response status: ${response.status} ${response.statusText}`);
-  console.log(`[MS API] Response headers:`, Object.fromEntries(response.headers.entries()));
+  console.log(`[MS API] Proxy response status: ${response.status} ${response.statusText}`);
   
   if (!response.ok) {
     const errorText = await response.text();
@@ -818,11 +791,11 @@ export const SHIPPING_METHOD_CODES = {
 
 export async function testConnection(): Promise<{ success: boolean; message: string }> {
   try {
-    // Check if all required credentials are present
+    // Check if all OAuth credentials are present
     if (!CONSUMER_KEY || !CONSUMER_SECRET || !ACCESS_TOKEN || !ACCESS_TOKEN_SECRET) {
       return {
         success: false,
-        message: 'Ontbrekende API credentials. Controleer environment variables.',
+        message: 'Ontbrekende API credentials. Controleer alle 4 environment variables.',
       };
     }
     

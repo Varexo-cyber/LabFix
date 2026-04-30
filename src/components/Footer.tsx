@@ -220,7 +220,7 @@ export default function Footer() {
             </div>
 
             {/* Google Pay */}
-            <div className="bg-white rounded-lg h-8 px-2 flex items-center">
+            <div className="bg-black rounded-lg h-8 px-2 flex items-center">
               <img src="/images/logos/googlepay.svg" alt="Google Pay" className="h-5 w-auto" />
             </div>
           </div>
