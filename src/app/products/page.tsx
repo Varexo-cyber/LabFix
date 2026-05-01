@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
 import { fetchProducts, Product } from '@/lib/store';
-import { Filter, Grid3X3, List, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
+import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories } from '@/lib/categories';
 
@@ -18,8 +18,9 @@ function ProductsPageContent() {
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 12;
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
   const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -46,6 +47,11 @@ function ProductsPageContent() {
     if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
   }, [searchParams]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedBrand, selectedSub, selectedModel, searchQuery, sortBy]);
 
   const toggleBrandExpand = (slug: string) => {
     setExpandedBrands(prev => prev.includes(slug) ? prev.filter(b => b !== slug) : [...prev, slug]);
@@ -106,6 +112,18 @@ function ProductsPageContent() {
 
     return filtered;
   }, [products, selectedBrand, selectedSub, selectedModel, searchQuery, sortBy, locale]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE
+  );
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -481,34 +499,13 @@ function ProductsPageContent() {
                 <option value="name">{t('products.sortName')}</option>
               </select>
 
-              {/* View toggle */}
-              <div className="hidden sm:flex items-center gap-1 border rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 ${viewMode === 'grid' ? 'bg-primary-500 text-white' : 'text-gray-400'}`}
-                >
-                  <Grid3X3 size={16} />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 ${viewMode === 'list' ? 'bg-primary-500 text-white' : 'text-gray-400'}`}
-                >
-                  <List size={16} />
-                </button>
-              </div>
             </div>
           </div>
 
           {/* Products Grid */}
-          {filteredProducts.length > 0 ? (
-            <div
-              className={
-                viewMode === 'grid'
-                  ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-                  : 'space-y-4'
-              }
-            >
-              {filteredProducts.map((product, i) => (
+          {paginatedProducts.length > 0 ? (
+            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
+              {paginatedProducts.map((product, i) => (
                 <div key={product.id} className={`animate-fade-in-up`} style={{ animationDelay: `${Math.min(i * 0.05, 0.4)}s` }}>
                   <ProductCard product={product} />
                 </div>
@@ -518,6 +515,47 @@ function ProductsPageContent() {
             <div className="bg-white rounded-xl shadow-md p-12 text-center animate-fade-in">
               <p className="text-gray-500 text-lg">{t('products.noProducts')}</p>
             </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                ← {locale === 'nl' ? 'Vorige' : 'Previous'}
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`min-w-[36px] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage === page
+                      ? 'bg-primary-500 text-white'
+                      : 'border hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                {locale === 'nl' ? 'Volgende' : 'Next'} →
+              </button>
+            </div>
+          )}
+
+          {filteredProducts.length > 0 && (
+            <p className="text-center text-sm text-gray-500 mt-3">
+              {locale === 'nl'
+                ? `Pagina ${currentPage} van ${totalPages} (${filteredProducts.length} producten)`
+                : `Page ${currentPage} of ${totalPages} (${filteredProducts.length} products)`}
+            </p>
           )}
         </div>
       </div>

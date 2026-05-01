@@ -40,6 +40,8 @@ export default function AdminPage() {
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState(emptyProduct);
   const [filterCategory, setFilterCategory] = useState('');
+  const [filterSubCategory, setFilterSubCategory] = useState('');
+  const [filterModel, setFilterModel] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
@@ -258,9 +260,23 @@ export default function AdminPage() {
   };
 
   const filteredProducts = products.filter((p) => {
-    const matchesCategory = !filterCategory || p.category === filterCategory;
-    const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    // Category matching: support full paths like samsung/galaxy-s/galaxy-s26-ultra
+    const catParts = p.category.split('/');
+    const matchesCategory = !filterCategory || p.category === filterCategory || catParts[0] === filterCategory || p.category.startsWith(filterCategory + '/');
+    const matchesSub = !filterSubCategory || p.subcategory === filterSubCategory || catParts[1] === filterSubCategory || p.category.includes('/' + filterSubCategory + '/');
+    const matchesModel = !filterModel || p.model === filterModel || catParts[2] === filterModel || p.category.endsWith('/' + filterModel);
+
+    // Broad search across all relevant fields
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.nameEn.toLowerCase().includes(q) ||
+      p.sku.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.descriptionEn.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q);
+
+    return matchesCategory && matchesSub && matchesModel && matchesSearch;
   });
 
   // Login screen
@@ -751,12 +767,12 @@ export default function AdminPage() {
 
         {/* Toolbar */}
         <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Zoek producten..." className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500" />
-            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
+              placeholder="Zoek producten, SKU, naam, beschrijving..." className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500 w-64" />
+            <select value={filterCategory} onChange={(e) => { setFilterCategory(e.target.value); setFilterSubCategory(''); setFilterModel(''); }}
               className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500">
-              <option value="">Alle categorieën</option>
+              <option value="">Alle merken</option>
               {categoriesLoading ? (
                 <option>Laden...</option>
               ) : (
@@ -767,6 +783,28 @@ export default function AdminPage() {
                 ))
               )}
             </select>
+            {filterCategory && (
+              <select value={filterSubCategory} onChange={(e) => { setFilterSubCategory(e.target.value); setFilterModel(''); }}
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500">
+                <option value="">Alle series</option>
+                {(productCategories.find(b => b.slug === filterCategory)?.subcategories || []).map((sub: any) => (
+                  <option key={sub.slug} value={sub.slug}>{sub.name}</option>
+                ))}
+              </select>
+            )}
+            {filterSubCategory && (
+              <select value={filterModel} onChange={(e) => setFilterModel(e.target.value)}
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500">
+                <option value="">Alle modellen</option>
+                {(() => {
+                  const brand = productCategories.find(b => b.slug === filterCategory);
+                  const sub = brand?.subcategories.find((s: any) => s.slug === filterSubCategory);
+                  return (sub?.models || []).map((model: any) => (
+                    <option key={model.slug} value={model.slug}>{model.name}</option>
+                  ));
+                })()}
+              </select>
+            )}
           </div>
           <button onClick={startCreate} className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-600 transition-colors flex items-center gap-2 text-sm font-semibold">
             <Plus size={16} /> Nieuw Product
