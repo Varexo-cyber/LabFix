@@ -34,7 +34,7 @@ export default {
         oauthHeader,        // The full OAuth Authorization header
         method = 'GET',
         queryParams = {},
-        apiBaseUrl = 'https://www.mobilesentrix.com'  // Default to .com
+        apiBaseUrl = 'https://www.mobilesentrix.eu'  // Default to .eu
       } = body;
 
       if (!endpoint || !oauthHeader) {

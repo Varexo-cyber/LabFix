@@ -59,15 +59,21 @@ function ProductsPageContent() {
     let filtered = [...products];
 
     if (selectedBrand) {
-      filtered = filtered.filter((p) => p.category === selectedBrand);
+      filtered = filtered.filter((p) => p.category === selectedBrand || p.category.startsWith(selectedBrand + '/'));
     }
 
     if (selectedSub) {
-      filtered = filtered.filter((p) => p.subcategory === selectedSub);
+      filtered = filtered.filter((p) => {
+        const parts = p.category.split('/');
+        return p.subcategory === selectedSub || parts[1] === selectedSub || p.category.includes('/' + selectedSub + '/');
+      });
     }
 
     if (selectedModel) {
-      filtered = filtered.filter((p) => p.model === selectedModel);
+      filtered = filtered.filter((p) => {
+        const parts = p.category.split('/');
+        return p.model === selectedModel || parts[2] === selectedModel || p.category.endsWith('/' + selectedModel);
+      });
     }
 
     if (searchQuery) {
@@ -182,7 +188,7 @@ function ProductsPageContent() {
                 {expandedSections.brands && (
                   <div className="max-h-[280px] overflow-y-auto space-y-0.5 mt-1">
                     {brandCategories.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((brand) => {
-                      const brandCount = products.filter(p => p.category === brand.slug).length;
+                      const brandCount = products.filter(p => p.category === brand.slug || p.category.startsWith(brand.slug + '/')).length;
                       const isExpanded = expandedBrands.includes(brand.slug);
                       const hasMatch = !sidebarSearch || brand.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()));
                       return (
