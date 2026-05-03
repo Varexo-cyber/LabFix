@@ -183,10 +183,23 @@ export default function MobileSentrixImport() {
   };
 
   const safeProducts = Array.isArray(products) ? products : [];
-  const filteredProducts = safeProducts.filter(p => 
-    (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.sku || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return safeProducts;
+    const q = searchQuery.trim().toLowerCase();
+    // Use word-boundary regex: "iphone 5" matches "iPhone 5" but NOT "iPhone 5C" or "iPhone 5S"
+    try {
+      const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+      const exact = safeProducts.filter(p => regex.test(p.name || '') || regex.test(p.sku || ''));
+      // If exact match finds results, use those; otherwise fall back to loose match
+      if (exact.length > 0) return exact;
+    } catch {}
+    // Fallback: loose includes match
+    return safeProducts.filter(p =>
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.sku || '').toLowerCase().includes(q)
+    );
+  }, [safeProducts, searchQuery]);
 
   const selectAll = () => {
     setSelectedProducts(new Set(filteredProducts.map(p => p.entity_id)));

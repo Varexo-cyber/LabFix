@@ -93,15 +93,11 @@ function ProductsPageContent() {
     }
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.nameEn.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          p.descriptionEn.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q)
-      );
+      const words = searchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+      filtered = filtered.filter((p) => {
+        const haystack = `${p.name} ${p.nameEn} ${p.description} ${p.descriptionEn} ${p.sku}`.toLowerCase();
+        return words.every(word => haystack.includes(word));
+      });
     }
 
     switch (sortBy) {
