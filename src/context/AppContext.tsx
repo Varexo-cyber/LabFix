@@ -35,11 +35,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
 
   useEffect(() => {
-    const savedLocale = localStorage.getItem('labfix_locale') as Locale;
-    const savedCurrency = localStorage.getItem('labfix_currency') as Currency;
-    if (savedLocale && (savedLocale === 'nl' || savedLocale === 'en')) {
-      setLocaleState(savedLocale);
+    // Auto-detect language based on domain: labfix.nl = NL, labfix.eu = EN
+    const hostname = window.location.hostname;
+    let domainLocale: Locale | null = null;
+    if (hostname.endsWith('.eu') || hostname.endsWith('.com')) {
+      domainLocale = 'en';
+    } else if (hostname.endsWith('.nl')) {
+      domainLocale = 'nl';
     }
+
+    // Domain-based locale takes priority; fallback to saved preference
+    const savedLocale = localStorage.getItem('labfix_locale') as Locale;
+    const effectiveLocale = domainLocale || (savedLocale && (savedLocale === 'nl' || savedLocale === 'en') ? savedLocale : 'nl');
+    setLocaleState(effectiveLocale);
+    localStorage.setItem('labfix_locale', effectiveLocale);
+
+    const savedCurrency = localStorage.getItem('labfix_currency') as Currency;
     if (savedCurrency && ['EUR', 'USD', 'GBP'].includes(savedCurrency)) {
       setCurrencyState(savedCurrency);
     }

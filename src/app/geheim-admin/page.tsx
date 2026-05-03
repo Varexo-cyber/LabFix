@@ -73,6 +73,9 @@ export default function AdminPage() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [repairStatus, setRepairStatus] = useState<RepairStatus>('pending');
 
+  // Multi-select products state
+  const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+
   // Custom confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -226,6 +229,40 @@ export default function AdminPage() {
     );
   };
 
+  const toggleProductSelect = (id: string) => {
+    setSelectedProductIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedProductIds.size === filteredProducts.length) {
+      setSelectedProductIds(new Set());
+    } else {
+      setSelectedProductIds(new Set(filteredProducts.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedProductIds.size === 0) return;
+    showConfirm(
+      `${selectedProductIds.size} producten verwijderen`,
+      `Weet je zeker dat je ${selectedProductIds.size} producten wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.`,
+      async () => {
+        const ids = Array.from(selectedProductIds);
+        for (let i = 0; i < ids.length; i++) {
+          await deleteProduct(ids[i]);
+        }
+        setSelectedProductIds(new Set());
+        const prods = await fetchProducts();
+        setProducts(prods);
+        closeConfirm();
+      }
+    );
+  };
+
   const startEdit = (product: Product) => {
     setEditing(product);
     setCreating(false);
@@ -266,15 +303,11 @@ export default function AdminPage() {
     const matchesSub = !filterSubCategory || p.subcategory === filterSubCategory || catParts[1] === filterSubCategory || p.category.includes('/' + filterSubCategory + '/');
     const matchesModel = !filterModel || p.model === filterModel || catParts[2] === filterModel || p.category.endsWith('/' + filterModel);
 
-    // Broad search across all relevant fields
+    // Broad search: ALL words must match (not just substring)
     const q = searchQuery.toLowerCase().trim();
-    const matchesSearch = !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.nameEn.toLowerCase().includes(q) ||
-      p.sku.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.descriptionEn.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q);
+    const words = q ? q.split(/\s+/) : [];
+    const haystack = `${p.name} ${p.nameEn} ${p.sku} ${p.description} ${p.descriptionEn} ${p.category}`.toLowerCase();
+    const matchesSearch = !q || words.every(word => haystack.includes(word));
 
     return matchesCategory && matchesSub && matchesModel && matchesSearch;
   });
@@ -811,12 +844,38 @@ export default function AdminPage() {
           </button>
         </div>
 
+        {/* Bulk action bar */}
+        {selectedProductIds.size > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between animate-fade-in">
+            <span className="text-sm font-semibold text-red-700">
+              {selectedProductIds.size} product{selectedProductIds.size > 1 ? 'en' : ''} geselecteerd
+            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSelectedProductIds(new Set())} className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-colors">
+                Deselecteer alles
+              </button>
+              <button onClick={handleBulkDelete} className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1.5">
+                <Trash2 size={14} /> Verwijder ({selectedProductIds.size})
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Products table */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={filteredProducts.length > 0 && selectedProductIds.size === filteredProducts.length}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
+                      title="Alles selecteren"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Product</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">SKU</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Categorie</th>
@@ -827,7 +886,15 @@ export default function AdminPage() {
               </thead>
               <tbody className="divide-y">
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+                  <tr key={product.id} className={`hover:bg-gray-50 ${selectedProductIds.has(product.id) ? 'bg-blue-50' : ''}`}>
+                    <td className="px-3 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedProductIds.has(product.id)}
+                        onChange={() => toggleProductSelect(product.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {product.image && (

@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProducts, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale } = useApp();
@@ -28,7 +28,9 @@ function ProductsPageContent() {
     brands: true,
     pcParts: false,
     pcAcc: false,
-    accessories: false
+    accessories: false,
+    laptopBrands: false,
+    laptopParts: false
   });
 
   useEffect(() => {
@@ -41,11 +43,19 @@ function ProductsPageContent() {
     const model = searchParams.get('model');
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
+    const accessory = searchParams.get('accessory');
+    const laptopBrand = searchParams.get('laptopBrand');
+    const laptopModel = searchParams.get('laptopModel');
+    const laptopPart = searchParams.get('laptopPart');
     if (brand) { setSelectedBrand(brand); setExpandedBrands([brand]); }
     if (sub) setSelectedSub(sub);
     if (model) setSelectedModel(model);
     if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
+    if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); }
+    if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); }
+    if (laptopModel) setSelectedSub(laptopModel);
+    if (laptopPart) { setSelectedBrand(`lp-${laptopPart}`); setExpandedBrands([`lp-${laptopPart}`]); }
   }, [searchParams]);
 
   // Reset to page 1 when filters change
@@ -448,6 +458,118 @@ function ProductsPageContent() {
                   </div>
                 )}
               </div>
+
+              {/* Section: Laptop Brands */}
+              <div className="mt-2 border-t pt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, laptopBrands: !p.laptopBrands }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? 'Laptop Merken' : 'Laptop Brands'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.laptopBrands ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.laptopBrands && (
+                  <div className="space-y-0.5 mt-1">
+                    {laptopBrands.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || b.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((brand) => {
+                      const brandKey = `laptop-${brand.slug}`;
+                      const isExpanded = expandedBrands.includes(brandKey);
+                      return (
+                        <div key={brandKey}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setSelectedBrand(brandKey); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === brandKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {brand.name}
+                            </button>
+                            {brand.subcategories && brand.subcategories.length > 0 && (
+                              <button
+                                onClick={() => toggleBrandExpand(brandKey)}
+                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
+                              >
+                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            )}
+                          </div>
+                          {isExpanded && brand.subcategories && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {brand.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(brandKey); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedSub === sub.slug && selectedBrand === brandKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Section: Laptop Parts */}
+              <div className="mt-2 border-t pt-2">
+                <button
+                  onClick={() => setExpandedSections(p => ({ ...p, laptopParts: !p.laptopParts }))}
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  {locale === 'nl' ? 'Laptop Onderdelen' : 'Laptop Parts'}
+                  <ChevronDown size={14} className={`transition-transform ${expandedSections.laptopParts ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.laptopParts && (
+                  <div className="space-y-0.5 mt-1">
+                    {laptopPartsCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
+                      const catKey = `lp-${cat.slug}`;
+                      const isExpanded = expandedBrands.includes(catKey);
+                      return (
+                        <div key={catKey}>
+                          <div className="flex items-center">
+                            <button
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
+                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </button>
+                            {cat.subcategories && cat.subcategories.length > 0 && (
+                              <button
+                                onClick={() => toggleBrandExpand(catKey)}
+                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
+                              >
+                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            )}
+                          </div>
+                          {isExpanded && cat.subcategories && (
+                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
+                                <button
+                                  key={sub.slug}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
+                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {locale === 'en' ? sub.nameEn : sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Price filter info */}
@@ -518,37 +640,58 @@ function ProductsPageContent() {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8">
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
-                ← {locale === 'nl' ? 'Vorige' : 'Previous'}
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {totalPages > 1 && (() => {
+            // Build compact page list: 1, 2, ..., current-1, current, current+1, ..., last-1, last
+            const pages: (number | '...')[] = [];
+            const addPage = (p: number) => { if (p >= 1 && p <= totalPages && !pages.includes(p)) pages.push(p); };
+            addPage(1);
+            addPage(2);
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) addPage(i);
+            addPage(totalPages - 1);
+            addPage(totalPages);
+            // Sort and insert ellipsis
+            const sorted = (pages.filter(p => typeof p === 'number') as number[]).sort((a, b) => a - b);
+            const withEllipsis: (number | '...')[] = [];
+            for (let i = 0; i < sorted.length; i++) {
+              if (i > 0 && sorted[i] - sorted[i - 1] > 1) withEllipsis.push('...');
+              withEllipsis.push(sorted[i]);
+            }
+            return (
+              <div className="flex items-center justify-center gap-1.5 mt-8">
                 <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`min-w-[36px] px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    currentPage === page
-                      ? 'bg-primary-500 text-white'
-                      : 'border hover:bg-gray-50'
-                  }`}
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
-                  {page}
+                  ←
                 </button>
-              ))}
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
-                {locale === 'nl' ? 'Volgende' : 'Next'} →
-              </button>
-            </div>
-          )}
+                {withEllipsis.map((item, idx) =>
+                  item === '...' ? (
+                    <span key={`dots-${idx}`} className="px-1 py-2 text-sm text-gray-400">...</span>
+                  ) : (
+                    <button
+                      key={item}
+                      onClick={() => goToPage(item as number)}
+                      className={`min-w-[36px] px-2 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === item
+                          ? 'bg-primary-500 text-white'
+                          : 'border hover:bg-gray-50'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  →
+                </button>
+              </div>
+            );
+          })()}
 
           {filteredProducts.length > 0 && (
             <p className="text-center text-sm text-gray-500 mt-3">

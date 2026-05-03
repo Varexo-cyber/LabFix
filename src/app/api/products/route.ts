@@ -32,10 +32,13 @@ async function ensureTable(sql: any) {
       ms_sku TEXT,
       ms_source TEXT,
       ms_last_sync TIMESTAMP,
+      sort_order INTEGER DEFAULT 100,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
+  // Add sort_order column if missing (existing tables)
+  try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 100`; } catch {}
 }
 
 export async function GET(request: NextRequest) {
@@ -50,15 +53,15 @@ export async function GET(request: NextRequest) {
 
     let products;
     if (category) {
-      products = await sql`SELECT * FROM products WHERE category = ${category} ORDER BY created_at DESC`;
+      products = await sql`SELECT * FROM products WHERE category = ${category} ORDER BY sort_order ASC, created_at DESC`;
     } else if (search) {
-      products = await sql`SELECT * FROM products WHERE LOWER(name) LIKE ${'%' + search.toLowerCase() + '%'} OR LOWER(sku) LIKE ${'%' + search.toLowerCase() + '%'} ORDER BY created_at DESC`;
+      products = await sql`SELECT * FROM products WHERE LOWER(name) LIKE ${'%' + search.toLowerCase() + '%'} OR LOWER(sku) LIKE ${'%' + search.toLowerCase() + '%'} ORDER BY sort_order ASC, created_at DESC`;
     } else if (featured === 'true') {
-      products = await sql`SELECT * FROM products WHERE featured = true ORDER BY created_at DESC`;
+      products = await sql`SELECT * FROM products WHERE featured = true ORDER BY sort_order ASC, created_at DESC`;
     } else if (isNew === 'true') {
-      products = await sql`SELECT * FROM products WHERE is_new = true ORDER BY created_at DESC`;
+      products = await sql`SELECT * FROM products WHERE is_new = true ORDER BY sort_order ASC, created_at DESC`;
     } else {
-      products = await sql`SELECT * FROM products ORDER BY created_at DESC`;
+      products = await sql`SELECT * FROM products ORDER BY sort_order ASC, created_at DESC`;
     }
 
     const mapped = products.map((p: any) => ({

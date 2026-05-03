@@ -35,6 +35,7 @@ export async function POST() {
         in_stock BOOLEAN DEFAULT true,
         featured BOOLEAN DEFAULT false,
         is_new BOOLEAN DEFAULT false,
+        sort_order INTEGER DEFAULT 100,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `;

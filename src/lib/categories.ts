@@ -1883,3 +1883,234 @@ export const accessoryCompatibility = {
   'oneplus': ['oneplus-phones'],
   'oppo': ['oppo-phones', 'oppo-find', 'oppo-reno'],
 };
+
+// ==================== LAPTOP BRANDS (for quick search / refurbished) ====================
+export interface LaptopSubCategory {
+  slug: string;
+  name: string;
+  nameEn: string;
+  description?: string;
+}
+
+export interface LaptopBrand {
+  slug: string;
+  name: string;
+  nameEn: string;
+  description?: string;
+  subcategories: LaptopSubCategory[];
+}
+
+export const laptopBrands: LaptopBrand[] = [
+  {
+    slug: 'dell',
+    name: 'Dell',
+    nameEn: 'Dell',
+    description: 'Dell laptops',
+    subcategories: [
+      { slug: 'inspiron', name: 'Inspiron', nameEn: 'Inspiron', description: 'Inspiron series' },
+      { slug: 'latitude', name: 'Latitude', nameEn: 'Latitude', description: 'Business laptops' },
+      { slug: 'xps', name: 'XPS', nameEn: 'XPS', description: 'Premium laptops' },
+      { slug: 'alienware', name: 'Alienware', nameEn: 'Alienware', description: 'Gaming laptops' },
+    ]
+  },
+  {
+    slug: 'hp',
+    name: 'HP',
+    nameEn: 'HP',
+    description: 'HP laptops',
+    subcategories: [
+      { slug: 'pavilion', name: 'Pavilion', nameEn: 'Pavilion', description: 'Consumer laptops' },
+      { slug: 'envy', name: 'Envy', nameEn: 'Envy', description: 'Premium consumer' },
+      { slug: 'omen', name: 'Omen', nameEn: 'Omen', description: 'Gaming laptops' },
+      { slug: 'elitebook', name: 'EliteBook', nameEn: 'EliteBook', description: 'Business premium' },
+      { slug: 'probook', name: 'ProBook', nameEn: 'ProBook', description: 'Business standard' },
+    ]
+  },
+  {
+    slug: 'lenovo',
+    name: 'Lenovo',
+    nameEn: 'Lenovo',
+    description: 'Lenovo laptops',
+    subcategories: [
+      { slug: 'ideapad', name: 'IdeaPad', nameEn: 'IdeaPad', description: 'Consumer laptops' },
+      { slug: 'thinkpad', name: 'ThinkPad', nameEn: 'ThinkPad', description: 'Business laptops' },
+      { slug: 'yoga', name: 'Yoga', nameEn: 'Yoga', description: '2-in-1 laptops' },
+      { slug: 'legion', name: 'Legion', nameEn: 'Legion', description: 'Gaming laptops' },
+    ]
+  },
+  {
+    slug: 'apple',
+    name: 'Apple',
+    nameEn: 'Apple',
+    description: 'Apple MacBooks',
+    subcategories: [
+      { slug: 'macbook-air', name: 'MacBook Air', nameEn: 'MacBook Air', description: 'Lightweight' },
+      { slug: 'macbook-pro', name: 'MacBook Pro', nameEn: 'MacBook Pro', description: 'Professional' },
+    ]
+  },
+  {
+    slug: 'asus',
+    name: 'ASUS',
+    nameEn: 'ASUS',
+    description: 'ASUS laptops',
+    subcategories: [
+      { slug: 'vivobook', name: 'VivoBook', nameEn: 'VivoBook', description: 'Consumer laptops' },
+      { slug: 'zenbook', name: 'ZenBook', nameEn: 'ZenBook', description: 'Premium laptops' },
+      { slug: 'rog', name: 'ROG', nameEn: 'ROG', description: 'Gaming laptops' },
+      { slug: 'tuf', name: 'TUF', nameEn: 'TUF', description: 'Durable gaming' },
+    ]
+  },
+  {
+    slug: 'acer',
+    name: 'Acer',
+    nameEn: 'Acer',
+    description: 'Acer laptops',
+    subcategories: [
+      { slug: 'aspire', name: 'Aspire', nameEn: 'Aspire', description: 'Consumer laptops' },
+      { slug: 'swift', name: 'Swift', nameEn: 'Swift', description: 'Ultrabooks' },
+      { slug: 'predator', name: 'Predator', nameEn: 'Predator', description: 'Gaming laptops' },
+      { slug: 'nitro', name: 'Nitro', nameEn: 'Nitro', description: 'Entry gaming' },
+    ]
+  },
+  {
+    slug: 'msi',
+    name: 'MSI',
+    nameEn: 'MSI',
+    description: 'MSI laptops',
+    subcategories: [
+      { slug: 'gf', name: 'GF Series', nameEn: 'GF Series', description: 'Entry gaming' },
+      { slug: 'gs', name: 'GS Series', nameEn: 'GS Series', description: 'Slim gaming' },
+      { slug: 'ge', name: 'GE Series', nameEn: 'GE Series', description: 'High-end gaming' },
+      { slug: 'modern', name: 'Modern', nameEn: 'Modern', description: 'Creator / Business' },
+    ]
+  },
+  {
+    slug: 'microsoft',
+    name: 'Microsoft',
+    nameEn: 'Microsoft',
+    description: 'Microsoft Surface',
+    subcategories: [
+      { slug: 'surface-pro', name: 'Surface Pro', nameEn: 'Surface Pro', description: '2-in-1 tablets' },
+      { slug: 'surface-laptop', name: 'Surface Laptop', nameEn: 'Surface Laptop', description: 'Clamshell' },
+      { slug: 'surface-book', name: 'Surface Book', nameEn: 'Surface Book', description: 'Detachable' },
+    ]
+  },
+];
+
+// ==================== LAPTOP PARTS CATEGORY SYSTEM ====================
+export const laptopPartsCategories: AccessoryCategory[] = [
+  {
+    slug: 'laptop-screens',
+    name: 'Laptop Schermen',
+    nameEn: 'Laptop Screens',
+    description: 'LCD / LED displays',
+    subcategories: [
+      { slug: '14-inch', name: '14 inch', nameEn: '14 inch', description: '14" laptop screens' },
+      { slug: '15-6-inch', name: '15.6 inch', nameEn: '15.6 inch', description: '15.6" laptop screens' },
+      { slug: '13-3-inch', name: '13.3 inch', nameEn: '13.3 inch', description: '13.3" laptop screens' },
+      { slug: '17-3-inch', name: '17.3 inch', nameEn: '17.3 inch', description: '17.3" laptop screens' },
+    ]
+  },
+  {
+    slug: 'laptop-batteries',
+    name: 'Laptop Accu\'s',
+    nameEn: 'Laptop Batteries',
+    description: 'Originele & compatibele accu\'s',
+    subcategories: [
+      { slug: 'dell-batteries', name: 'Dell Accu\'s', nameEn: 'Dell Batteries', description: 'Dell laptop batteries' },
+      { slug: 'hp-batteries', name: 'HP Accu\'s', nameEn: 'HP Batteries', description: 'HP laptop batteries' },
+      { slug: 'lenovo-batteries', name: 'Lenovo Accu\'s', nameEn: 'Lenovo Batteries', description: 'Lenovo laptop batteries' },
+      { slug: 'universal-batteries', name: 'Universeel', nameEn: 'Universal', description: 'Universal batteries' },
+    ]
+  },
+  {
+    slug: 'laptop-keyboards',
+    name: 'Laptop Toetsenborden',
+    nameEn: 'Laptop Keyboards',
+    description: 'Vervanging toetsenborden',
+    subcategories: [
+      { slug: 'dell-keyboards', name: 'Dell', nameEn: 'Dell', description: 'Dell keyboards' },
+      { slug: 'hp-keyboards', name: 'HP', nameEn: 'HP', description: 'HP keyboards' },
+      { slug: 'lenovo-keyboards', name: 'Lenovo', nameEn: 'Lenovo', description: 'Lenovo keyboards' },
+      { slug: 'universal-keyboards', name: 'Universeel', nameEn: 'Universal', description: 'Universal keyboards' },
+    ]
+  },
+  {
+    slug: 'laptop-chargers',
+    name: 'Laptop Adapters',
+    nameEn: 'Laptop Chargers',
+    description: 'Voedingen & adapters',
+    subcategories: [
+      { slug: '45w-65w', name: '45W - 65W', nameEn: '45W - 65W', description: 'Standard chargers' },
+      { slug: '90w-135w', name: '90W - 135W', nameEn: '90W - 135W', description: 'High-power chargers' },
+      { slug: 'usb-c-pd', name: 'USB-C PD', nameEn: 'USB-C PD', description: 'USB-C Power Delivery' },
+      { slug: 'universal-chargers', name: 'Universeel', nameEn: 'Universal', description: 'Universal chargers' },
+    ]
+  },
+  {
+    slug: 'laptop-ram',
+    name: 'Laptop RAM',
+    nameEn: 'Laptop RAM',
+    description: 'Geheugen modules',
+    subcategories: [
+      { slug: 'ddr4-sodimm', name: 'DDR4 SO-DIMM', nameEn: 'DDR4 SO-DIMM', description: 'DDR4 laptop memory' },
+      { slug: 'ddr5-sodimm', name: 'DDR5 SO-DIMM', nameEn: 'DDR5 SO-DIMM', description: 'DDR5 laptop memory' },
+      { slug: 'ddr3-sodimm', name: 'DDR3 SO-DIMM', nameEn: 'DDR3 SO-DIMM', description: 'DDR3 laptop memory' },
+    ]
+  },
+  {
+    slug: 'laptop-storage',
+    name: 'Laptop Opslag',
+    nameEn: 'Laptop Storage',
+    description: 'SSD & HDD upgrades',
+    subcategories: [
+      { slug: '2-5-inch-ssd', name: '2.5" SSD', nameEn: '2.5" SSD', description: 'SATA SSD drives' },
+      { slug: 'm2-ssd', name: 'M.2 SSD', nameEn: 'M.2 SSD', description: 'NVMe & SATA M.2' },
+      { slug: '2-5-inch-hdd', name: '2.5" HDD', nameEn: '2.5" HDD', description: 'Laptop hard drives' },
+    ]
+  },
+  {
+    slug: 'laptop-motherboards',
+    name: 'Laptop Moederborden',
+    nameEn: 'Laptop Motherboards',
+    description: 'Vervanging moederborden',
+    subcategories: [
+      { slug: 'dell-motherboards', name: 'Dell', nameEn: 'Dell', description: 'Dell motherboards' },
+      { slug: 'hp-motherboards', name: 'HP', nameEn: 'HP', description: 'HP motherboards' },
+      { slug: 'lenovo-motherboards', name: 'Lenovo', nameEn: 'Lenovo', description: 'Lenovo motherboards' },
+    ]
+  },
+  {
+    slug: 'laptop-cooling',
+    name: 'Laptop Koeling',
+    nameEn: 'Laptop Cooling',
+    description: 'Fans & koelpasta',
+    subcategories: [
+      { slug: 'cpu-fans', name: 'CPU Fans', nameEn: 'CPU Fans', description: 'Processor fans' },
+      { slug: 'gpu-fans', name: 'GPU Fans', nameEn: 'GPU Fans', description: 'Graphics fans' },
+      { slug: 'cooling-pads', name: 'Koelpads', nameEn: 'Cooling Pads', description: 'External cooling' },
+    ]
+  },
+  {
+    slug: 'laptop-hinges',
+    name: 'Laptop Scharnieren',
+    nameEn: 'Laptop Hinges',
+    description: 'Scherm scharnieren',
+    subcategories: [
+      { slug: 'left-hinge', name: 'Links', nameEn: 'Left', description: 'Left hinges' },
+      { slug: 'right-hinge', name: 'Rechts', nameEn: 'Right', description: 'Right hinges' },
+      { slug: 'hinge-set', name: 'Set', nameEn: 'Set', description: 'Hinge sets' },
+    ]
+  },
+  {
+    slug: 'laptop-cases',
+    name: 'Laptop Behuizingen',
+    nameEn: 'Laptop Cases',
+    description: 'Top/bottom covers',
+    subcategories: [
+      { slug: 'palmrest', name: 'Palmrest', nameEn: 'Palmrest', description: 'Palmrest covers' },
+      { slug: 'bottom-case', name: 'Bottom Case', nameEn: 'Bottom Case', description: 'Base covers' },
+      { slug: 'lcd-back-cover', name: 'LCD Back Cover', nameEn: 'LCD Back Cover', description: 'Screen back covers' },
+    ]
+  },
+];

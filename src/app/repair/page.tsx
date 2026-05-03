@@ -57,7 +57,7 @@ export default function RepairPage() {
   const generateDates = () => {
     const dates = [];
     const today = new Date();
-    for (let i = 1; i <= 30; i++) {
+    for (let i = 2; i <= 30; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const day = date.getDay();
@@ -160,13 +160,11 @@ export default function RepairPage() {
               Bedankt voor uw aanvraag. We hebben een bevestiging gestuurd naar <strong>{formData.email}</strong>.
             </p>
             <p className="text-gray-500 text-sm mb-8">
-              U ontvangt binnen 24 uur een reactie of uw afspraak is goedgekeurd.
+              U ontvangt binnen 24 uur een reactie of uw afspraak is goedgekeurd. We nemen zo snel mogelijk contact met u op om een passend tijdstip af te spreken.
             </p>
             <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
               <h3 className="font-semibold text-gray-700 mb-4">Afspraak Details:</h3>
               <div className="space-y-2 text-sm">
-                <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
                 <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
                 <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'pickup' ? 'Ophalen' : 'Opsturen'}</p>
               </div>
@@ -466,11 +464,16 @@ export default function RepairPage() {
                     return;
                   }
                   setError('');
-                  setStep(3);
+                  if (formData.serviceType === 'pickup') {
+                    handleSubmit();
+                  } else {
+                    setStep(3);
+                  }
                 }}
-                className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
+                disabled={loading}
+                className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {formData.serviceType === 'pickup' ? 'Volgende: Datum & Tijd' : 'Volgende: Verzend Informatie'}
+                {loading ? 'Verzenden...' : formData.serviceType === 'pickup' ? 'Aanvraag Indienen' : 'Volgende: Verzend Informatie'}
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -482,76 +485,22 @@ export default function RepairPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
             {formData.serviceType === 'pickup' ? (
               <>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Kies Ophalen Datum & Tijd</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Bevestiging</h2>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-sm text-blue-800">
-                    <strong>Let op:</strong> Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug.
+                    <strong>Let op:</strong> Wij nemen zo snel mogelijk contact met u op om een passend tijdstip af te spreken voor het ophalen van uw apparaat.
                   </p>
                 </div>
-                
-                {/* Date Selection */}
-                <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                    <Calendar size={20} className="text-primary-500" />
-                    Kies een datum
-                  </label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                    {availableDates.slice(0, 12).map((date) => (
-                      <button
-                        key={date.value}
-                        onClick={() => setSelectedDate(date.value)}
-                        className={`p-3 rounded-lg text-center transition-all ${
-                          selectedDate === date.value
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        <div className="text-xs uppercase">{date.label.split(' ')[0]}</div>
-                        <div className="font-bold">{date.label.split(' ')[1]}</div>
-                      </button>
-                    ))}
+
+                <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                  <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
+                    <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
+                    <p><span className="text-gray-500">Service:</span> Ophalen</p>
+                    <p><span className="text-gray-500">Locatie:</span> {pickupLocation}</p>
                   </div>
                 </div>
-
-                {/* Time Selection */}
-                {selectedDate && (
-                  <div className="mb-8">
-                    <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                      <Clock size={20} className="text-primary-500" />
-                      Kies een tijdstip
-                    </label>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3">
-                      {availableTimes.map((time) => (
-                        <button
-                          key={time}
-                          onClick={() => setSelectedTime(time)}
-                          className={`p-3 rounded-lg text-center font-medium transition-all ${
-                            selectedTime === time
-                              ? 'bg-primary-600 text-white'
-                              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Summary */}
-                {selectedDate && selectedTime && (
-                  <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                    <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
-                    <div className="space-y-2 text-sm">
-                      <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
-                      <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
-                      <p><span className="text-gray-500">Datum:</span> {new Date(selectedDate).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                      <p><span className="text-gray-500">Tijd:</span> {selectedTime}</p>
-                      <p><span className="text-gray-500">Service:</span> Ophalen</p>
-                      <p><span className="text-gray-500">Locatie:</span> {pickupLocation}</p>
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex gap-4">
                   <button
@@ -562,17 +511,11 @@ export default function RepairPage() {
                     Terug
                   </button>
                   <button
-                    onClick={() => {
-                      if (!selectedDate || !selectedTime) {
-                        setError('Selecteer een datum en tijd');
-                        return;
-                      }
-                      handleSubmit();
-                    }}
-                    disabled={loading || !selectedDate || !selectedTime}
+                    onClick={handleSubmit}
+                    disabled={loading}
                     className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Verzenden...' : 'Afspraak Bevestigen'}
+                    {loading ? 'Verzenden...' : 'Aanvraag Indienen'}
                     <CheckCircle size={20} />
                   </button>
                 </div>
