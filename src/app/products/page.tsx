@@ -44,6 +44,8 @@ function ProductsPageContent() {
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
     const accessory = searchParams.get('accessory');
+    const pcpart = searchParams.get('pcpart');
+    const pcacc = searchParams.get('pcacc');
     const laptopBrand = searchParams.get('laptopBrand');
     const laptopModel = searchParams.get('laptopModel');
     const laptopPart = searchParams.get('laptopPart');
@@ -53,6 +55,8 @@ function ProductsPageContent() {
     if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
     if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); }
+    if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); }
+    if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); }
     if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); }
     if (laptopModel) setSelectedSub(laptopModel);
     if (laptopPart) { setSelectedBrand(`lp-${laptopPart}`); setExpandedBrands([`lp-${laptopPart}`]); }

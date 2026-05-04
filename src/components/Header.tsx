@@ -68,7 +68,7 @@ export default function Header() {
   // PC combined dropdown
   const [pcDropdownTab, setPcDropdownTab] = useState<'parts' | 'accessories'>('parts');
   // Laptop dropdown
-  const [laptopDropdownTab, setLaptopDropdownTab] = useState<'quick' | 'refurbished' | 'parts'>('quick');
+  const [laptopDropdownTab, setLaptopDropdownTab] = useState<'refurbished' | 'parts'>('refurbished');
   const [laptopSelectedBrand, setLaptopSelectedBrand] = useState<string | null>(null);
   const [laptopSelectedSub, setLaptopSelectedSub] = useState<string | null>(null);
   const [laptopSelectorStep, setLaptopSelectorStep] = useState<number>(1);
@@ -1472,7 +1472,7 @@ export default function Header() {
                                   onMouseEnter={() => setHoveredPcPartsSub(sub.slug)}
                                 >
                                   <Link
-                                    href={`/products?accessory=${hoveredPcPartsCat}&sub=${sub.slug}`}
+                                    href={`/products?pcpart=${hoveredPcPartsCat}&sub=${sub.slug}`}
                                     className="block"
                                     onClick={() => setOpenDropdown(null)}
                                   >
@@ -1482,7 +1482,7 @@ export default function Header() {
                                 </div>
                               ))}
                               <Link
-                                href={`/products?accessory=${hoveredPcPartsCat}`}
+                                href={`/products?pcpart=${hoveredPcPartsCat}`}
                                 className="block mt-3 text-sm text-primary-600 font-semibold hover:underline px-3"
                                 onClick={() => setOpenDropdown(null)}
                               >
@@ -1510,7 +1510,7 @@ export default function Header() {
                                 <p className="text-sm text-gray-600">{sub.description}</p>
                               </div>
                               <Link
-                                href={`/products?accessory=${hoveredPcPartsCat}&sub=${sub.slug}`}
+                                href={`/products?pcpart=${hoveredPcPartsCat}&sub=${sub.slug}`}
                                 className="mt-auto block w-full py-2 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition-colors"
                                 onClick={() => setOpenDropdown(null)}
                               >
@@ -1607,7 +1607,7 @@ export default function Header() {
                                   onMouseEnter={() => setHoveredPcAccessorySub(sub.slug)}
                                 >
                                   <Link
-                                    href={`/products?accessory=${hoveredPcAccessoryCat}&sub=${sub.slug}`}
+                                    href={`/products?pcacc=${hoveredPcAccessoryCat}&sub=${sub.slug}`}
                                     className="block"
                                     onClick={() => setOpenDropdown(null)}
                                   >
@@ -1617,7 +1617,7 @@ export default function Header() {
                                 </div>
                               ))}
                               <Link
-                                href={`/products?accessory=${hoveredPcAccessoryCat}`}
+                                href={`/products?pcacc=${hoveredPcAccessoryCat}`}
                                 className="block mt-3 text-sm text-primary-600 font-semibold hover:underline px-3"
                                 onClick={() => setOpenDropdown(null)}
                               >
@@ -1645,7 +1645,7 @@ export default function Header() {
                                 <p className="text-sm text-gray-600">{sub.description}</p>
                               </div>
                               <Link
-                                href={`/products?accessory=${hoveredPcAccessoryCat}&sub=${sub.slug}`}
+                                href={`/products?pcacc=${hoveredPcAccessoryCat}&sub=${sub.slug}`}
                                 className="mt-auto block w-full py-2 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition-colors"
                                 onClick={() => setOpenDropdown(null)}
                               >
@@ -1688,16 +1688,10 @@ export default function Header() {
                       {/* Tabs */}
                       <div className="flex border-b border-gray-200">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('quick'); }}
-                          className={`flex-1 px-4 py-2 text-sm font-semibold ${laptopDropdownTab === 'quick' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                          {locale === 'nl' ? 'Snel Zoeken' : 'Quick Search'}
-                        </button>
-                        <button
                           onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('refurbished'); }}
                           className={`flex-1 px-4 py-2 text-sm font-semibold ${laptopDropdownTab === 'refurbished' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                          {locale === 'nl' ? 'Refurbished' : 'Refurbished'}
+                          {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('parts'); }}
@@ -1707,7 +1701,7 @@ export default function Header() {
                         </button>
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        {laptopDropdownTab === 'quick' && (
+                        {laptopDropdownTab === 'refurbished' && (
                           <div className="h-full p-4 overflow-y-auto">
                             {laptopSelectorStep === 1 && (
                               <div>
@@ -1753,21 +1747,6 @@ export default function Header() {
                                 </div>
                               </div>
                             )}
-                          </div>
-                        )}
-                        {laptopDropdownTab === 'refurbished' && (
-                          <div className="h-full flex flex-col items-center justify-center text-center p-4">
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">{locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}</h3>
-                            <p className="text-gray-500 text-sm mb-4 max-w-md">
-                              {locale === 'nl' ? 'Bekijk ons assortiment refurbished laptops van alle grote merken.' : 'View our assortment of refurbished laptops from all major brands.'}
-                            </p>
-                            <Link
-                              href="/products?category=laptop&refurbished=true"
-                              onClick={() => setOpenDropdown(null)}
-                              className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
-                            >
-                              {locale === 'nl' ? 'Bekijk Refurbished Laptops' : 'View Refurbished Laptops'}
-                            </Link>
                           </div>
                         )}
                         {laptopDropdownTab === 'parts' && (
@@ -2121,7 +2100,7 @@ export default function Header() {
                           {pcPartsCategories.map((cat) => (
                             <Link
                               key={cat.slug}
-                              href={`/products?accessory=${cat.slug}`}
+                              href={`/products?pcpart=${cat.slug}`}
                               className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
                               onClick={() => setMobileMenuOpen(false)}
                             >
@@ -2132,7 +2111,7 @@ export default function Header() {
                           {pcAccessoryCategories.map((cat) => (
                             <Link
                               key={cat.slug}
-                              href={`/products?accessory=${cat.slug}`}
+                              href={`/products?pcacc=${cat.slug}`}
                               className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
                               onClick={() => setMobileMenuOpen(false)}
                             >

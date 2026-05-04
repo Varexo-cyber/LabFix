@@ -1302,16 +1302,79 @@ export const brandCategories: BrandCategory[] = [
 
 export function getBrandName(slug: string, locale: string = 'nl'): string {
   const brand = brandCategories.find(b => b.slug === slug);
-  if (!brand) return slug;
-  return locale === 'en' ? brand.nameEn : brand.name;
+  if (brand) return locale === 'en' ? brand.nameEn : brand.name;
+  // Check PC parts (pc-slug)
+  if (slug.startsWith('pc-')) {
+    const pc = pcPartsCategories.find(c => c.slug === slug.slice(3));
+    if (pc) return locale === 'en' ? pc.nameEn : pc.name;
+  }
+  // Check PC accessories (pca-slug)
+  if (slug.startsWith('pca-')) {
+    const pca = pcAccessoryCategories.find(c => c.slug === slug.slice(4));
+    if (pca) return locale === 'en' ? pca.nameEn : pca.name;
+  }
+  // Check laptop brands (laptop-slug)
+  if (slug.startsWith('laptop-')) {
+    const lb = laptopBrands.find(b => b.slug === slug.slice(7));
+    if (lb) return locale === 'en' ? lb.nameEn : lb.name;
+  }
+  // Check laptop parts (lp-slug)
+  if (slug.startsWith('lp-')) {
+    const lp = laptopPartsCategories.find(c => c.slug === slug.slice(3));
+    if (lp) return locale === 'en' ? lp.nameEn : lp.name;
+  }
+  // Check accessories (acc-slug)
+  if (slug.startsWith('acc-')) {
+    const acc = accessoryCategories.find(c => c.slug === slug.slice(4));
+    if (acc) return locale === 'en' ? acc.nameEn : acc.name;
+  }
+  return slug;
 }
 
 export function getSubcategoryName(brandSlug: string, subSlug: string, locale: string = 'nl'): string {
   const brand = brandCategories.find(b => b.slug === brandSlug);
-  if (!brand) return subSlug;
-  const sub = brand.subcategories.find(s => s.slug === subSlug);
-  if (!sub) return subSlug;
-  return locale === 'en' ? sub.nameEn : sub.name;
+  if (brand) {
+    const sub = brand.subcategories.find(s => s.slug === subSlug);
+    if (sub) return locale === 'en' ? sub.nameEn : sub.name;
+    return subSlug;
+  }
+  // Check PC parts subcategories
+  if (brandSlug.startsWith('pc-')) {
+    const pc = pcPartsCategories.find(c => c.slug === brandSlug.slice(3));
+    if (pc) {
+      const sub = pc.subcategories.find(s => s.slug === subSlug);
+      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
+    }
+    return subSlug;
+  }
+  // Check PC accessories subcategories
+  if (brandSlug.startsWith('pca-')) {
+    const pca = pcAccessoryCategories.find(c => c.slug === brandSlug.slice(4));
+    if (pca) {
+      const sub = pca.subcategories.find(s => s.slug === subSlug);
+      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
+    }
+    return subSlug;
+  }
+  // Check laptop brands subcategories
+  if (brandSlug.startsWith('laptop-')) {
+    const lb = laptopBrands.find(b => b.slug === brandSlug.slice(7));
+    if (lb) {
+      const sub = lb.subcategories.find(s => s.slug === subSlug);
+      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
+    }
+    return subSlug;
+  }
+  // Check accessories subcategories
+  if (brandSlug.startsWith('acc-')) {
+    const acc = accessoryCategories.find(c => c.slug === brandSlug.slice(4));
+    if (acc) {
+      const sub = acc.subcategories.find(s => s.slug === subSlug);
+      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
+    }
+    return subSlug;
+  }
+  return subSlug;
 }
 
 export function getModelName(brandSlug: string, subSlug: string, modelSlug: string): string {
@@ -1793,31 +1856,69 @@ export const accessoryCategories: AccessoryCategory[] = [
 // ==================== PC PARTS CATEGORY SYSTEM ====================
 export const pcPartsCategories: AccessoryCategory[] = [
   {
-    slug: 'pc-components',
-    name: 'PC Componenten',
-    nameEn: 'PC Components',
-    description: 'Interne PC componenten',
+    slug: 'motherboards',
+    name: 'Moederborden',
+    nameEn: 'Motherboards',
+    description: 'ATX, Micro-ATX, Mini-ITX moederborden',
     subcategories: [
-      { slug: 'processors', name: 'Processoren (CPU)', nameEn: 'Processors', description: 'Intel & AMD processors' },
-      { slug: 'motherboards', name: 'Moederborden', nameEn: 'Motherboards', description: 'ATX, Micro-ATX, Mini-ITX' },
-      { slug: 'graphics-cards', name: 'Grafische Kaarten (GPU)', nameEn: 'Graphics Cards', description: 'NVIDIA & AMD videokaarten' },
-      { slug: 'memory-ram', name: 'Geheugen (RAM)', nameEn: 'Memory', description: 'DDR4 & DDR5 RAM' },
-      { slug: 'storage', name: 'Opslag (HDD/SSD)', nameEn: 'Storage', description: 'SSD, NVMe, Harde schijven' },
-      { slug: 'power-supplies', name: 'Voedingen (PSU)', nameEn: 'Power Supplies', description: 'ATX voedingen' },
-      { slug: 'cases', name: 'PC Behuizingen', nameEn: 'PC Cases', description: 'Tower, Mini-ITX, Micro-ATX' },
-      { slug: 'cpu-coolers', name: 'CPU Koelers', nameEn: 'CPU Coolers', description: 'Air & Liquid cooling' },
+      { slug: 'atx', name: 'ATX', nameEn: 'ATX', description: 'Standaard ATX form factor' },
+      { slug: 'micro-atx', name: 'Micro-ATX', nameEn: 'Micro-ATX', description: 'Compact Micro-ATX' },
+      { slug: 'mini-itx', name: 'Mini-ITX', nameEn: 'Mini-ITX', description: 'Kleine Mini-ITX' },
     ]
   },
   {
-    slug: 'pc-internal',
-    name: 'Interne Onderdelen',
-    nameEn: 'Internal Parts',
-    description: 'Overige interne componenten',
+    slug: 'processors',
+    name: 'Processoren (CPU)',
+    nameEn: 'Processors (CPU)',
+    description: 'Intel & AMD processors',
     subcategories: [
-      { slug: 'case-fans', name: 'Case Fans', nameEn: 'Case Fans', description: '120mm, 140mm fans' },
-      { slug: 'thermal-paste', name: 'Koelpasta', nameEn: 'Thermal Paste', description: 'Thermische compound' },
-      { slug: 'cables-internal', name: 'Interne Kabels', nameEn: 'Internal Cables', description: 'SATA, power, fan kabels' },
-      { slug: 'network-cards', name: 'Netwerkkaarten', nameEn: 'Network Cards', description: 'WiFi & Ethernet kaarten' },
+      { slug: 'intel', name: 'Intel', nameEn: 'Intel', description: 'Intel Core processors' },
+      { slug: 'amd', name: 'AMD', nameEn: 'AMD', description: 'AMD Ryzen processors' },
+    ]
+  },
+  {
+    slug: 'memory-ram',
+    name: 'Geheugen (RAM)',
+    nameEn: 'Memory (RAM)',
+    description: 'DDR4 & DDR5 RAM modules',
+    subcategories: [
+      { slug: 'ddr4', name: 'DDR4', nameEn: 'DDR4', description: 'DDR4 geheugen' },
+      { slug: 'ddr5', name: 'DDR5', nameEn: 'DDR5', description: 'DDR5 geheugen' },
+    ]
+  },
+  {
+    slug: 'graphics-cards',
+    name: 'Grafische Kaarten (GPU)',
+    nameEn: 'Graphics Cards (GPU)',
+    description: 'NVIDIA & AMD videokaarten',
+    subcategories: [
+      { slug: 'nvidia', name: 'NVIDIA', nameEn: 'NVIDIA', description: 'NVIDIA GeForce kaarten' },
+      { slug: 'amd-gpu', name: 'AMD', nameEn: 'AMD', description: 'AMD Radeon kaarten' },
+    ]
+  },
+  {
+    slug: 'power-supplies',
+    name: 'Voedingen (PSU)',
+    nameEn: 'Power Supplies (PSU)',
+    description: 'ATX voedingen voor PC',
+    subcategories: []
+  },
+  {
+    slug: 'cases',
+    name: 'Behuizingen',
+    nameEn: 'PC Cases',
+    description: 'Tower, Mini-ITX, Micro-ATX behuizingen',
+    subcategories: []
+  },
+  {
+    slug: 'monitors',
+    name: 'Monitoren / Beeldschermen',
+    nameEn: 'Monitors / Displays',
+    description: 'Gaming, 4K, Ultrawide monitoren',
+    subcategories: [
+      { slug: 'gaming-monitors', name: 'Gaming Monitoren', nameEn: 'Gaming Monitors', description: '144Hz, 240Hz, 1ms' },
+      { slug: '4k-monitors', name: '4K Monitoren', nameEn: '4K Monitors', description: 'Ultra HD beeldschermen' },
+      { slug: 'ultrawide', name: 'Ultrawide', nameEn: 'Ultrawide', description: '21:9 & 32:9 monitoren' },
     ]
   },
 ];
@@ -1825,49 +1926,103 @@ export const pcPartsCategories: AccessoryCategory[] = [
 // ==================== PC ACCESSORIES CATEGORY SYSTEM ====================
 export const pcAccessoryCategories: AccessoryCategory[] = [
   {
-    slug: 'drawing-tablets',
-    name: 'Tekentablets',
-    nameEn: 'Drawing Tablets',
-    description: 'Wacom, Huion, XP-Pen',
+    slug: 'keyboards',
+    name: 'Toetsenborden',
+    nameEn: 'Keyboards',
+    description: 'Mechanisch, membrane, draadloos',
     subcategories: [
-      { slug: 'wacom', name: 'Wacom', nameEn: 'Wacom', description: 'Wacom tablets' },
-      { slug: 'huion', name: 'Huion', nameEn: 'Huion', description: 'Huion tablets' },
-      { slug: 'xp-pen', name: 'XP-Pen', nameEn: 'XP-Pen', description: 'XP-Pen tablets' },
-    ],
-  },
-  {
-    slug: 'pc-monitors',
-    name: 'Monitoren',
-    nameEn: 'Monitors',
-    description: 'Beeldschermen',
-    subcategories: [
-      { slug: 'gaming-monitors', name: 'Gaming Monitoren', nameEn: 'Gaming Monitors', description: '144Hz, 240Hz, 1ms' },
-      { slug: '4k-monitors', name: '4K Monitoren', nameEn: '4K Monitors', description: 'Ultra HD beeldschermen' },
-      { slug: 'ultrawide', name: 'Ultrawide', nameEn: 'Ultrawide', description: '21:9 & 32:9 monitoren' },
-      { slug: 'monitor-arms', name: 'Monitor Armen', nameEn: 'Monitor Arms', description: 'Beeldscherm steunen' },
+      { slug: 'mechanical', name: 'Mechanisch', nameEn: 'Mechanical', description: 'Mechanische switches' },
+      { slug: 'membrane', name: 'Membraan', nameEn: 'Membrane', description: 'Stille membrane toetsenborden' },
+      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth & 2.4GHz' },
     ]
   },
   {
-    slug: 'pc-audio',
-    name: 'PC Audio',
-    nameEn: 'PC Audio',
-    description: 'Geluid voor PC',
+    slug: 'mice',
+    name: 'Muizen',
+    nameEn: 'Mice',
+    description: 'Bedraad, draadloos, gaming',
     subcategories: [
-      { slug: 'pc-speakers', name: 'PC Speakers', nameEn: 'PC Speakers', description: '2.0, 2.1, 5.1 sets' },
-      { slug: 'gaming-headsets', name: 'Gaming Headsets', nameEn: 'Gaming Headsets', description: 'USB & 3.5mm headsets' },
-      { slug: 'sound-cards', name: 'Geluidskaarten', nameEn: 'Sound Cards', description: 'Interne & externe' },
+      { slug: 'wired', name: 'Bedraad', nameEn: 'Wired', description: 'USB muizen' },
+      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth & 2.4GHz' },
+      { slug: 'gaming', name: 'Gaming', nameEn: 'Gaming', description: 'Hoge DPI gaming muizen' },
     ]
   },
   {
-    slug: 'pc-connectivity',
-    name: 'PC Connectiviteit',
-    nameEn: 'PC Connectivity',
-    description: 'Kabels & adapters',
+    slug: 'mousepads',
+    name: 'Muispaden',
+    nameEn: 'Mousepads',
+    description: 'Gaming & office muispaden',
+    subcategories: []
+  },
+  {
+    slug: 'speakers',
+    name: 'Speakers',
+    nameEn: 'Speakers',
+    description: 'PC speakers & soundbars',
     subcategories: [
-      { slug: 'hdmi-cables', name: 'HDMI Kabels', nameEn: 'HDMI Cables', description: 'HDMI 2.0, 2.1' },
-      { slug: 'displayport', name: 'DisplayPort Kabels', nameEn: 'DisplayPort Cables', description: 'DP 1.4, DP 2.0' },
-      { slug: 'usb-cables', name: 'USB Kabels', nameEn: 'USB Cables', description: 'USB-A, USB-C hubs' },
-      { slug: 'ethernet-cables', name: 'Ethernet Kabels', nameEn: 'Ethernet Cables', description: 'Cat5e, Cat6, Cat6a' },
+      { slug: '2.0', name: '2.0 Speakers', nameEn: '2.0 Speakers', description: 'Stereo speakers' },
+      { slug: '2.1', name: '2.1 Speakers', nameEn: '2.1 Speakers', description: 'Met subwoofer' },
+      { slug: '5.1', name: '5.1 Speakers', nameEn: '5.1 Speakers', description: 'Surround sound' },
+    ]
+  },
+  {
+    slug: 'headphones',
+    name: 'Koptelefoons / Headsets',
+    nameEn: 'Headphones / Headsets',
+    description: 'Bedraad, draadloos, gaming headsets',
+    subcategories: [
+      { slug: 'wired', name: 'Bedraad', nameEn: 'Wired', description: '3.5mm & USB headsets' },
+      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth headsets' },
+      { slug: 'gaming', name: 'Gaming', nameEn: 'Gaming', description: 'Gaming headsets met mic' },
+    ]
+  },
+  {
+    slug: 'external-storage',
+    name: 'Externe Opslag',
+    nameEn: 'External Storage',
+    description: 'Externe harde schijven & USB sticks',
+    subcategories: [
+      { slug: 'external-hdd', name: 'Externe Harde Schijf', nameEn: 'External Hard Drive', description: 'HDD & SSD extern' },
+      { slug: 'usb-sticks', name: 'USB Sticks', nameEn: 'USB Sticks', description: 'USB 2.0, 3.0, 3.1 & USB-C' },
+    ]
+  },
+  {
+    slug: 'webcams',
+    name: "Camera's / Webcams",
+    nameEn: 'Cameras / Webcams',
+    description: 'Webcams voor PC & laptop',
+    subcategories: []
+  },
+  {
+    slug: 'microphones',
+    name: 'Microfoons',
+    nameEn: 'Microphones',
+    description: 'USB & condensator microfoons',
+    subcategories: []
+  },
+  {
+    slug: 'cables',
+    name: 'Kabels',
+    nameEn: 'Cables',
+    description: 'Internet, VGA, HDMI, voedingskabels',
+    subcategories: [
+      { slug: 'ethernet', name: 'Internet / Ethernet', nameEn: 'Internet / Ethernet', description: 'Cat5e, Cat6, Cat6a kabels' },
+      { slug: 'vga', name: 'VGA', nameEn: 'VGA', description: 'VGA monitorkabels' },
+      { slug: 'hdmi', name: 'HDMI', nameEn: 'HDMI', description: 'HDMI 1.4, 2.0, 2.1 kabels' },
+      { slug: 'power', name: 'Voedingskabels', nameEn: 'Power Cables', description: 'PC voedingskabels' },
+    ]
+  },
+  {
+    slug: 'networking',
+    name: 'Netwerkapparatuur',
+    nameEn: 'Networking',
+    description: 'Routers, WiFi, Bluetooth, switches',
+    subcategories: [
+      { slug: 'routers', name: 'Routers', nameEn: 'Routers', description: 'WiFi routers' },
+      { slug: 'wifi-usb', name: 'WiFi USB', nameEn: 'WiFi USB', description: 'USB WiFi adapters' },
+      { slug: 'wifi-extender', name: 'WiFi Extender', nameEn: 'WiFi Extender', description: 'WiFi versterkers & repeaters' },
+      { slug: 'bluetooth', name: 'Bluetooth', nameEn: 'Bluetooth', description: 'Bluetooth adapters & dongles' },
+      { slug: 'network-switch', name: 'Netwerk Switch', nameEn: 'Network Switch', description: 'Ethernet switches' },
     ]
   },
 ];
