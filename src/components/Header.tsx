@@ -1688,20 +1688,20 @@ export default function Header() {
                       {/* Tabs */}
                       <div className="flex border-b border-gray-200">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('refurbished'); }}
-                          className={`flex-1 px-4 py-2 text-sm font-semibold ${laptopDropdownTab === 'refurbished' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
-                        >
-                          {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
-                        </button>
-                        <button
                           onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('parts'); }}
                           className={`flex-1 px-4 py-2 text-sm font-semibold ${laptopDropdownTab === 'parts' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                           {locale === 'nl' ? 'Onderdelen' : 'Parts'}
                         </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setLaptopDropdownTab('refurbished'); }}
+                          className={`flex-1 px-4 py-2 text-sm font-semibold ${laptopDropdownTab === 'refurbished' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                          {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
+                        </button>
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        {laptopDropdownTab === 'refurbished' && (
+                        {laptopDropdownTab === 'parts' && (
                           <div className="h-full p-4 overflow-y-auto">
                             {laptopSelectorStep === 1 && (
                               <div>
@@ -1749,135 +1749,19 @@ export default function Header() {
                             )}
                           </div>
                         )}
-                        {laptopDropdownTab === 'parts' && (
-                          <div className="flex h-full">
-                            {/* Column 1: Categories */}
-                            <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
-                              <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
-                                {locale === 'nl' ? 'Categorieën' : 'Categories'}
-                              </div>
-                              <div className="p-2 border-b border-gray-100">
-                                <div className="relative">
-                                  <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-                                  <input
-                                    type="text"
-                                    placeholder={locale === 'nl' ? 'Zoek categorie...' : 'Search category...'}
-                                    value={laptopSearch}
-                                    onChange={(e) => setLaptopSearch(e.target.value)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full pl-8 pr-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                  />
-                                </div>
-                              </div>
-                              {(() => {
-                                const searchTerm = laptopSearch.toLowerCase();
-                                const filteredCats = laptopPartsCategories.filter(cat =>
-                                  cat.name.toLowerCase().includes(searchTerm) ||
-                                  cat.nameEn.toLowerCase().includes(searchTerm) ||
-                                  cat.subcategories?.some(sub =>
-                                    sub.name.toLowerCase().includes(searchTerm) ||
-                                    sub.nameEn.toLowerCase().includes(searchTerm)
-                                  )
-                                );
-                                if (searchTerm && filteredCats.length > 0 && !hoveredLaptopPartsCat) {
-                                  setTimeout(() => setHoveredLaptopPartsCat(filteredCats[0].slug), 0);
-                                }
-                                return filteredCats.map((cat) => (
-                                  <div
-                                    key={cat.slug}
-                                    className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between text-gray-900 ${hoveredLaptopPartsCat === cat.slug ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}
-                                    onMouseEnter={() => {
-                                      setHoveredLaptopPartsCat(cat.slug);
-                                      setHoveredLaptopPartsSub(null);
-                                    }}
-                                  >
-                                    <span className="text-gray-900">{locale === 'nl' ? cat.name : cat.nameEn}</span>
-                                    <ChevronRight size={14} className="text-gray-400" />
-                                  </div>
-                                ));
-                              })()}
-                            </div>
-                            {/* Column 2: Subcategories */}
-                            <div className="w-[220px] border-r border-gray-100 bg-gray-50/50 overflow-y-auto">
-                              {(() => {
-                                const cat = laptopPartsCategories.find(c => c.slug === hoveredLaptopPartsCat);
-                                if (!cat) return (
-                                  <div className="flex items-center justify-center h-full text-gray-400 text-sm p-4 text-center">
-                                    {locale === 'nl' ? 'Selecteer een categorie' : 'Select a category'}
-                                  </div>
-                                );
-                                const searchTerm = laptopSearch.toLowerCase();
-                                const filteredSubs = searchTerm
-                                  ? cat.subcategories?.filter(sub =>
-                                      sub.name.toLowerCase().includes(searchTerm) ||
-                                      sub.nameEn.toLowerCase().includes(searchTerm) ||
-                                      (sub.description && sub.description.toLowerCase().includes(searchTerm))
-                                    )
-                                  : cat.subcategories;
-                                return (
-                                  <>
-                                    <div className="p-3 bg-white border-b text-xs font-bold text-gray-500 uppercase sticky top-0">
-                                      {locale === 'nl' ? cat.name : cat.nameEn}
-                                    </div>
-                                    {filteredSubs?.map((sub) => (
-                                      <div
-                                        key={sub.slug}
-                                        className={`px-3 py-2 text-sm cursor-pointer ${hoveredLaptopPartsSub === sub.slug ? 'bg-white text-primary-700 shadow-sm' : 'hover:bg-white'}`}
-                                        onMouseEnter={() => setHoveredLaptopPartsSub(sub.slug)}
-                                      >
-                                        <Link
-                                          href={`/products?laptopPart=${hoveredLaptopPartsCat}&sub=${sub.slug}`}
-                                          className="block"
-                                          onClick={() => setOpenDropdown(null)}
-                                        >
-                                          <div className="font-medium text-gray-900">{locale === 'nl' ? sub.name : sub.nameEn}</div>
-                                          <div className="text-xs text-gray-500 truncate">{sub.description}</div>
-                                        </Link>
-                                      </div>
-                                    ))}
-                                    <Link
-                                      href={`/products?laptopPart=${hoveredLaptopPartsCat}`}
-                                      className="block mt-3 text-sm text-primary-600 font-semibold hover:underline px-3"
-                                      onClick={() => setOpenDropdown(null)}
-                                    >
-                                      {locale === 'nl' ? 'Alle items →' : 'All items →'}
-                                    </Link>
-                                  </>
-                                );
-                              })()}
-                            </div>
-                            {/* Column 3: Featured/Info */}
-                            <div className="flex-1 p-4 bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
-                              {(() => {
-                                const cat = laptopPartsCategories.find(c => c.slug === hoveredLaptopPartsCat);
-                                const sub = cat?.subcategories.find(s => s.slug === hoveredLaptopPartsSub);
-                                if (sub) return (
-                                  <div className="h-full flex flex-col">
-                                    <div className="mb-4">
-                                      <h4 className="font-bold text-gray-900 mb-1">{locale === 'nl' ? sub.name : sub.nameEn}</h4>
-                                      <p className="text-sm text-gray-600">{sub.description}</p>
-                                    </div>
-                                    <Link
-                                      href={`/products?laptopPart=${hoveredLaptopPartsCat}&sub=${sub.slug}`}
-                                      className="mt-auto block w-full py-2 bg-primary-600 text-white text-center rounded-lg font-medium hover:bg-primary-700 transition-colors"
-                                      onClick={() => setOpenDropdown(null)}
-                                    >
-                                      {locale === 'nl' ? 'Bekijk alle items' : 'View all items'}
-                                    </Link>
-                                  </div>
-                                );
-                                if (hoveredLaptopPartsCat) return (
-                                  <div className="flex items-center justify-center h-full text-gray-400 text-sm text-center">
-                                    {locale === 'nl' ? 'Selecteer een subcategorie' : 'Select a subcategory'}
-                                  </div>
-                                );
-                                return (
-                                  <div className="flex items-center justify-center h-full text-gray-400 text-sm text-center">
-                                    {locale === 'nl' ? 'Selecteer een categorie om items te zien' : 'Select a category to see items'}
-                                  </div>
-                                );
-                              })()}
-                            </div>
+                        {laptopDropdownTab === 'refurbished' && (
+                          <div className="h-full flex flex-col items-center justify-center text-center p-4">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}</h3>
+                            <p className="text-gray-500 text-sm mb-4 max-w-md">
+                              {locale === 'nl' ? 'Bekijk ons assortiment refurbished laptops van alle grote merken.' : 'View our assortment of refurbished laptops from all major brands.'}
+                            </p>
+                            <Link
+                              href="/products?category=laptop&refurbished=true"
+                              onClick={() => setOpenDropdown(null)}
+                              className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                            >
+                              {locale === 'nl' ? 'Bekijk Refurbished Laptops' : 'View Refurbished Laptops'}
+                            </Link>
                           </div>
                         )}
                       </div>
@@ -2124,14 +2008,7 @@ export default function Header() {
                       {/* Laptop Tab */}
                       {mobileMoreTab === 'laptop' && (
                         <div className="space-y-1">
-                          <Link
-                            href="/products?category=laptop&refurbished=true"
-                            className="block px-2 py-2 text-sm font-semibold text-primary-600 hover:bg-gray-100 rounded"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
-                          </Link>
-                          <div className="px-2 py-1 text-xs font-bold text-gray-500 uppercase border-t mt-2">{locale === 'nl' ? 'Merken' : 'Brands'}</div>
+                          <div className="px-2 py-1 text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
                           {laptopBrands.map((brand) => (
                             <div key={brand.slug}>
                               <button
@@ -2157,17 +2034,14 @@ export default function Header() {
                               )}
                             </div>
                           ))}
-                          <div className="px-2 py-1 text-xs font-bold text-gray-500 uppercase border-t mt-2">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
-                          {laptopPartsCategories.map((cat) => (
-                            <Link
-                              key={cat.slug}
-                              href={`/products?laptopPart=${cat.slug}`}
-                              className="block px-2 py-2 text-sm hover:bg-gray-100 rounded"
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              {locale === 'en' ? cat.nameEn : cat.name}
-                            </Link>
-                          ))}
+                          <div className="px-2 py-1 text-xs font-bold text-gray-500 uppercase border-t mt-2">{locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}</div>
+                          <Link
+                            href="/products?category=laptop&refurbished=true"
+                            className="block px-2 py-2 text-sm font-semibold text-primary-600 hover:bg-gray-100 rounded"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {locale === 'nl' ? 'Bekijk Refurbished Laptops' : 'View Refurbished Laptops'}
+                          </Link>
                         </div>
                       )}
                     </div>
