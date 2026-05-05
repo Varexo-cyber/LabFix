@@ -54,12 +54,12 @@ function ProductsPageContent() {
     if (model) setSelectedModel(model);
     if (cat) setSelectedBrand(cat);
     if (search) setSearchQuery(search);
-    if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); }
-    if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); }
-    if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); }
-    if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); }
+    if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
+    if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcParts: true })); }
+    if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcAcc: true })); }
+    if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); setExpandedSections(p => ({ ...p, laptopBrands: true })); }
     if (laptopModel) setSelectedSub(laptopModel);
-    if (laptopPart) { setSelectedBrand(`lp-${laptopPart}`); setExpandedBrands([`lp-${laptopPart}`]); }
+    if (laptopPart) { setSelectedBrand(`lp-${laptopPart}`); setExpandedBrands([`lp-${laptopPart}`]); setExpandedSections(p => ({ ...p, laptopParts: true })); }
   }, [searchParams]);
 
   // Reset to page 1 when filters change
@@ -79,7 +79,13 @@ function ProductsPageContent() {
     let filtered = [...products];
 
     if (selectedBrand) {
-      filtered = filtered.filter((p) => p.category === selectedBrand || p.category.startsWith(selectedBrand + '/'));
+      if (selectedBrand === 'pc-all') {
+        filtered = filtered.filter((p) => p.category?.startsWith('pc-'));
+      } else if (selectedBrand === 'pca-all') {
+        filtered = filtered.filter((p) => p.category?.startsWith('pca-'));
+      } else {
+        filtered = filtered.filter((p) => p.category === selectedBrand || p.category?.startsWith(selectedBrand + '/'));
+      }
     }
 
     if (selectedSub) {
