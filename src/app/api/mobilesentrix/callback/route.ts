@@ -55,8 +55,8 @@ export async function GET(request: NextRequest) {
               <li>Body (JSON):
 <pre style="background:#1e293b;color:#e2e8f0;padding:15px;border-radius:8px;overflow-x:auto;">
 {
-  "consumer_key": "fb48dafbc3103b60a27bef006d1de2c7",
-  "consumer_secret": "03fdddc63bfb5e1978dc37c1eb86c20b",
+  "consumer_key": "<YOUR_NEW_CONSUMER_KEY>",
+  "consumer_secret": "<YOUR_NEW_CONSUMER_SECRET>",
   "oauth_token": "${oauthToken}",
   "oauth_verifier": "${oauthVerifier}"
 }</pre>
