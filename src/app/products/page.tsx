@@ -677,11 +677,11 @@ function ProductsPageContent() {
             );
           })()}
 
-          {filteredProducts.length > 0 && (
+          {totalCount > 0 && (
             <p className="text-center text-sm text-gray-500 mt-3">
               {locale === 'nl'
-                ? `Pagina ${currentPage} van ${totalPages} (${filteredProducts.length} producten)`
-                : `Page ${currentPage} of ${totalPages} (${filteredProducts.length} products)`}
+                ? `Pagina ${currentPage} van ${totalPages} (${totalCount} producten)`
+                : `Page ${currentPage} of ${totalPages} (${totalCount} products)`}
             </p>
           )}
         </div>

@@ -151,12 +151,23 @@ export interface PaginatedProducts {
 }
 
 export async function fetchProducts(params?: Record<string, string>): Promise<Product[]> {
-  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  const res = await fetch(`${API_BASE}/api/products${qs}`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  // Handle both old array format and new paginated format
-  return Array.isArray(data) ? data : (data.products || []);
+  // Fetch ALL pages so callers (admin, detail page) receive the complete list
+  const PAGE_SIZE = 500;
+  const baseParams = { ...(params || {}), limit: String(PAGE_SIZE) };
+  const fetchPage = async (page: number) => {
+    const qs = '?' + new URLSearchParams({ ...baseParams, page: String(page) }).toString();
+    const res = await fetch(`${API_BASE}/api/products${qs}`);
+    if (!res.ok) return { products: [] as Product[], totalPages: 0 };
+    const data = await res.json();
+    if (Array.isArray(data)) return { products: data as Product[], totalPages: 1 };
+    return { products: (data.products || []) as Product[], totalPages: data.totalPages || 1 };
+  };
+  const first = await fetchPage(1);
+  if (first.totalPages <= 1) return first.products;
+  const restPromises = [];
+  for (let p = 2; p <= first.totalPages; p++) restPromises.push(fetchPage(p));
+  const rest = await Promise.all(restPromises);
+  return first.products.concat(...rest.map(r => r.products));
 }
 
 export async function fetchProductsPaginated(params?: Record<string, string>): Promise<PaginatedProducts> {
