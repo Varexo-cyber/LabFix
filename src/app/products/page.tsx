@@ -14,6 +14,7 @@ function ProductsPageContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedSub, setSelectedSub] = useState<string>('');
@@ -49,8 +50,16 @@ function ProductsPageContent() {
     fetchProductsPaginated(params).then((data) => {
       setProducts(data.products);
       setTotalCount(data.total);
+      // Track grand total (no filter) once we have it
+      if (!selectedBrand && !searchQuery) setGrandTotal(data.total);
     }).finally(() => setLoadingProducts(false));
   }, [currentPage, selectedBrand, searchQuery]);
+
+  // Fetch grand total once on mount (in case page loads with a filter active)
+  useEffect(() => {
+    if (grandTotal > 0) return;
+    fetchProductsPaginated({ page: '1', limit: '1' }).then(d => setGrandTotal(d.total));
+  }, []);
 
   // Debounce search input → update searchQuery
   useEffect(() => {
@@ -176,7 +185,7 @@ function ProductsPageContent() {
                   !selectedBrand ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
                 }`}
               >
-                {t('products.all')} ({products.length})
+                {t('products.all')} ({grandTotal || '...'})
               </button>
 
               {/* Section: Phone Brands */}
