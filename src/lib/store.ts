@@ -53,6 +53,7 @@ export interface User {
   billingPostalCode?: string;
   billingCountry?: string;
   billingSameAsShipping?: boolean;
+  msCustomerId?: string;
   createdAt: string;
 }
 
@@ -141,11 +142,30 @@ export interface ContactMessage {
 
 const API_BASE = typeof window !== 'undefined' ? '' : '';
 
+export interface PaginatedProducts {
+  products: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export async function fetchProducts(params?: Record<string, string>): Promise<Product[]> {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
   const res = await fetch(`${API_BASE}/api/products${qs}`);
   if (!res.ok) return [];
-  return res.json();
+  const data = await res.json();
+  // Handle both old array format and new paginated format
+  return Array.isArray(data) ? data : (data.products || []);
+}
+
+export async function fetchProductsPaginated(params?: Record<string, string>): Promise<PaginatedProducts> {
+  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+  const res = await fetch(`${API_BASE}/api/products${qs}`);
+  if (!res.ok) return { products: [], total: 0, page: 1, limit: 48, totalPages: 0 };
+  const data = await res.json();
+  if (Array.isArray(data)) return { products: data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
+  return data;
 }
 
 export async function fetchCategories(): Promise<Category[]> {

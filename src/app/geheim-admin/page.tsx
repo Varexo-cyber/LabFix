@@ -75,6 +75,8 @@ export default function AdminPage() {
 
   // Multi-select products state
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  const [adminProductPage, setAdminProductPage] = useState(1);
+  const ADMIN_PRODUCTS_PER_PAGE = 200;
 
   // Custom confirmation modal state
   const [confirmModal, setConfirmModal] = useState<{
@@ -238,11 +240,34 @@ export default function AdminPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedProductIds.size === filteredProducts.length) {
+    if (selectedProductIds.size === adminPagedProducts.length) {
       setSelectedProductIds(new Set());
     } else {
-      setSelectedProductIds(new Set(filteredProducts.map(p => p.id)));
+      setSelectedProductIds(new Set(adminPagedProducts.map(p => p.id)));
     }
+  };
+
+  const handleDeleteAllProducts = () => {
+    showConfirm(
+      '⚠️ ALLE producten verwijderen',
+      `Weet je ZEKER dat je ALLE ${products.length} producten wilt verwijderen? Dit kan NIET ongedaan worden gemaakt!`,
+      () => {
+        showConfirm(
+          '⚠️ LAATSTE WAARSCHUWING',
+          `Dit is je laatste kans. Je staat op het punt om ALLE ${products.length} producten permanent te verwijderen. Weet je het ABSOLUUT zeker?`,
+          async () => {
+            const ids = products.map(p => p.id);
+            for (let i = 0; i < ids.length; i++) {
+              await deleteProduct(ids[i]);
+            }
+            setProducts([]);
+            setSelectedProductIds(new Set());
+            setAdminProductPage(1);
+            closeConfirm();
+          }
+        );
+      }
+    );
   };
 
   const handleBulkDelete = () => {
@@ -296,21 +321,26 @@ export default function AdminPage() {
     setFormData(emptyProduct);
   };
 
+  // Reset to page 1 when filters/search change
+  React.useEffect(() => { setAdminProductPage(1); }, [searchQuery, filterCategory, filterSubCategory, filterModel]);
+
   const filteredProducts = products.filter((p) => {
-    // Category matching: support full paths like samsung/galaxy-s/galaxy-s26-ultra
     const catParts = p.category.split('/');
     const matchesCategory = !filterCategory || p.category === filterCategory || catParts[0] === filterCategory || p.category.startsWith(filterCategory + '/');
     const matchesSub = !filterSubCategory || p.subcategory === filterSubCategory || catParts[1] === filterSubCategory || p.category.includes('/' + filterSubCategory + '/');
     const matchesModel = !filterModel || p.model === filterModel || catParts[2] === filterModel || p.category.endsWith('/' + filterModel);
-
-    // Broad search: ALL words must match (not just substring)
     const q = searchQuery.toLowerCase().trim();
     const words = q ? q.split(/\s+/) : [];
     const haystack = `${p.name} ${p.nameEn} ${p.sku} ${p.description} ${p.descriptionEn} ${p.category}`.toLowerCase();
     const matchesSearch = !q || words.every(word => haystack.includes(word));
-
     return matchesCategory && matchesSub && matchesModel && matchesSearch;
   });
+
+  const adminTotalPages = Math.ceil(filteredProducts.length / ADMIN_PRODUCTS_PER_PAGE);
+  const adminPagedProducts = filteredProducts.slice(
+    (adminProductPage - 1) * ADMIN_PRODUCTS_PER_PAGE,
+    adminProductPage * ADMIN_PRODUCTS_PER_PAGE
+  );
 
   // Login screen
   if (!authenticated) {
@@ -844,6 +874,19 @@ export default function AdminPage() {
           </button>
         </div>
 
+        {/* Pagination info + delete all */}
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-500">
+            {filteredProducts.length} producten gevonden — pagina {adminProductPage} van {adminTotalPages}
+          </p>
+          <button
+            onClick={handleDeleteAllProducts}
+            className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 font-semibold"
+          >
+            <Trash2 size={13} /> Alle {products.length} producten verwijderen
+          </button>
+        </div>
+
         {/* Bulk action bar */}
         {selectedProductIds.size > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between animate-fade-in">
@@ -870,7 +913,7 @@ export default function AdminPage() {
                   <th className="px-3 py-3 w-10">
                     <input
                       type="checkbox"
-                      checked={filteredProducts.length > 0 && selectedProductIds.size === filteredProducts.length}
+                      checked={adminPagedProducts.length > 0 && selectedProductIds.size === adminPagedProducts.length}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
                       title="Alles selecteren"
@@ -885,7 +928,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {filteredProducts.map((product) => (
+                {adminPagedProducts.map((product) => (
                   <tr key={product.id} className={`hover:bg-gray-50 ${selectedProductIds.has(product.id) ? 'bg-blue-50' : ''}`}>
                     <td className="px-3 py-3 w-10">
                       <input
@@ -950,6 +993,45 @@ export default function AdminPage() {
             )}
           </div>
         </div>
+
+        {/* Pagination controls */}
+        {adminTotalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+            <button
+              onClick={() => setAdminProductPage(1)}
+              disabled={adminProductPage === 1}
+              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >« Eerste</button>
+            <button
+              onClick={() => setAdminProductPage(p => Math.max(1, p - 1))}
+              disabled={adminProductPage === 1}
+              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >‹ Vorige</button>
+            {Array.from({ length: Math.min(7, adminTotalPages) }, (_, i) => {
+              const start = Math.max(1, Math.min(adminProductPage - 3, adminTotalPages - 6));
+              const page = start + i;
+              return (
+                <button
+                  key={page}
+                  onClick={() => setAdminProductPage(page)}
+                  className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
+                    page === adminProductPage ? 'bg-primary-500 text-white border-primary-500' : 'hover:bg-gray-50'
+                  }`}
+                >{page}</button>
+              );
+            })}
+            <button
+              onClick={() => setAdminProductPage(p => Math.min(adminTotalPages, p + 1))}
+              disabled={adminProductPage === adminTotalPages}
+              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >Volgende ›</button>
+            <button
+              onClick={() => setAdminProductPage(adminTotalPages)}
+              disabled={adminProductPage === adminTotalPages}
+              className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >Laatste »</button>
+          </div>
+        )}
         </div>)}
 
         {/* ============= ORDERS TAB ============= */}

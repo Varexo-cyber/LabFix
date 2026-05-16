@@ -35,6 +35,7 @@ async function ensureTable(sql: any) {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_postal_code TEXT DEFAULT ''`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_country TEXT DEFAULT 'Nederland'`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_same_as_shipping BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ms_customer_id TEXT DEFAULT ''`;
   } catch {
     // Ignore if columns already exist
   }
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest) {
       city: user.city || '',
       postalCode: user.postal_code || '',
       country: user.country || 'Nederland',
+      msCustomerId: user.ms_customer_id || '',
       createdAt: user.created_at,
     };
 

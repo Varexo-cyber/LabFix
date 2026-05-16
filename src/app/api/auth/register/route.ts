@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '@/lib/email';
 import { randomUUID } from 'crypto';
+import { createCustomer as msSyncCustomer, findMsCustomerByEmail } from '@/lib/mobilesentrix-new';
 
 export const runtime = 'nodejs';
 
@@ -37,6 +38,7 @@ async function ensureTable(sql: any) {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_postal_code TEXT DEFAULT ''`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_country TEXT DEFAULT 'Nederland'`;
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS billing_same_as_shipping BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ms_customer_id TEXT DEFAULT ''`;
   } catch {
     // Ignore if columns already exist
   }
@@ -71,9 +73,50 @@ export async function POST(request: NextRequest) {
       ? (body.contactPerson || body.companyName)
       : `${body.firstName} ${body.lastName}`;
 
+    // ── MobileSentrix customer sync ───────────────────────────────────────
+    let msCustomerId = '';
+    try {
+      const nameParts = displayName.trim().split(' ');
+      const msFirstname = body.firstName || nameParts[0] || 'LabFix';
+      const msLastname = body.lastName || nameParts.slice(1).join(' ') || 'Klant';
+      const msUsername = body.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 9000 + 1000);
+      const countryCode = body.country === 'Nederland' || !body.country ? 'NL' : body.country;
+
+      const msResult = await msSyncCustomer({
+        firstname: msFirstname,
+        lastname: msLastname,
+        username: msUsername,
+        email: body.email,
+        mobile: (body.phone || '0000000000').replace(/\D/g, ''),
+        password: body.password,
+        company: body.companyName || `${msFirstname} ${msLastname}`,
+        company_short: (body.companyName || msFirstname).substring(0, 8),
+        street: [body.address || 'Onbekend'],
+        city: body.city || 'Onbekend',
+        region: '',
+        postcode: body.postalCode || '0000AA',
+        country_id: countryCode,
+        telephone: (body.phone || '0000000000').replace(/\D/g, ''),
+        vat_numbers: body.btwNumber ? [{ vat_prefix: 'VAT', vat_number: body.btwNumber }] : [],
+      });
+
+      if (msResult?.success) {
+        // Find the new customer's ID via search
+        const foundId = await findMsCustomerByEmail(body.email);
+        msCustomerId = foundId || '';
+      } else if (msResult?.message?.includes('already an account')) {
+        // Customer already exists at MS, look up ID
+        const foundId = await findMsCustomerByEmail(body.email);
+        msCustomerId = foundId || '';
+      }
+    } catch (msErr: any) {
+      console.error('MS customer sync failed (LabFix account still created):', msErr.message);
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     await sql`
-      INSERT INTO users (id, email, password, customer_type, first_name, last_name, company_name, kvk_number, btw_number, contact_person, phone, address, city, postal_code, country)
-      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'})
+      INSERT INTO users (id, email, password, customer_type, first_name, last_name, company_name, kvk_number, btw_number, contact_person, phone, address, city, postal_code, country, ms_customer_id)
+      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'}, ${msCustomerId})
     `;
 
     // Send welcome email
@@ -113,7 +156,7 @@ export async function POST(request: NextRequest) {
       console.error('Welcome email failed:', emailErr);
     }
 
-    return NextResponse.json({ success: true, message: 'Account aangemaakt' });
+    return NextResponse.json({ success: true, message: 'Account aangemaakt', msCustomerId });
   } catch (error: any) {
     console.error('Registration error:', error);
     return NextResponse.json({ success: false, message: error.message || 'Er is een serverfout opgetreden' }, { status: 500 });

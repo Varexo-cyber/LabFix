@@ -37,8 +37,12 @@ async function ensureTable(sql: any) {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `;
-  // Add sort_order column if missing (existing tables)
   try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 100`; } catch {}
+  // Indexes for fast filtering
+  try { await sql`CREATE INDEX IF NOT EXISTS idx_products_category ON products (category)`; } catch {}
+  try { await sql`CREATE INDEX IF NOT EXISTS idx_products_featured ON products (featured) WHERE featured = true`; } catch {}
+  try { await sql`CREATE INDEX IF NOT EXISTS idx_products_is_new ON products (is_new) WHERE is_new = true`; } catch {}
+  try { await sql`CREATE INDEX IF NOT EXISTS idx_products_sort ON products (sort_order ASC, created_at DESC)`; } catch {}
 }
 
 export async function GET(request: NextRequest) {
@@ -50,21 +54,44 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
     const isNew = searchParams.get('isNew');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(500, Math.max(1, parseInt(searchParams.get('limit') || '200')));
+    const offset = (page - 1) * limit;
 
-    let products;
+    let rows: any[];
+    let totalRows: any[];
+
     if (category) {
-      products = await sql`SELECT * FROM products WHERE category = ${category} ORDER BY sort_order ASC, created_at DESC`;
+      [rows, totalRows] = await Promise.all([
+        sql`SELECT * FROM products WHERE category = ${category} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${category}`,
+      ]);
     } else if (search) {
-      products = await sql`SELECT * FROM products WHERE LOWER(name) LIKE ${'%' + search.toLowerCase() + '%'} OR LOWER(sku) LIKE ${'%' + search.toLowerCase() + '%'} ORDER BY sort_order ASC, created_at DESC`;
+      const q = '%' + search.toLowerCase() + '%';
+      [rows, totalRows] = await Promise.all([
+        sql`SELECT * FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q}`,
+      ]);
     } else if (featured === 'true') {
-      products = await sql`SELECT * FROM products WHERE featured = true ORDER BY sort_order ASC, created_at DESC`;
+      [rows, totalRows] = await Promise.all([
+        sql`SELECT * FROM products WHERE featured = true ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE featured = true`,
+      ]);
     } else if (isNew === 'true') {
-      products = await sql`SELECT * FROM products WHERE is_new = true ORDER BY sort_order ASC, created_at DESC`;
+      [rows, totalRows] = await Promise.all([
+        sql`SELECT * FROM products WHERE is_new = true ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE is_new = true`,
+      ]);
     } else {
-      products = await sql`SELECT * FROM products ORDER BY sort_order ASC, created_at DESC`;
+      [rows, totalRows] = await Promise.all([
+        sql`SELECT * FROM products ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products`,
+      ]);
     }
 
-    const mapped = products.map((p: any) => ({
+    const total: number = totalRows[0]?.count ?? rows.length;
+
+    const mapped = rows.map((p: any) => ({
       id: p.id,
       name: p.name,
       nameEn: p.name_en,
@@ -83,7 +110,13 @@ export async function GET(request: NextRequest) {
       createdAt: p.created_at,
     }));
 
-    return NextResponse.json(mapped);
+    return NextResponse.json({
+      products: mapped,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

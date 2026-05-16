@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { createOrderApi } from '@/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Lock, ShoppingBag, Truck } from 'lucide-react';
+import { CheckCircle, Lock, ShoppingBag, Loader2, CreditCard } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { t, locale, formatPrice, user, cart, cartTotal, clearCart } = useApp();
@@ -64,18 +64,22 @@ export default function CheckoutPage() {
   };
 
   const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setPaymentError('');
     try {
-      const result = await createOrderApi({
+      const orderId = 'ORD-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+
+      const orderData = {
         userId: user?.id || 'guest',
         userEmail: isGuest ? guestEmail : user?.email || '',
         companyName: isGuest ? guestCompanyName : user?.companyName || '',
         kvkNumber: isGuest ? guestKvkNumber : user?.kvkNumber || '',
         vatNumber: isGuest ? guestVatNumber : user?.btwNumber || '',
-        contactPerson: isGuest ? guestName : user?.contactPerson || '',
+        contactPerson: isGuest ? guestName : (user?.contactPerson || `${user?.firstName || ''} ${user?.lastName || ''}`.trim()),
         phone: isGuest ? guestPhone : user?.phone || '',
         shippingAddress,
         shippingCity,
@@ -94,14 +98,34 @@ export default function CheckoutPage() {
         shippingCost,
         total,
         notes,
+        msCustomerId: user?.msCustomerId || '',
+        billingSameAsShipping,
+        shippingCountryCode: shippingCountry === 'Nederland' ? 'NL' : shippingCountry,
+        billingCountryCode: billingSameAsShipping ? (shippingCountry === 'Nederland' ? 'NL' : shippingCountry) : (billingCountry === 'Nederland' ? 'NL' : billingCountry),
+      };
+
+      const res = await fetch('/api/payments/mollie/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          amount: total.toFixed(2),
+          description: `LabFix bestelling ${orderId}`,
+          orderData,
+        }),
       });
-      if (result.success && result.id) {
-        setOrderId(result.id);
-        setOrderPlaced(true);
+
+      const data = await res.json();
+
+      if (data.checkoutUrl) {
         clearCart();
+        window.location.href = data.checkoutUrl;
+      } else {
+        setPaymentError(data.error || 'Betaling kon niet worden gestart. Probeer opnieuw.');
       }
     } catch (err) {
-      console.error('Order placement failed:', err);
+      console.error('Payment initiation failed:', err);
+      setPaymentError('Er is een fout opgetreden. Probeer het opnieuw.');
     } finally {
       setLoading(false);
     }
@@ -387,15 +411,28 @@ export default function CheckoutPage() {
                 <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
               </div>
 
+              {paymentError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{paymentError}</p>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full mt-6 bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full mt-6 bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <Lock size={16} />
-                {t('checkout.placeOrder')}
+                {loading ? (
+                  <><Loader2 size={16} className="animate-spin" /> Bezig met verwerken...</>
+                ) : (
+                  <><CreditCard size={16} /> Betalen via Mollie</>
+                )}
               </button>
 
-              <p className="text-xs text-gray-400 text-center mt-3">{t('features.secureDesc')}</p>
+              <div className="flex items-center justify-center gap-2 mt-3">
+                <Lock size={12} className="text-gray-400" />
+                <p className="text-xs text-gray-400">Veilig betalen via iDEAL, creditcard, Bancontact en meer</p>
+              </div>
             </div>
           </div>
         </div>

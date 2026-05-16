@@ -1,10 +1,10 @@
 'use client';
 
-import React, { Suspense, useEffect, useState, useMemo } from 'react';
+import React, { Suspense, useEffect, useState, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
-import { fetchProducts, Product } from '@/lib/store';
+import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
@@ -13,14 +13,18 @@ function ProductsPageContent() {
   const { t, locale } = useApp();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedSub, setSelectedSub] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 12;
+  const PRODUCTS_PER_PAGE = 200;
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
   const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -33,9 +37,30 @@ function ProductsPageContent() {
     laptopParts: false
   });
 
+  // Fetch products from API with server-side pagination
   useEffect(() => {
-    fetchProducts().then(setProducts);
-  }, []);
+    setLoadingProducts(true);
+    const params: Record<string, string> = {
+      page: currentPage.toString(),
+      limit: PRODUCTS_PER_PAGE.toString(),
+    };
+    if (selectedBrand) params.category = selectedBrand;
+    if (searchQuery) params.search = searchQuery;
+    fetchProductsPaginated(params).then((data) => {
+      setProducts(data.products);
+      setTotalCount(data.total);
+    }).finally(() => setLoadingProducts(false));
+  }, [currentPage, selectedBrand, searchQuery]);
+
+  // Debounce search input → update searchQuery
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 300);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [searchInput]);
 
   useEffect(() => {
     const brand = searchParams.get('brand');
@@ -62,10 +87,10 @@ function ProductsPageContent() {
     if (laptopPart) { setSelectedBrand(`lp-${laptopPart}`); setExpandedBrands([`lp-${laptopPart}`]); setExpandedSections(p => ({ ...p, laptopParts: true })); }
   }, [searchParams]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when category/sub/model filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedBrand, selectedSub, selectedModel, searchQuery, sortBy]);
+  }, [selectedBrand, selectedSub, selectedModel, sortBy]);
 
   const toggleBrandExpand = (slug: string) => {
     setExpandedBrands(prev => prev.includes(slug) ? prev.filter(b => b !== slug) : [...prev, slug]);
@@ -75,66 +100,10 @@ function ProductsPageContent() {
     setExpandedSubs(prev => prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]);
   };
 
-  const filteredProducts = useMemo(() => {
-    let filtered = [...products];
-
-    if (selectedBrand) {
-      if (selectedBrand === 'pc-all') {
-        filtered = filtered.filter((p) => p.category?.startsWith('pc-'));
-      } else if (selectedBrand === 'pca-all') {
-        filtered = filtered.filter((p) => p.category?.startsWith('pca-'));
-      } else {
-        filtered = filtered.filter((p) => p.category === selectedBrand || p.category?.startsWith(selectedBrand + '/'));
-      }
-    }
-
-    if (selectedSub) {
-      filtered = filtered.filter((p) => {
-        const parts = p.category.split('/');
-        return p.subcategory === selectedSub || parts[1] === selectedSub || p.category.includes('/' + selectedSub + '/');
-      });
-    }
-
-    if (selectedModel) {
-      filtered = filtered.filter((p) => {
-        const parts = p.category.split('/');
-        return p.model === selectedModel || parts[2] === selectedModel || p.category.endsWith('/' + selectedModel);
-      });
-    }
-
-    if (searchQuery) {
-      const words = searchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
-      filtered = filtered.filter((p) => {
-        const haystack = `${p.name} ${p.nameEn} ${p.description} ${p.descriptionEn} ${p.sku}`.toLowerCase();
-        return words.every(word => haystack.includes(word));
-      });
-    }
-
-    switch (sortBy) {
-      case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'name':
-        filtered.sort((a, b) => (locale === 'nl' ? a.name : a.nameEn).localeCompare(locale === 'nl' ? b.name : b.nameEn));
-        break;
-      case 'newest':
-      default:
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-    }
-
-    return filtered;
-  }, [products, selectedBrand, selectedSub, selectedModel, searchQuery, sortBy, locale]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE
-  );
+  // Products come pre-filtered from API; just use them directly
+  const filteredProducts = products;
+  const paginatedProducts = products;
+  const totalPages = Math.ceil(totalCount / PRODUCTS_PER_PAGE);
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -601,19 +570,26 @@ function ProductsPageContent() {
                 Filters
               </button>
               <span className="text-sm text-gray-500">
-                {filteredProducts.length} {locale === 'nl' ? 'producten' : 'products'}
+                {loadingProducts ? '...' : `${totalCount} ${locale === 'nl' ? 'producten' : 'products'}`}
               </span>
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Search in results */}
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('nav.search')}
-                className="border rounded-lg px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-primary-500"
-              />
+              {/* Search in results — queries full database */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder={t('nav.search')}
+                  className="border rounded-lg pl-3 pr-8 py-1.5 text-sm w-56 focus:outline-none focus:border-primary-500"
+                />
+                {searchInput && (
+                  <button onClick={() => { setSearchInput(''); setSearchQuery(''); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
 
               {/* Sort */}
               <select
@@ -631,7 +607,9 @@ function ProductsPageContent() {
           </div>
 
           {/* Products Grid */}
-          {paginatedProducts.length > 0 ? (
+          {loadingProducts ? (
+            <div className="col-span-4 py-20 text-center text-gray-400">Laden...</div>
+          ) : paginatedProducts.length > 0 ? (
             <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
               {paginatedProducts.map((product, i) => (
                 <div key={product.id} className={`animate-fade-in-up`} style={{ animationDelay: `${Math.min(i * 0.05, 0.4)}s` }}>
