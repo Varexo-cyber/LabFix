@@ -176,8 +176,8 @@ function generateSmartResponse(
     }
     if (intent === 'shipping') {
       response = nl
-        ? `Je vroeg al eerder over verzending. Ik herhaal: we verzenden met DHL, FedEx, UPS, PostNL en DPD. Levertijd 1-3 werkdagen EU, gratis verzending vanaf €150. Wil je weten hoe je je bestelling kunt volgen?`
-        : `You asked about shipping before. To repeat: we ship with DHL, FedEx, UPS, PostNL and DPD. Delivery 1-3 business days EU, free shipping from €150. Want to know how to track your order?`;
+        ? `Je vroeg al eerder over verzending. Ik herhaal: NL verzending €6,95 (gratis boven €150). EU verzending €18,95. Levertijd 1-3 werkdagen. Wil je weten hoe je je bestelling kunt volgen?`
+        : `You asked about shipping before. To repeat: NL shipping €6.95 (free above €150). EU shipping €18.95. Delivery 1-3 business days. Want to know how to track your order?`;
       followUp = nl ? 'Bestelling volgen' : 'Track order';
       return { response, followUp };
     }
@@ -191,12 +191,12 @@ function generateSmartResponse(
       if (hasBrand) {
         const brand = entities.find(e => ['Apple', 'Samsung', 'Huawei', 'Xiaomi'].includes(e));
         response = nl
-          ? `Voor ${brand}-onderdelen geldt onze standaard verzending: 1-3 werkdagen binnen de EU via DHL, FedEx, UPS, PostNL of DPD. Gratis verzending vanaf €150. Heb je haast? We kunnen ook express verzending regelen - neem hiervoor contact op.`
-          : `For ${brand} parts, our standard shipping applies: 1-3 business days within the EU via DHL, FedEx, UPS, PostNL or DPD. Free shipping from €150. In a hurry? We can arrange express shipping - contact us for this.`;
+          ? `Voor ${brand}-onderdelen: NL verzending €6,95 (gratis boven €150), EU €18,95. Levertijd 1-3 werkdagen via DHL, PostNL of DPD. Heb je haast? Vraag naar express verzending.`
+          : `For ${brand} parts: NL shipping €6.95 (free above €150), EU €18.95. Delivery 1-3 business days via DHL, PostNL or DPD. In a hurry? Ask about express shipping.`;
       } else {
         response = nl
-          ? `We verzenden dagelijks met DHL, FedEx, UPS, PostNL en DPD. Binnen Nederland meestal volgende dag, EU-wide 1-3 werkdagen. Vanaf €150 is verzending gratis. Je ontvangt automatisch een track & trace link zodra je bestelling verzonden is.`
-          : `We ship daily with DHL, FedEx, UPS, PostNL and DPD. Within the Netherlands usually next day, EU-wide 1-3 business days. Free shipping from €150. You automatically receive a track & trace link once your order ships.`;
+          ? `We verzenden dagelijks via DHL, PostNL en DPD. NL verzending €6,95 (gratis boven €150), EU €18,95. Binnen Nederland meestal volgende dag, EU-wide 1-3 werkdagen. Je ontvangt automatisch een track & trace link zodra je bestelling verzonden is.`
+          : `We ship daily via DHL, PostNL and DPD. NL shipping €6.95 (free above €150), EU €18.95. Within the Netherlands usually next day, EU-wide 1-3 business days. You automatically receive a track & trace link once your order ships.`;
       }
       followUp = nl ? 'Wat is de levertijd naar België?' : 'What is delivery time to Germany?';
       break;

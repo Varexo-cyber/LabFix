@@ -69,11 +69,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const formatPrice = useCallback((price: number): string => {
-    // API returns prices in USD - convert to target currency
+    // Prices are stored in EUR - convert to other currencies if needed
     const rates: Record<Currency, number> = {
-      EUR: 0.92,  // USD to EUR
-      USD: 1,     // USD to USD (base)
-      GBP: 0.79   // USD to GBP
+      EUR: 1,      // EUR base
+      USD: 1.09,   // EUR to USD
+      GBP: 0.86,   // EUR to GBP
     };
     const symbols: Record<Currency, string> = {
       EUR: '€',

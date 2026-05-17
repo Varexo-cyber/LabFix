@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft, Truck } from 'lucide-react';
+import { NL_SHIPPING, FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
 export default function CartPage() {
   const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
@@ -92,12 +93,12 @@ export default function CartPage() {
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.shipping')}</span>
                   <span className="font-semibold">
-                    {cartTotal >= 150
+                    {cartTotal >= FREE_SHIPPING_THRESHOLD
                       ? (locale === 'nl' ? 'Gratis' : 'Free')
-                      : '€14.95'}
+                      : `€${NL_SHIPPING.toFixed(2)}`}
                   </span>
                 </div>
-                {cartTotal < 150 && (
+                {cartTotal < FREE_SHIPPING_THRESHOLD && (
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Truck size={14} />
                     {t('cart.freeShipping')}
@@ -109,7 +110,7 @@ export default function CartPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
                   <span className="text-primary-500">
-                    {cartTotal >= 150 ? formatPrice(cartTotal) : `€${(cartTotal + 14.95).toFixed(2)}`}
+                    {cartTotal >= FREE_SHIPPING_THRESHOLD ? formatPrice(cartTotal) : `€${(cartTotal + NL_SHIPPING).toFixed(2)}`}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>

@@ -70,7 +70,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'cart.continue': 'Verder Winkelen',
     'cart.remove': 'Verwijderen',
     'cart.quantity': 'Aantal',
-    'cart.freeShipping': 'Gratis verzending vanaf €150',
+    'cart.freeShipping': 'Gratis verzending binnen NL vanaf €150',
 
     // Footer
     'footer.about': 'Over LabFix',
@@ -246,7 +246,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     'cart.continue': 'Continue Shopping',
     'cart.remove': 'Remove',
     'cart.quantity': 'Quantity',
-    'cart.freeShipping': 'Free shipping on orders over €150',
+    'cart.freeShipping': 'Free shipping within NL on orders over €150',
 
     // Footer
     'footer.about': 'About LabFix',

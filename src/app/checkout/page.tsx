@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Lock, ShoppingBag, Loader2, CreditCard } from 'lucide-react';
+import { getShippingCost } from '@/lib/shipping';
 
 export default function CheckoutPage() {
   const { t, locale, formatPrice, user, cart, cartTotal, clearCart } = useApp();
@@ -46,7 +47,7 @@ export default function CheckoutPage() {
     }
   }, [user, cart, router, orderPlaced]);
 
-  const shippingCost = cartTotal >= 150 ? 0 : 14.95;
+  const shippingCost = getShippingCost(cartTotal, shippingCountry || 'NL');
   const total = cartTotal + shippingCost;
   const isGuest = !user;
 
@@ -401,7 +402,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">{t('cart.shipping')}</span>
-                  <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">Gratis</span> : `€${shippingCost.toFixed(2)}`}</span>
+                  <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">{locale === 'nl' ? 'Gratis' : 'Free'}</span> : `€${shippingCost.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
                   <span>{t('cart.total')}</span>

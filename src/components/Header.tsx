@@ -172,7 +172,7 @@ export default function Header() {
       <div className="bg-primary-600 text-white text-sm">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
           <span className="font-medium hidden sm:inline">
-            {locale === 'nl' ? 'Bestellingen boven de 150 EUR = gratis verzenden' : 'Orders over 150 EUR = free shipping'}
+            {locale === 'nl' ? 'NL verzending €6,95 • Gratis boven €150 • EU €18,95' : 'NL shipping €6.95 • Free above €150 • EU €18.95'}
           </span>
           <div className="flex items-center gap-4">
             <a href="mailto:info@labfix.nl" className="flex items-center gap-1 hover:text-gray-200">
@@ -216,12 +216,12 @@ export default function Header() {
       {/* Main header with logo + search + actions */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             <Link href="/" className="flex-shrink-0">
-              <img src="/logo.png" alt="LabFix" className="h-14 sm:h-20 md:h-24 w-auto" />
+              <img src="/logo.png" alt="LabFix" className="h-12 sm:h-20 md:h-24 w-auto" />
             </Link>
 
-            {/* Search */}
+            {/* Search - desktop */}
             <div ref={searchRef} className="hidden md:block flex-1 max-w-xl relative">
               <form onSubmit={handleSearch} className="flex w-full">
                 <input
@@ -252,26 +252,75 @@ export default function Header() {
               )}
             </div>
 
-            <div className="flex items-center gap-4">
-              <Link href="/account" className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary-600 transition-colors">
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Account - desktop label, mobile icon-only */}
+              <Link href="/account" className="hidden md:flex flex-col items-center text-gray-700 hover:text-primary-600 transition-colors">
                 <User size={22} />
                 <span className="text-xs mt-0.5">{user ? t('nav.myAccount') : (locale === 'nl' ? 'Inloggen' : 'Login')}</span>
               </Link>
-              <Link href="/repair" className="flex flex-col items-center bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-2 transition-colors glow-red-static">
+              <Link href="/account" aria-label={locale === 'nl' ? 'Inloggen' : 'Login'} className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-700">
+                <User size={22} />
+              </Link>
+
+              {/* Reparatie - compact on mobile */}
+              <Link href="/repair" className="hidden md:flex flex-col items-center bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-2 transition-colors glow-red-static">
                 <Wrench size={22} />
                 <span className="text-xs mt-0.5 font-semibold">{locale === 'nl' ? 'Reparatie' : 'Repair'}</span>
               </Link>
-              <Link href="/cart" className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary-600 transition-colors relative">
+              <Link href="/repair" aria-label={locale === 'nl' ? 'Reparatie' : 'Repair'} className="md:hidden flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-lg w-10 h-10 transition-colors glow-red-static">
+                <Wrench size={20} />
+              </Link>
+
+              {/* Cart - desktop label, mobile icon-only */}
+              <Link href="/cart" className="hidden md:flex flex-col items-center text-gray-700 hover:text-primary-600 transition-colors relative">
                 <ShoppingCart size={22} />
                 <span className="text-xs mt-0.5">{locale === 'nl' ? 'Winkelwagen' : 'Cart'}</span>
                 {cartCount > 0 && (
                   <span className="absolute -top-1 right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{cartCount}</span>
                 )}
               </Link>
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 rounded-full hover:bg-gray-100">
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              <Link href="/cart" aria-label={locale === 'nl' ? 'Winkelwagen' : 'Cart'} className="md:hidden relative p-2 rounded-full hover:bg-gray-100 text-gray-700">
+                <ShoppingCart size={22} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold">{cartCount}</span>
+                )}
+              </Link>
+
+              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu" className="lg:hidden p-2 rounded-full hover:bg-gray-100 text-gray-700">
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
+          </div>
+
+          {/* Search - mobile (full width below) */}
+          <div className="md:hidden mt-3 relative">
+            <form onSubmit={handleSearch} className="flex w-full">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('nav.search')}
+                className="flex-1 border-2 border-r-0 border-gray-300 rounded-l-lg px-4 py-2 text-sm focus:outline-none focus:border-primary-500"
+              />
+              <button type="submit" className="bg-red-500 text-white px-5 rounded-r-lg hover:bg-red-600">
+                <Search size={18} />
+              </button>
+            </form>
+            {showSearchDropdown && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto mt-1">
+                {searchResults.map((result, idx) => (
+                  <Link key={idx} href={result.url} className="block px-4 py-3 hover:bg-gray-50 border-b last:border-b-0" onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm">{result.label}</div>
+                        {result.sublabel && <div className="text-xs text-gray-500">{result.sublabel}</div>}
+                      </div>
+                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">{result.type}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -639,25 +688,32 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t max-h-[80vh] overflow-y-auto">
-          <form onSubmit={handleSearch} className="p-4 flex">
-            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('nav.search')} className="flex-1 border-2 border-r-0 border-gray-300 rounded-l-lg px-4 py-2" />
-            <button type="submit" className="bg-red-500 text-white px-4 rounded-r-lg hover:bg-red-600"><Search size={20} /></button>
-          </form>
-          <div className="border-t">
-            <Link href="/products" className="block px-4 py-3 hover:bg-gray-50 border-b font-semibold" onClick={() => setMobileMenuOpen(false)}>{t('nav.allProducts')}</Link>
+        <div className="lg:hidden bg-white border-t max-h-[85vh] overflow-y-auto shadow-lg">
+          {/* Account quick link */}
+          <Link href="/account" className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b hover:bg-gray-100" onClick={() => setMobileMenuOpen(false)}>
+            <User size={20} className="text-primary-600" />
+            <span className="font-medium text-sm">{user ? t('nav.myAccount') : (locale === 'nl' ? 'Inloggen / Mijn Account' : 'Login / My Account')}</span>
+          </Link>
+
+          <div>
+            <Link href="/products" className="flex items-center gap-2 px-4 py-3 hover:bg-gray-50 border-b font-semibold text-sm" onClick={() => setMobileMenuOpen(false)}>
+              <LayoutGrid size={18} className="text-primary-600" />
+              {t('nav.allProducts')}
+            </Link>
+
+            {/* Alle merken */}
             <div className="border-b">
-              <button onClick={() => setMobileMoreOpen(!mobileMoreOpen)} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold">
-                {locale === 'nl' ? 'Alle merken' : 'All Brands'}
-                <ChevronDown size={16} className={mobileMoreOpen ? 'rotate-180' : ''} />
+              <button onClick={() => setMobileMoreOpen(!mobileMoreOpen)} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+                <span>{locale === 'nl' ? 'Alle Merken' : 'All Brands'}</span>
+                <ChevronDown size={16} className={`transition-transform ${mobileMoreOpen ? 'rotate-180' : ''}`} />
               </button>
               {mobileMoreOpen && (
                 <div className="bg-gray-50">
                   {categories.map((brand) => (
                     <div key={brand.slug}>
                       <button onClick={() => setMobileMoreBrand(mobileMoreBrand === brand.slug ? null : brand.slug)} className={`w-full px-6 py-2 hover:bg-gray-100 flex items-center justify-between text-sm ${mobileMoreBrand === brand.slug ? 'bg-primary-50 text-primary-600' : ''}`}>
-                        {locale === 'en' ? brand.nameEn : brand.name}
-                        <ChevronDown size={14} className={mobileMoreBrand === brand.slug ? 'rotate-180' : ''} />
+                        <span>{locale === 'en' ? brand.nameEn : brand.name}</span>
+                        <ChevronDown size={14} className={`transition-transform ${mobileMoreBrand === brand.slug ? 'rotate-180' : ''}`} />
                       </button>
                       {mobileMoreBrand === brand.slug && (
                         <div className="bg-white">
@@ -676,12 +732,79 @@ export default function Header() {
                 </div>
               )}
             </div>
-            <Link href="/repair" className="block mx-3 my-3 px-4 py-4 bg-red-500 text-white rounded-xl text-center font-bold flex items-center justify-center gap-2 glow-red-static" onClick={() => setMobileMenuOpen(false)}>
+
+            {/* Accessoires */}
+            <div className="border-b">
+              <button onClick={() => setMobileOpenBrand(mobileOpenBrand === '__acc' ? null : '__acc')} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+                <span>{locale === 'nl' ? 'Accessoires' : 'Accessories'}</span>
+                <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === '__acc' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileOpenBrand === '__acc' && (
+                <div className="bg-gray-50">
+                  {accessoryCategories.map((cat) => (
+                    <Link key={cat.slug} href={`/products?accessory=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
+                      {locale === 'en' ? cat.nameEn : cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* PC */}
+            <div className="border-b">
+              <button onClick={() => setMobileOpenBrand(mobileOpenBrand === '__pc' ? null : '__pc')} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+                <span>PC</span>
+                <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === '__pc' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileOpenBrand === '__pc' && (
+                <div className="bg-gray-50">
+                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
+                  {pcPartsCategories.map((cat) => (
+                    <Link key={cat.slug} href={`/products?pcpart=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
+                      {locale === 'en' ? cat.nameEn : cat.name}
+                    </Link>
+                  ))}
+                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</div>
+                  {pcAccessoryCategories.map((cat) => (
+                    <Link key={cat.slug} href={`/products?pcacc=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
+                      {locale === 'en' ? cat.nameEn : cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Laptop */}
+            <div className="border-b">
+              <button onClick={() => setMobileOpenBrand(mobileOpenBrand === '__laptop' ? null : '__laptop')} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+                <span>Laptop</span>
+                <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === '__laptop' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileOpenBrand === '__laptop' && (
+                <div className="bg-gray-50">
+                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">Refurbished</div>
+                  {laptopBrands.map((b) => (
+                    <Link key={b.slug} href={`/products?laptop=${b.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
+                      {locale === 'en' ? b.nameEn : b.name}
+                    </Link>
+                  ))}
+                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
+                  {laptopPartsCategories.map((c) => (
+                    <Link key={c.slug} href={`/products?laptop-parts=${c.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
+                      {locale === 'en' ? c.nameEn : c.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/repair" className="mx-3 my-3 px-4 py-4 bg-red-500 text-white rounded-xl text-center font-bold flex items-center justify-center gap-2 glow-red-static" onClick={() => setMobileMenuOpen(false)}>
               <Wrench size={20} />
               {locale === 'nl' ? 'Reparatie Aanvragen' : 'Repair Request'}
             </Link>
-            <Link href="/about" className="block px-4 py-3 hover:bg-gray-50 border-t" onClick={() => setMobileMenuOpen(false)}>{t('nav.about')}</Link>
-            <Link href="/contact" className="block px-4 py-3 hover:bg-gray-50 border-t" onClick={() => setMobileMenuOpen(false)}>{t('nav.contact')}</Link>
+
+            <Link href="/about" className="block px-4 py-3 hover:bg-gray-50 border-t text-sm" onClick={() => setMobileMenuOpen(false)}>{t('nav.about')}</Link>
+            <Link href="/contact" className="block px-4 py-3 hover:bg-gray-50 border-t text-sm" onClick={() => setMobileMenuOpen(false)}>{t('nav.contact')}</Link>
           </div>
         </div>
       )}

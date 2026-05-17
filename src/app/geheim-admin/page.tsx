@@ -51,6 +51,11 @@ export default function AdminPage() {
   const [uploadingNewsImage, setUploadingNewsImage] = useState(false);
   const [savingNews, setSavingNews] = useState(false);
   const [newsToast, setNewsToast] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({show: false, message: '', type: 'success'});
+  const [toast, setToast] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({show: false, message: '', type: 'success'});
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500);
+  };
   const [orders, setOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -193,7 +198,7 @@ export default function AdminPage() {
 
   const handleSave = async () => {
     if (!formData.name || !formData.price || !formData.sku) {
-      alert('Vul naam, prijs en SKU in');
+      showToast('Vul naam, prijs en SKU in', 'error');
       return;
     }
 
@@ -389,7 +394,7 @@ export default function AdminPage() {
       setEmailSent(true);
       setTimeout(() => { setEmailSent(false); setEmailMessage(''); }, 3000);
     } catch {
-      alert('E-mail versturen mislukt');
+      showToast('E-mail versturen mislukt', 'error');
     }
   };
 
@@ -402,12 +407,12 @@ export default function AdminPage() {
           const res = await fetch(`/api/users?id=${userId}`, { method: 'DELETE' });
           if (res.ok) {
             setUsers(users.filter(u => u.id !== userId));
-            alert('Klant verwijderd');
+            showToast('Klant verwijderd', 'success');
           } else {
-            alert('Verwijderen mislukt');
+            showToast('Verwijderen mislukt', 'error');
           }
         } catch {
-          alert('Verwijderen mislukt');
+          showToast('Verwijderen mislukt', 'error');
         }
         closeConfirm();
       }
@@ -416,7 +421,7 @@ export default function AdminPage() {
 
   const handleSendNewsletter = async () => {
     if (!newsletterSubject.trim() || !newsletterBody.trim()) {
-      alert('Vul onderwerp en bericht in');
+      showToast('Vul onderwerp en bericht in', 'error');
       return;
     }
     setSendingNewsletter(true);
@@ -424,11 +429,11 @@ export default function AdminPage() {
       for (const sub of subscribers) {
         await sendEmailApi(sub.email, newsletterSubject, newsletterBody);
       }
-      alert(`Nieuwsbrief verstuurd naar ${subscribers.length} abonnees!`);
+      showToast(`Nieuwsbrief verstuurd naar ${subscribers.length} abonnees!`, 'success');
       setNewsletterSubject('');
       setNewsletterBody('');
     } catch {
-      alert('Nieuwsbrief versturen mislukt');
+      showToast('Nieuwsbrief versturen mislukt', 'error');
     } finally {
       setSendingNewsletter(false);
     }
@@ -461,13 +466,13 @@ export default function AdminPage() {
         setRepairAppointments(result.appointments);
       }
     } catch {
-      alert('Reparatie goedkeuren mislukt');
+      showToast('Reparatie goedkeuren mislukt', 'error');
     }
   };
 
   const handleRejectRepair = async (id: string) => {
     if (!rejectionReason.trim()) {
-      alert('Geef een reden voor afwijzing');
+      showToast('Geef een reden voor afwijzing', 'error');
       return;
     }
     try {
@@ -479,7 +484,7 @@ export default function AdminPage() {
         setRepairAppointments(result.appointments);
       }
     } catch {
-      alert('Reparatie afwijzen mislukt');
+      showToast('Reparatie afwijzen mislukt', 'error');
     }
   };
 
@@ -495,7 +500,7 @@ export default function AdminPage() {
             setRepairAppointments(result.appointments);
           }
         } catch {
-          alert('Reparatie verwijderen mislukt');
+          showToast('Reparatie verwijderen mislukt', 'error');
         }
         closeConfirm();
       }
@@ -504,6 +509,13 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 animate-fade-in">
+      {/* Global Toast */}
+      {toast.show && (
+        <div className={`fixed top-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium transition-all ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          <span>{toast.type === 'success' ? '✓' : '✕'}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
       {/* Admin header */}
       <div className="bg-primary-600 text-white animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -740,10 +752,10 @@ export default function AdminPage() {
                                 images: [...(prev.images || []), data.url]
                               }));
                             } else {
-                              alert('Upload mislukt: ' + data.error);
+                              showToast('Upload mislukt: ' + data.error, 'error');
                             }
                           } catch {
-                            alert('Upload mislukt - Controleer of de upload map bestaat');
+                            showToast('Upload mislukt - Controleer of de upload map bestaat', 'error');
                           } finally {
                             setUploadingImage(false);
                           }
@@ -1470,10 +1482,10 @@ export default function AdminPage() {
                                 if (data.success) {
                                   setNewsForm(prev => ({ ...prev, image: data.url }));
                                 } else {
-                                  alert('Upload mislukt: ' + data.error);
+                                  showToast('Upload mislukt: ' + data.error, 'error');
                                 }
                               } catch {
-                                alert('Upload mislukt - Controleer of de upload map bestaat');
+                                showToast('Upload mislukt - Controleer of de upload map bestaat', 'error');
                               } finally {
                                 setUploadingNewsImage(false);
                                 e.target.value = '';
@@ -1509,7 +1521,7 @@ export default function AdminPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={async () => {
-                        if (!newsForm.title) { alert('Vul een titel in'); return; }
+                        if (!newsForm.title) { showToast('Vul een titel in', 'error'); return; }
                         setSavingNews(true);
                         try {
                           if (editingNews) {

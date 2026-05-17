@@ -29,8 +29,9 @@ export default function ShippingPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Verzendkosten</h2>
             <p className="text-gray-600">
-              Bestellingen boven €50 worden gratis verzonden binnen Nederland. 
-              Voor bestellingen onder €50 zijn de verzendkosten €4,95.
+              Binnen Nederland zijn de verzendkosten <strong>€6,95</strong>. 
+              Bij bestellingen boven <strong>€150</strong> is verzending gratis.
+              Voor EU-landen (buiten Nederland) zijn de verzendkosten <strong>€18,95</strong> (tot 5 kg).
             </p>
           </section>
 
