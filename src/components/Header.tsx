@@ -42,6 +42,7 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState<{type: string; label: string; sublabel?: string; url: string}[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -117,7 +118,10 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const insideDesktop = searchRef.current?.contains(target);
+      const insideMobile = mobileSearchRef.current?.contains(target);
+      if (!insideDesktop && !insideMobile) {
         setShowSearchDropdown(false);
       }
     };
@@ -293,7 +297,7 @@ export default function Header() {
           </div>
 
           {/* Search - mobile (full width below) */}
-          <div className="md:hidden mt-3 relative">
+          <div ref={mobileSearchRef} className="md:hidden mt-3 relative">
             <form onSubmit={handleSearch} className="flex w-full">
               <input
                 type="text"
