@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { createOrderApi } from '@/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CheckCircle, Lock, ShoppingBag, Loader2, CreditCard } from 'lucide-react';
@@ -390,7 +389,7 @@ export default function CheckoutPage() {
                       <p className="text-sm font-medium truncate">{item.product.name}</p>
                       <p className="text-xs text-gray-500">x{item.quantity}</p>
                     </div>
-                    <p className="text-sm font-semibold">{formatPrice(item.product.price * item.quantity)}</p>
+                    <p className="text-sm font-semibold">{`€${(item.product.price * item.quantity).toFixed(2)}`}</p>
                   </div>
                 ))}
               </div>
@@ -398,15 +397,15 @@ export default function CheckoutPage() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">{t('cart.subtotal')}</span>
-                  <span>{formatPrice(cartTotal)}</span>
+                  <span>{`€${cartTotal.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">{t('cart.shipping')}</span>
-                  <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">Gratis</span> : formatPrice(shippingCost)}</span>
+                  <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">Gratis</span> : `€${shippingCost.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
                   <span>{t('cart.total')}</span>
-                  <span className="text-primary-500">{formatPrice(total)}</span>
+                  <span className="text-primary-500">{`€${total.toFixed(2)}`}</span>
                 </div>
                 <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
               </div>

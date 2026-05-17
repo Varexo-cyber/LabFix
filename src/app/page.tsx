@@ -111,9 +111,9 @@ export default function HomePage() {
   return (
     <div className="bg-gray-50">
       {/* MobileSentrix Style Hero - White Background with Product Images */}
-      <section className="bg-gradient-to-br from-gray-100 via-white to-gray-100 py-8 md:py-12">
+      <section className="bg-gradient-to-br from-gray-100 via-white to-gray-100 py-8 md:py-12 overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden relative">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden relative" style={{maxWidth:'100%'}}>
             {heroSlides.map((slide, index) => (
               <div
                 key={index}
@@ -154,7 +154,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Right Image - Full coverage */}
-                  <div className="relative h-[250px] md:h-full md:min-h-[500px] order-2">
+                  <div className="relative h-[220px] md:h-full md:min-h-[380px] lg:min-h-[420px] order-2">
                     <img
                       src={slide.image}
                       alt={slide.title}

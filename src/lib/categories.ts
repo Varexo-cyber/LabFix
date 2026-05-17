@@ -116,46 +116,6 @@ export const brandCategories: BrandCategory[] = [
         ],
       },
       {
-        slug: 'apple-watch', name: 'Apple Watch', nameEn: 'Apple Watch',
-        models: [
-          { slug: 'watch-ultra-3', name: 'Ultra 3 (49MM)' },
-          { slug: 'watch-series-10-46', name: 'Series 10 (46MM)' },
-          { slug: 'watch-series-10-42', name: 'Series 10 (42MM)' },
-          { slug: 'watch-se3-44', name: 'SE 3rd Gen (44MM)' },
-          { slug: 'watch-se3-40', name: 'SE 3rd Gen (40MM)' },
-          { slug: 'watch-series-9-45', name: 'Series 9 (45MM)' },
-          { slug: 'watch-series-9-41', name: 'Series 9 (41MM)' },
-          { slug: 'watch-ultra-2', name: 'Ultra 2 (49MM)' },
-          { slug: 'watch-ultra-1', name: 'Ultra 1 (49MM)' },
-          { slug: 'watch-series-8-45', name: 'Series 8 (45MM)' },
-          { slug: 'watch-series-8-41', name: 'Series 8 (41MM)' },
-          { slug: 'watch-se2-44', name: 'SE 2nd Gen (44MM)' },
-          { slug: 'watch-se2-40', name: 'SE 2nd Gen (40MM)' },
-          { slug: 'watch-series-7-45', name: 'Series 7 (45MM)' },
-          { slug: 'watch-series-7-41', name: 'Series 7 (41MM)' },
-          { slug: 'watch-series-6-44', name: 'Series 6 (44MM)' },
-          { slug: 'watch-series-6-40', name: 'Series 6 (40MM)' },
-          { slug: 'watch-series-5-44', name: 'Series 5 (44MM)' },
-          { slug: 'watch-series-5-40', name: 'Series 5 (40MM)' },
-          { slug: 'watch-series-4-44', name: 'Series 4 (44MM)' },
-          { slug: 'watch-series-4-40', name: 'Series 4 (40MM)' },
-          { slug: 'watch-series-3-42', name: 'Series 3 (42MM)' },
-          { slug: 'watch-series-3-38', name: 'Series 3 (38MM)' },
-        ],
-      },
-      {
-        slug: 'airpods', name: 'AirPods', nameEn: 'AirPods',
-        models: [
-          { slug: 'airpods-max-2', name: 'AirPods Max 2nd Gen' },
-          { slug: 'airpods-max-1', name: 'AirPods Max 1st Gen' },
-          { slug: 'airpods-pro-2', name: 'AirPods Pro 2nd Gen (2022)' },
-          { slug: 'airpods-pro-1', name: 'AirPods Pro 1st Gen (2019)' },
-          { slug: 'airpods-3', name: 'AirPods 3rd Gen (2021)' },
-          { slug: 'airpods-2', name: 'AirPods 2nd Gen (2019)' },
-          { slug: 'airpods-1', name: 'AirPods 1st Gen (2016)' },
-        ],
-      },
-      {
         slug: 'macbook-pro', name: 'MacBook Pro', nameEn: 'MacBook Pro',
         models: [
           { slug: 'mbp-16-2024-m4', name: 'MacBook Pro 16" (2024) M4' },
@@ -177,56 +137,6 @@ export const brandCategories: BrandCategory[] = [
         ],
       },
       {
-        slug: 'mac-studio',
-        name: 'Mac Studio',
-        nameEn: 'Mac Studio',
-        models: [
-          { slug: 'mac-studio-2023-m2-ultra', name: 'Mac Studio (2023) M2 Ultra' },
-          { slug: 'mac-studio-2023-m2-max', name: 'Mac Studio (2023) M2 Max' },
-          { slug: 'mac-studio-2022-m1-ultra', name: 'Mac Studio (2022) M1 Ultra' },
-          { slug: 'mac-studio-2022-m1-max', name: 'Mac Studio (2022) M1 Max' },
-        ],
-      },
-      {
-        slug: 'studio-display',
-        name: 'Studio Display',
-        nameEn: 'Studio Display',
-        models: [
-          { slug: 'studio-display-2022', name: 'Studio Display 27" (2022)' },
-        ],
-      },
-      {
-        slug: 'mac-pro',
-        name: 'Mac Pro',
-        nameEn: 'Mac Pro',
-        models: [
-          { slug: 'mac-pro-2023', name: 'Mac Pro (2023) M2 Ultra' },
-          { slug: 'mac-pro-2019', name: 'Mac Pro (2019) Intel' },
-        ],
-      },
-      {
-        slug: 'mac-mini',
-        name: 'Mac Mini',
-        nameEn: 'Mac Mini',
-        models: [
-          { slug: 'mac-mini-2024-m4', name: 'Mac Mini (2024) M4' },
-          { slug: 'mac-mini-2023-m2', name: 'Mac Mini (2023) M2/M2 Pro' },
-          { slug: 'mac-mini-2020-m1', name: 'Mac Mini (2020) M1' },
-        ],
-      },
-      {
-        slug: 'imac',
-        name: 'iMac',
-        nameEn: 'iMac',
-        models: [
-          { slug: 'imac-24-2024-m4', name: 'iMac 24" (2024) M4' },
-          { slug: 'imac-24-2023-m3', name: 'iMac 24" (2023) M3' },
-          { slug: 'imac-24-2021-m1', name: 'iMac 24" (2021) M1' },
-          { slug: 'imac-27-2020', name: 'iMac 27" (2020) Intel' },
-          { slug: 'imac-21-2019', name: 'iMac 21.5" (2019) Intel' },
-        ],
-      },
-      {
         slug: 'macbook-air',
         name: 'MacBook Air',
         nameEn: 'MacBook Air',
@@ -242,16 +152,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'mba-13-2019', name: 'MacBook Air 13" (2019)' },
           { slug: 'mba-13-2018', name: 'MacBook Air 13" (2018)' },
           { slug: 'mba-13-2017', name: 'MacBook Air 13" (2017)' },
-        ],
-      },
-      {
-        slug: 'ipod', name: 'iPod', nameEn: 'iPod',
-        models: [
-          { slug: 'ipod-touch-7', name: 'iPod Touch 7' },
-          { slug: 'ipod-touch-6', name: 'iPod Touch 6' },
-          { slug: 'ipod-touch-5', name: 'iPod Touch 5' },
-          { slug: 'ipod-nano-7', name: 'iPod Nano 7' },
-          { slug: 'ipod-classic', name: 'iPod Classic' },
         ],
       },
     ],
@@ -442,171 +342,12 @@ export const brandCategories: BrandCategory[] = [
   },
   // ==================== OTHER BRANDS FROM MOBILE SENTRIX ====================
   {
-    slug: 'alcatel',
-    name: 'Alcatel',
-    nameEn: 'Alcatel',
-    subcategories: [
-      { slug: 'alcatel-1', name: 'Alcatel 1 Series', nameEn: 'Alcatel 1 Series', models: [{ slug: 'alcatel-1-2021', name: 'Alcatel 1 (2021)' }, { slug: 'alcatel-1x', name: 'Alcatel 1X' }] },
-      { slug: 'alcatel-3', name: 'Alcatel 3 Series', nameEn: 'Alcatel 3 Series', models: [{ slug: 'alcatel-3-2020', name: 'Alcatel 3 (2020)' }, { slug: 'alcatel-3x', name: 'Alcatel 3X' }] },
-      { slug: 'alcatel-5', name: 'Alcatel 5 Series', nameEn: 'Alcatel 5 Series', models: [{ slug: 'alcatel-5', name: 'Alcatel 5' }] },
-    ],
-  },
-  {
-    slug: 'att',
-    name: 'AT&T',
-    nameEn: 'AT&T',
-    subcategories: [
-      { slug: 'att-phones', name: 'AT&T Phones', nameEn: 'AT&T Phones', models: [{ slug: 'att-fusion-5g', name: 'AT&T Fusion 5G' }, { slug: 'att-maestro-plus', name: 'AT&T Maestro Plus' }] },
-    ],
-  },
-  {
     slug: 'blackberry',
     name: 'Blackberry',
     nameEn: 'Blackberry',
     subcategories: [
       { slug: 'key-series', name: 'Key Series', nameEn: 'Key Series', models: [{ slug: 'key2', name: 'BlackBerry Key2' }, { slug: 'keyone', name: 'BlackBerry KeyOne' }] },
       { slug: 'motion', name: 'Motion', nameEn: 'Motion', models: [{ slug: 'motion', name: 'BlackBerry Motion' }] },
-    ],
-  },
-  {
-    slug: 'blu',
-    name: 'Blu',
-    nameEn: 'Blu',
-    subcategories: [
-      { slug: 'g-series', name: 'G Series', nameEn: 'G Series', models: [{ slug: 'g91', name: 'Blu G91' }, { slug: 'g90', name: 'Blu G90' }] },
-      { slug: 'v-series', name: 'V Series', nameEn: 'V Series', models: [{ slug: 'v90', name: 'Blu V90' }] },
-    ],
-  },
-  {
-    slug: 'cat',
-    name: 'CAT',
-    nameEn: 'CAT',
-    subcategories: [
-      { slug: 'cat-s', name: 'S Series', nameEn: 'S Series', models: [{ slug: 'cat-s62', name: 'CAT S62' }, { slug: 'cat-s42', name: 'CAT S42' }, { slug: 'cat-s22', name: 'CAT S22' }] },
-    ],
-  },
-  {
-    slug: 'coolpad',
-    name: 'Coolpad',
-    nameEn: 'Coolpad',
-    subcategories: [
-      { slug: 'coolpad-legacy', name: 'Legacy', nameEn: 'Legacy', models: [{ slug: 'legacy', name: 'Coolpad Legacy' }, { slug: 'legacy-s', name: 'Coolpad Legacy S' }] },
-    ],
-  },
-  {
-    slug: 'cricket',
-    name: 'Cricket',
-    nameEn: 'Cricket',
-    subcategories: [
-      { slug: 'cricket-wireless', name: 'Cricket Wireless', nameEn: 'Cricket Wireless', models: [{ slug: 'cricket-debut', name: 'Cricket Debut' }, { slug: 'cricket-wave', name: 'Cricket Wave' }] },
-    ],
-  },
-  {
-    slug: 'dji',
-    name: 'DJI',
-    nameEn: 'DJI',
-    subcategories: [
-      { slug: 'dji-drones', name: 'DJI Drones', nameEn: 'DJI Drones', models: [{ slug: 'mavic-3', name: 'Mavic 3' }, { slug: 'air-3', name: 'Air 3' }, { slug: 'mini-4', name: 'Mini 4 Pro' }] },
-    ],
-  },
-  {
-    slug: 'essential',
-    name: 'Essential',
-    nameEn: 'Essential',
-    subcategories: [
-      { slug: 'essential-phone', name: 'Essential Phone', nameEn: 'Essential Phone', models: [{ slug: 'ph-1', name: 'Essential PH-1' }] },
-    ],
-  },
-  {
-    slug: 'fitbit',
-    name: 'Fitbit',
-    nameEn: 'Fitbit',
-    subcategories: [
-      { slug: 'fitbit-watches', name: 'Fitbit Watches', nameEn: 'Fitbit Watches', models: [{ slug: 'sense-2', name: 'Sense 2' }, { slug: 'versa-4', name: 'Versa 4' }, { slug: 'charge-6', name: 'Charge 6' }] },
-    ],
-  },
-  {
-    slug: 'gopro',
-    name: 'GoPro',
-    nameEn: 'GoPro',
-    subcategories: [
-      { slug: 'hero', name: 'Hero', nameEn: 'Hero', models: [{ slug: 'hero-13', name: 'Hero 13' }, { slug: 'hero-12', name: 'Hero 12' }, { slug: 'hero-11', name: 'Hero 11' }] },
-    ],
-  },
-  {
-    slug: 'htc',
-    name: 'HTC',
-    nameEn: 'HTC',
-    subcategories: [
-      { slug: 'u-series', name: 'U Series', nameEn: 'U Series', models: [{ slug: 'u12-plus', name: 'U12+' }, { slug: 'u11', name: 'U11' }] },
-      { slug: 'desire', name: 'Desire', nameEn: 'Desire', models: [{ slug: 'desire-21', name: 'Desire 21' }] },
-    ],
-  },
-  {
-    slug: 'insta360',
-    name: 'Insta360',
-    nameEn: 'Insta360',
-    subcategories: [
-      { slug: 'action-cameras', name: 'Action Cameras', nameEn: 'Action Cameras', models: [{ slug: 'ace-pro', name: 'Ace Pro' }, { slug: 'go-3', name: 'GO 3' }] },
-    ],
-  },
-  {
-    slug: 'kyocera',
-    name: 'Kyocera',
-    nameEn: 'Kyocera',
-    subcategories: [
-      { slug: 'duraforce', name: 'DuraForce', nameEn: 'DuraForce', models: [{ slug: 'duraforce-pro-3', name: 'DuraForce Pro 3' }, { slug: 'duraforce-ultra', name: 'DuraForce Ultra' }] },
-    ],
-  },
-  {
-    slug: 'nexus',
-    name: 'Nexus',
-    nameEn: 'Nexus',
-    subcategories: [
-      { slug: 'nexus-phones', name: 'Nexus Phones', nameEn: 'Nexus Phones', models: [{ slug: 'nexus-6p', name: 'Nexus 6P' }, { slug: 'nexus-5x', name: 'Nexus 5X' }, { slug: 'nexus-6', name: 'Nexus 6' }] },
-    ],
-  },
-  {
-    slug: 'oukitel',
-    name: 'Oukitel',
-    nameEn: 'Oukitel',
-    subcategories: [
-      { slug: 'wp-series', name: 'WP Series', nameEn: 'WP Series', models: [{ slug: 'wp30', name: 'WP30 Pro' }, { slug: 'wp22', name: 'WP22' }] },
-      { slug: 'c-series', name: 'C Series', nameEn: 'C Series', models: [{ slug: 'c35', name: 'C35' }] },
-    ],
-  },
-  {
-    slug: 'revvl',
-    name: 'Revvl',
-    nameEn: 'Revvl',
-    subcategories: [
-      { slug: 'revvl-series', name: 'Revvl Series', nameEn: 'Revvl Series', models: [{ slug: 'revvl-7', name: 'Revvl 7' }, { slug: 'revvl-6', name: 'Revvl 6' }] },
-    ],
-  },
-  {
-    slug: 'tecno',
-    name: 'Tecno',
-    nameEn: 'Tecno',
-    subcategories: [
-      { slug: 'phantom', name: 'Phantom', nameEn: 'Phantom', models: [{ slug: 'phantom-v2', name: 'Phantom V2' }, { slug: 'phantom-v', name: 'Phantom V' }] },
-      { slug: 'camon', name: 'Camon', nameEn: 'Camon', models: [{ slug: 'camon-30', name: 'Camon 30' }, { slug: 'camon-20', name: 'Camon 20' }] },
-    ],
-  },
-  {
-    slug: 'zebra',
-    name: 'Zebra',
-    nameEn: 'Zebra',
-    subcategories: [
-      { slug: 'tc-series', name: 'TC Series', nameEn: 'TC Series', models: [{ slug: 'tc26', name: 'TC26' }, { slug: 'tc52', name: 'TC52' }] },
-    ],
-  },
-  {
-    slug: 'zte',
-    name: 'ZTE',
-    nameEn: 'ZTE',
-    subcategories: [
-      { slug: 'axon', name: 'Axon', nameEn: 'Axon', models: [{ slug: 'axon-50', name: 'Axon 50' }, { slug: 'axon-40', name: 'Axon 40' }] },
-      { slug: 'blade', name: 'Blade', nameEn: 'Blade', models: [{ slug: 'blade-v50', name: 'Blade V50' }, { slug: 'blade-a73', name: 'Blade A73' }] },
     ],
   },
   {
@@ -960,39 +701,6 @@ export const brandCategories: BrandCategory[] = [
     ],
   },
   {
-    slug: 'sony',
-    name: 'Sony',
-    nameEn: 'Sony',
-    subcategories: [
-      {
-        slug: 'sony-xperia', name: 'Xperia', nameEn: 'Xperia',
-        models: [
-          { slug: 'xperia-1-vi', name: 'Xperia 1 VI' },
-          { slug: 'xperia-5-v', name: 'Xperia 5 V' },
-          { slug: 'xperia-10-vi', name: 'Xperia 10 VI' },
-          { slug: 'xperia-1-v', name: 'Xperia 1 V' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'lg',
-    name: 'LG',
-    nameEn: 'LG',
-    subcategories: [
-      {
-        slug: 'lg-phone', name: 'LG Telefoon', nameEn: 'LG Phone',
-        models: [
-          { slug: 'lg-velvet', name: 'LG Velvet' },
-          { slug: 'lg-v60', name: 'LG V60 ThinQ' },
-          { slug: 'lg-g8', name: 'LG G8 ThinQ' },
-          { slug: 'lg-stylo-6', name: 'LG Stylo 6' },
-          { slug: 'lg-k92', name: 'LG K92' },
-        ],
-      },
-    ],
-  },
-  {
     slug: 'honor',
     name: 'Honor',
     nameEn: 'Honor',
@@ -1027,23 +735,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'honor-x8a', name: 'Honor X8a' },
           { slug: 'honor-x7b', name: 'Honor X7b' },
           { slug: 'honor-x6a', name: 'Honor X6a' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'nothing',
-    name: 'Nothing',
-    nameEn: 'Nothing',
-    subcategories: [
-      {
-        slug: 'nothing-phone', name: 'Nothing Phone', nameEn: 'Nothing Phone',
-        models: [
-          { slug: 'nothing-phone-2a-plus', name: 'Phone (2a) Plus' },
-          { slug: 'nothing-phone-2a', name: 'Phone (2a)' },
-          { slug: 'nothing-phone-2', name: 'Phone (2)' },
-          { slug: 'nothing-phone-1', name: 'Phone (1)' },
-          { slug: 'cmf-phone-1', name: 'CMF Phone 1' },
         ],
       },
     ],
@@ -1147,70 +838,6 @@ export const brandCategories: BrandCategory[] = [
     ],
   },
   {
-    slug: 'tcl',
-    name: 'TCL',
-    nameEn: 'TCL',
-    subcategories: [
-      {
-        slug: 'tcl-phone', name: 'TCL Telefoon', nameEn: 'TCL Phone',
-        models: [
-          { slug: 'tcl-50-le', name: 'TCL 50 LE' },
-          { slug: 'tcl-50-xl-5g', name: 'TCL 50 XL 5G' },
-          { slug: 'tcl-50-5g', name: 'TCL 50 5G' },
-          { slug: 'tcl-40-se', name: 'TCL 40 SE' },
-          { slug: 'tcl-40-xl', name: 'TCL 40 XL' },
-          { slug: 'tcl-stylus-5g', name: 'TCL Stylus 5G' },
-          { slug: 'tcl-30-xl', name: 'TCL 30 XL' },
-          { slug: 'tcl-30-se', name: 'TCL 30 SE' },
-          { slug: 'tcl-30', name: 'TCL 30' },
-          { slug: 'tcl-20-se', name: 'TCL 20 SE' },
-          { slug: 'tcl-10-pro', name: 'TCL 10 Pro' },
-          { slug: 'tcl-10l', name: 'TCL 10L' },
-        ],
-      },
-      {
-        slug: 'tcl-tab', name: 'TCL Tablet', nameEn: 'TCL Tablet',
-        models: [
-          { slug: 'tcl-tab-pro-5g', name: 'Tab Pro 5G' },
-          { slug: 'tcl-tab-10s', name: 'Tab 10S' },
-          { slug: 'tcl-tab-10-5g', name: 'Tab 10 5G' },
-          { slug: 'tcl-tab-8-4g', name: 'Tab 8 4G' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'asus',
-    name: 'ASUS',
-    nameEn: 'ASUS',
-    subcategories: [
-      {
-        slug: 'asus-rog-phone', name: 'ROG Phone', nameEn: 'ROG Phone',
-        models: [
-          { slug: 'rog-phone-9-pro', name: 'ROG Phone 9 Pro' },
-          { slug: 'rog-phone-9', name: 'ROG Phone 9' },
-          { slug: 'rog-phone-8-pro', name: 'ROG Phone 8 Pro' },
-          { slug: 'rog-phone-8', name: 'ROG Phone 8' },
-          { slug: 'rog-phone-7-pro', name: 'ROG Phone 7 Pro' },
-          { slug: 'rog-phone-7', name: 'ROG Phone 7' },
-          { slug: 'rog-phone-6-pro', name: 'ROG Phone 6 Pro' },
-          { slug: 'rog-phone-6', name: 'ROG Phone 6' },
-          { slug: 'rog-phone-5', name: 'ROG Phone 5' },
-        ],
-      },
-      {
-        slug: 'asus-zenfone', name: 'Zenfone', nameEn: 'Zenfone',
-        models: [
-          { slug: 'zenfone-11-ultra', name: 'Zenfone 11 Ultra' },
-          { slug: 'zenfone-10', name: 'Zenfone 10' },
-          { slug: 'zenfone-9', name: 'Zenfone 9' },
-          { slug: 'zenfone-8-flip', name: 'Zenfone 8 Flip' },
-          { slug: 'zenfone-8', name: 'Zenfone 8' },
-        ],
-      },
-    ],
-  },
-  {
     slug: 'lenovo',
     name: 'Lenovo',
     nameEn: 'Lenovo',
@@ -1234,32 +861,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'lenovo-tab-p12', name: 'Tab P12' },
           { slug: 'lenovo-tab-p11-pro-2', name: 'Tab P11 Pro 2nd Gen' },
           { slug: 'lenovo-tab-p11-plus', name: 'Tab P11 Plus' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'amazon',
-    name: 'Amazon',
-    nameEn: 'Amazon',
-    subcategories: [
-      {
-        slug: 'kindle', name: 'Kindle', nameEn: 'Kindle',
-        models: [
-          { slug: 'kindle-paperwhite-2024', name: 'Kindle Paperwhite (2024)' },
-          { slug: 'kindle-scribe-2022', name: 'Kindle Scribe (2022)' },
-          { slug: 'kindle-2022', name: 'Kindle (2022)' },
-        ],
-      },
-      {
-        slug: 'fire-tablet', name: 'Fire Tablet', nameEn: 'Fire Tablet',
-        models: [
-          { slug: 'fire-hd-10-2023', name: 'Fire HD 10 (2023)' },
-          { slug: 'fire-hd-10-2021', name: 'Fire HD 10 (2021)' },
-          { slug: 'fire-hd-8-plus-2022', name: 'Fire HD 8 Plus (2022)' },
-          { slug: 'fire-hd-8-2022', name: 'Fire HD 8 (2022)' },
-          { slug: 'fire-hd-8-2020', name: 'Fire HD 8 (2020)' },
-          { slug: 'fire-7-2022', name: 'Fire 7 (2022)' },
         ],
       },
     ],
@@ -1449,20 +1050,6 @@ export interface AccessoryCategory {
 }
 
 export const accessoryCategories: AccessoryCategory[] = [
-  {
-    slug: 'cases-covers',
-    name: 'Hoesjes & Cases',
-    nameEn: 'Cases & Covers',
-    description: 'Beschermhoesjes voor alle telefoonmodellen',
-    subcategories: [
-      { slug: 'silicone-cases', name: 'Siliconen Hoesjes', nameEn: 'Silicone Cases', description: 'Flexibele siliconen bescherming' },
-      { slug: 'leather-cases', name: 'Leren Hoesjes', nameEn: 'Leather Cases', description: 'Premium lederen hoesjes' },
-      { slug: 'wallet-cases', name: 'Booktype & Portemonnee', nameEn: 'Wallet & Flip Cases', description: 'Hoesjes met kaarthouders' },
-      { slug: 'rugged-cases', name: 'Rugged & Armor', nameEn: 'Rugged & Armor', description: 'Zware bescherming, shockproof' },
-      { slug: 'clear-cases', name: 'Transparante Hoesjes', nameEn: 'Clear & Transparent', description: 'Doorzichtige bescherming' },
-      { slug: 'magnetic-cases', name: 'MagSafe Hoesjes', nameEn: 'MagSafe Compatible', description: 'Magnetische hoesjes voor iPhone' },
-    ]
-  },
   {
     slug: 'screen-protectors',
     name: 'Screenprotectors',

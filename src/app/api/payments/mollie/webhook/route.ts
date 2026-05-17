@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createMollieClient } from '@mollie/api-client';
 import { getDb } from '@/lib/db';
-import { addToCart as msAddToCart, clearCart as msClearCart, createOrder as msCreateOrder, getOrCreateMsAddress, SHIPPING_METHODS } from '@/lib/mobilesentrix-new';
+import { addToCart as msAddToCart, clearCart as msClearCart, createOrder as msCreateOrder, getOrCreateMsAddress, findMsCustomerByEmail, createCustomer as msCreateCustomer, SHIPPING_METHODS } from '@/lib/mobilesentrix-new';
 import { sendOrderConfirmation } from '@/lib/email';
 
 export const runtime = 'nodejs';
@@ -34,10 +34,18 @@ export async function POST(request: NextRequest) {
     if (payment.status === 'paid') {
       const metadata = payment.metadata as any;
       const orderId = metadata?.orderId;
-      const orderData = metadata?.orderData ? JSON.parse(metadata.orderData) : null;
 
-      if (!orderId || !orderData) {
-        console.error('Webhook: missing orderId or orderData in metadata');
+      if (!orderId) {
+        console.error('Webhook: missing orderId in metadata');
+        return NextResponse.json({ received: true });
+      }
+
+      // Fetch orderData from DB (stored before payment was created to avoid Mollie 1024 byte metadata limit)
+      const paymentRow = await sql`SELECT order_data FROM payments WHERE mollie_payment_id = ${molliePaymentId} LIMIT 1`;
+      const orderData = paymentRow[0]?.order_data || null;
+
+      if (!orderData) {
+        console.error('Webhook: orderData not found in DB for payment', molliePaymentId);
         return NextResponse.json({ received: true });
       }
 
@@ -52,12 +60,40 @@ export async function POST(request: NextRequest) {
       let msIncrementId = '';
 
       try {
-        const msCustomerId = orderData.msCustomerId || '';
-        if (msCustomerId) {
-          const nameParts = (orderData.contactPerson || '').trim().split(' ');
-          const firstname = nameParts[0] || orderData.companyName || 'LabFix';
-          const lastname = nameParts.slice(1).join(' ') || 'Klant';
+        const nameParts = (orderData.contactPerson || '').trim().split(' ');
+        const firstname = nameParts[0] || orderData.companyName || 'LabFix';
+        const lastname = nameParts.slice(1).join(' ') || 'Klant';
 
+        // Resolve MS customer ID — use stored one, else look up by email, else create new
+        let msCustomerId = orderData.msCustomerId || '';
+
+        if (!msCustomerId && orderData.userEmail) {
+          msCustomerId = (await findMsCustomerByEmail(orderData.userEmail)) || '';
+        }
+
+        if (!msCustomerId && orderData.userEmail) {
+          // Create new MS customer for guest/new user
+          const company = orderData.companyName || `${firstname} ${lastname}`;
+          await msCreateCustomer({
+            firstname,
+            lastname,
+            username: orderData.userEmail,
+            email: orderData.userEmail,
+            mobile: orderData.phone || '0000000000',
+            password: Math.random().toString(36).slice(2, 12) + 'A1!',
+            company,
+            company_short: company.substring(0, 8),
+            street: [orderData.shippingAddress || ''],
+            city: orderData.shippingCity || '',
+            region: '',
+            postcode: orderData.shippingPostalCode || '',
+            country_id: orderData.shippingCountryCode || 'NL',
+            telephone: orderData.phone || '0000000000',
+          });
+          msCustomerId = (await findMsCustomerByEmail(orderData.userEmail)) || '';
+        }
+
+        if (msCustomerId) {
           const shippingAddrInput = {
             firstname,
             lastname,
@@ -110,7 +146,10 @@ export async function POST(request: NextRequest) {
             });
             msOrderId = msOrder?.order_id || '';
             msIncrementId = msOrder?.increment_id || '';
+            console.log(`MS order created: ${msOrderId} / ${msIncrementId} for LabFix order ${orderId}`);
           }
+        } else {
+          console.error('Webhook: could not resolve MS customer for order', orderId, orderData.userEmail);
         }
       } catch (msErr: any) {
         console.error('MS order sync failed in webhook:', msErr.message);

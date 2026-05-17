@@ -30,6 +30,11 @@ async function ensureTable(sql: any) {
     )
   `;
   
+  // Fix existing empty KVK strings to NULL so UNIQUE constraint works for particuliers
+  try {
+    await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = '' OR kvk_number IS NOT NULL AND TRIM(kvk_number) = ''`;
+  } catch {}
+
   // Add missing columns if they don't exist
   try {
     await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS btw_number TEXT DEFAULT ''`;
@@ -57,11 +62,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Email is al geregistreerd' }, { status: 400 });
     }
 
+    // Fix any remaining empty KVK strings to NULL before insert
+    try { await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = ''`; } catch {}
+
     // Check existing KVK (only for business)
     if (isBusiness && body.kvkNumber) {
       const existingKvk = await sql`SELECT id FROM users WHERE kvk_number = ${body.kvkNumber}`;
       if (existingKvk.length > 0) {
-        return NextResponse.json({ success: false, message: 'KVK nummer is al geregistreerd' }, { status: 400 });
+        return NextResponse.json({ success: false, message: 'Dit KVK-nummer is al geregistreerd. Wil je inloggen?' }, { status: 400 });
       }
     }
 
@@ -114,9 +122,12 @@ export async function POST(request: NextRequest) {
     }
     // ─────────────────────────────────────────────────────────────────────
 
+    // Use NULL for KVK when empty so UNIQUE constraint allows multiple particuliers
+    const kvkValue = (isBusiness && body.kvkNumber) ? body.kvkNumber : null;
+
     await sql`
       INSERT INTO users (id, email, password, customer_type, first_name, last_name, company_name, kvk_number, btw_number, contact_person, phone, address, city, postal_code, country, ms_customer_id)
-      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'}, ${msCustomerId})
+      VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${kvkValue}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'}, ${msCustomerId})
     `;
 
     // Send welcome email
@@ -159,6 +170,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'Account aangemaakt', msCustomerId });
   } catch (error: any) {
     console.error('Registration error:', error);
-    return NextResponse.json({ success: false, message: error.message || 'Er is een serverfout opgetreden' }, { status: 500 });
+    // Friendly error messages
+    const msg = error.message || '';
+    if (msg.includes('users_email')) {
+      return NextResponse.json({ success: false, message: 'Dit e-mailadres is al geregistreerd. Wil je inloggen?' }, { status: 400 });
+    }
+    if (msg.includes('users_kvk_number_key') || msg.includes('kvk_number')) {
+      return NextResponse.json({ success: false, message: 'Dit KVK-nummer is al geregistreerd. Wil je inloggen?' }, { status: 400 });
+    }
+    if (msg.includes('unique') || msg.includes('duplicate')) {
+      return NextResponse.json({ success: false, message: 'Dit account bestaat al. Probeer in te loggen.' }, { status: 400 });
+    }
+    return NextResponse.json({ success: false, message: 'Er is een fout opgetreden. Probeer het opnieuw.' }, { status: 500 });
   }
 }

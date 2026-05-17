@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { orderId, amount, description, redirectUrl, orderData } = body;
 
-    if (!orderId || !amount || !redirectUrl) {
+    if (!orderId || !amount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -22,21 +22,7 @@ export async function POST(request: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://stellar-brioche-27fb7f.netlify.app';
 
-    const payment = await mollie.payments.create({
-      amount: {
-        currency: 'EUR',
-        value: parseFloat(amount).toFixed(2),
-      },
-      description: description || `LabFix bestelling ${orderId}`,
-      redirectUrl: `${baseUrl}/checkout/betaling-voltooid?orderId=${orderId}`,
-      webhookUrl: `${baseUrl}/api/payments/mollie/webhook`,
-      metadata: {
-        orderId,
-        orderData: JSON.stringify(orderData || {}),
-      },
-    });
-
-    // Store pending payment in DB
+    // Store orderData in DB BEFORE creating Mollie payment (avoids 1024 byte metadata limit)
     const sql = getDb();
     await sql`
       CREATE TABLE IF NOT EXISTS payments (
@@ -45,19 +31,41 @@ export async function POST(request: NextRequest) {
         mollie_payment_id TEXT UNIQUE NOT NULL,
         status TEXT NOT NULL DEFAULT 'open',
         amount DECIMAL(10,2) NOT NULL,
+        order_data JSONB,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
     `;
+    try { await sql`ALTER TABLE payments ADD COLUMN IF NOT EXISTS order_data JSONB`; } catch {}
+
+    const payId = 'PAY-' + Date.now().toString(36).toUpperCase();
+    // Insert pending record with orderData before Mollie call
     await sql`
-      INSERT INTO payments (id, order_id, mollie_payment_id, status, amount)
+      INSERT INTO payments (id, order_id, mollie_payment_id, status, amount, order_data)
       VALUES (
-        ${'PAY-' + Date.now().toString(36).toUpperCase()},
+        ${payId},
         ${orderId},
-        ${payment.id},
-        ${payment.status},
-        ${parseFloat(amount)}
+        ${'pending-' + payId},
+        'open',
+        ${parseFloat(amount)},
+        ${JSON.stringify(orderData || {})}
       )
+    `;
+
+    const payment = await mollie.payments.create({
+      amount: {
+        currency: 'EUR',
+        value: parseFloat(amount).toFixed(2),
+      },
+      description: description || `LabFix bestelling ${orderId}`,
+      redirectUrl: `${baseUrl}/checkout/betaling-voltooid?orderId=${orderId}`,
+      webhookUrl: `${baseUrl}/api/payments/mollie/webhook`,
+      metadata: { orderId },
+    });
+
+    // Update with real Mollie payment ID
+    await sql`
+      UPDATE payments SET mollie_payment_id = ${payment.id} WHERE id = ${payId}
     `;
 
     return NextResponse.json({

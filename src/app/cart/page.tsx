@@ -94,7 +94,7 @@ export default function CartPage() {
                   <span className="font-semibold">
                     {cartTotal >= 150
                       ? (locale === 'nl' ? 'Gratis' : 'Free')
-                      : formatPrice(14.95)}
+                      : '€14.95'}
                   </span>
                 </div>
                 {cartTotal < 150 && (
@@ -109,7 +109,7 @@ export default function CartPage() {
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
                   <span className="text-primary-500">
-                    {formatPrice(cartTotal + (cartTotal >= 150 ? 0 : 14.95))}
+                    {cartTotal >= 150 ? formatPrice(cartTotal) : `€${(cartTotal + 14.95).toFixed(2)}`}
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>

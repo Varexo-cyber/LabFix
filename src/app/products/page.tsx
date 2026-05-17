@@ -24,7 +24,7 @@ function ProductsPageContent() {
   const [searchInput, setSearchInput] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const PRODUCTS_PER_PAGE = 200;
+  const PRODUCTS_PER_PAGE = 24;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
   const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
@@ -46,14 +46,16 @@ function ProductsPageContent() {
       limit: PRODUCTS_PER_PAGE.toString(),
     };
     if (selectedBrand) params.category = selectedBrand;
+    if (selectedSub) params.subcategory = selectedSub;
+    if (selectedModel) params.model = selectedModel;
     if (searchQuery) params.search = searchQuery;
     fetchProductsPaginated(params).then((data) => {
       setProducts(data.products);
       setTotalCount(data.total);
       // Track grand total (no filter) once we have it
-      if (!selectedBrand && !searchQuery) setGrandTotal(data.total);
+      if (!selectedBrand && !selectedSub && !selectedModel && !searchQuery) setGrandTotal(data.total);
     }).finally(() => setLoadingProducts(false));
-  }, [currentPage, selectedBrand, searchQuery]);
+  }, [currentPage, selectedBrand, selectedSub, selectedModel, searchQuery]);
 
   // Fetch grand total once on mount (in case page loads with a filter active)
   useEffect(() => {
@@ -200,7 +202,8 @@ function ProductsPageContent() {
                 {expandedSections.brands && (
                   <div className="max-h-[280px] overflow-y-auto space-y-0.5 mt-1">
                     {brandCategories.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((brand) => {
-                      const brandCount = products.filter(p => p.category === brand.slug || p.category.startsWith(brand.slug + '/')).length;
+                      const brandCount = products.filter(p => p.category === brand.slug || p.category.startsWith(brand.slug + '/')).length + 
+                        (selectedBrand === brand.slug ? totalCount - products.length : 0);
                       const isExpanded = expandedBrands.includes(brand.slug);
                       const hasMatch = !sidebarSearch || brand.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()));
                       return (
@@ -569,8 +572,8 @@ function ProductsPageContent() {
         {/* Main content */}
         <div className="flex-1">
           {/* Toolbar */}
-          <div className="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap items-center justify-between gap-4 animate-slide-down">
-            <div className="flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-md p-3 sm:p-4 mb-6 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4 animate-slide-down">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 className="lg:hidden flex items-center gap-1 text-sm text-primary-500"
                 onClick={() => setShowFilters(!showFilters)}
@@ -578,20 +581,20 @@ function ProductsPageContent() {
                 <SlidersHorizontal size={16} />
                 Filters
               </button>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 whitespace-nowrap">
                 {loadingProducts ? '...' : `${totalCount} ${locale === 'nl' ? 'producten' : 'products'}`}
               </span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               {/* Search in results — queries full database */}
-              <div className="relative">
+              <div className="relative flex-1 sm:flex-none">
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder={t('nav.search')}
-                  className="border rounded-lg pl-3 pr-8 py-1.5 text-sm w-56 focus:outline-none focus:border-primary-500"
+                  className="border rounded-lg pl-3 pr-8 py-1.5 text-sm w-full sm:w-56 focus:outline-none focus:border-primary-500"
                 />
                 {searchInput && (
                   <button onClick={() => { setSearchInput(''); setSearchQuery(''); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -604,7 +607,7 @@ function ProductsPageContent() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-primary-500"
+                className="border rounded-lg px-2 sm:px-3 py-1.5 text-sm focus:outline-none focus:border-primary-500 flex-shrink-0"
               >
                 <option value="newest">{t('products.sortNewest')}</option>
                 <option value="price-asc">{t('products.sortPrice')} ↑</option>

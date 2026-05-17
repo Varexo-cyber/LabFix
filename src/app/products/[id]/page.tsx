@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { fetchProducts, Product } from '@/lib/store';
+import { fetchProductsPaginated, Product } from '@/lib/store';
 import { ShoppingCart, ArrowLeft, Truck, Shield, Check, Minus, Plus } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import ImageSlideshow from '@/components/ImageSlideshow';
@@ -19,15 +19,18 @@ export default function ProductDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
-    fetchProducts().then((allProducts: Product[]) => {
-      const found = allProducts.find((p: Product) => p.id === params.id);
-      if (found) {
+    if (!params.id) return;
+    // Fetch single product directly by ID — fast
+    fetch(`/api/products?id=${params.id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then((found: Product | null) => {
+        if (!found || (found as any).error) return;
         setProduct(found);
-        setRelatedProducts(
-          allProducts.filter((p: Product) => p.category === found.category && p.id !== found.id).slice(0, 4)
-        );
-      }
-    });
+        // Fetch related products by category (paginated, small set)
+        fetchProductsPaginated({ category: found.category, limit: '5' }).then(({ products }) => {
+          setRelatedProducts(products.filter((p: Product) => p.id !== found.id).slice(0, 4));
+        });
+      });
   }, [params.id]);
 
   if (!product) {
