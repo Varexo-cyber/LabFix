@@ -120,7 +120,10 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <Mail className="text-accent-500 flex-shrink-0" size={20} />
-                <a href="mailto:info@labfix.nl" className="text-primary-500 hover:underline">info@labfix.nl</a>
+                <div>
+                  <a href="mailto:info@labfix.nl" className="text-primary-500 hover:underline block">info@labfix.nl</a>
+                  <a href="mailto:labfixnl@gmail.com" className="text-primary-500 hover:underline block">labfixnl@gmail.com</a>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="text-accent-500 flex-shrink-0" size={20} />
@@ -144,9 +147,9 @@ export default function ContactPage() {
               {locale === 'nl' ? 'Bedrijfsgegevens' : 'Company Details'}
             </h3>
             <div className="space-y-2 text-sm text-gray-600">
-              <p><span className="font-semibold">KvK:</span> 42035906</p>
+              <p><span className="font-semibold">KVK:</span> 42035906</p>
               <p><span className="font-semibold">BTW:</span> NL005445900B06</p>
-              <p><span className="font-semibold">Bank:</span> NL36INGB0115171061</p>
+              <p><span className="font-semibold">IBAN:</span> NL36INGB0115171061</p>
               <p><span className="font-semibold">{locale === 'nl' ? 'T.n.v.' : 'Attn:'}</span> LabFix</p>
             </div>
           </div>

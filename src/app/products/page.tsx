@@ -40,6 +40,7 @@ function ProductsPageContent() {
 
   // Fetch products from API with server-side pagination
   useEffect(() => {
+    const abortController = new AbortController();
     setLoadingProducts(true);
     const params: Record<string, string> = {
       page: currentPage.toString(),
@@ -49,12 +50,19 @@ function ProductsPageContent() {
     if (selectedSub) params.subcategory = selectedSub;
     if (selectedModel) params.model = selectedModel;
     if (searchQuery) params.search = searchQuery;
-    fetchProductsPaginated(params).then((data) => {
-      setProducts(data.products);
-      setTotalCount(data.total);
-      // Track grand total (no filter) once we have it
-      if (!selectedBrand && !selectedSub && !selectedModel && !searchQuery) setGrandTotal(data.total);
-    }).finally(() => setLoadingProducts(false));
+    fetchProductsPaginated(params, abortController.signal)
+      .then((data) => {
+        setProducts(data.products);
+        setTotalCount(data.total);
+        // Track grand total (no filter) once we have it
+        if (!selectedBrand && !selectedSub && !selectedModel && !searchQuery) setGrandTotal(data.total);
+      })
+      .catch((err) => {
+        // Ignore abort errors (cleanup)
+        if (err?.name !== 'AbortError') throw err;
+      })
+      .finally(() => setLoadingProducts(false));
+    return () => abortController.abort();
   }, [currentPage, selectedBrand, selectedSub, selectedModel, searchQuery]);
 
   // Fetch grand total once on mount (in case page loads with a filter active)
@@ -181,14 +189,15 @@ function ProductsPageContent() {
             </div>
 
             <div className="space-y-1">
-              <button
-                onClick={() => { setSelectedBrand(''); setSelectedSub(''); setSidebarSearch(''); }}
+              <Link
+                href="/products"
+                onClick={() => { setSelectedBrand(''); setSelectedSub(''); setSelectedModel(''); setSidebarSearch(''); }}
                 className={`block w-full text-left px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
                   !selectedBrand ? 'bg-primary-500 text-white' : 'hover:bg-gray-100'
                 }`}
               >
                 {t('products.all')} ({grandTotal || '...'})
-              </button>
+              </Link>
 
               {/* Section: Phone Brands */}
               <div className="mt-2">

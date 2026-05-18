@@ -289,35 +289,6 @@ export const brandCategories: BrandCategory[] = [
         ],
       },
       {
-        slug: 'galaxy-watch', name: 'Galaxy Watch', nameEn: 'Galaxy Watch',
-        models: [
-          { slug: 'watch-8-44', name: 'Watch 8 (44mm)' },
-          { slug: 'watch-8-40', name: 'Watch 8 (40mm)' },
-          { slug: 'watch-ultra-47', name: 'Watch Ultra (47mm)' },
-          { slug: 'watch-7-44', name: 'Watch 7 (44mm)' },
-          { slug: 'watch-7-40', name: 'Watch 7 (40mm)' },
-          { slug: 'watch-6-44', name: 'Watch 6 (44mm)' },
-          { slug: 'watch-6-40', name: 'Watch 6 (40mm)' },
-          { slug: 'watch-5-pro', name: 'Watch 5 Pro (45mm)' },
-          { slug: 'watch-5-44', name: 'Watch 5 (44mm)' },
-          { slug: 'watch-5-40', name: 'Watch 5 (40mm)' },
-          { slug: 'watch-4-44', name: 'Watch 4 (44mm)' },
-          { slug: 'watch-4-40', name: 'Watch 4 (40mm)' },
-        ],
-      },
-      {
-        slug: 'galaxy-buds', name: 'Galaxy Buds', nameEn: 'Galaxy Buds',
-        models: [
-          { slug: 'buds-3-pro', name: 'Galaxy Buds 3 Pro' },
-          { slug: 'buds-3', name: 'Galaxy Buds 3' },
-          { slug: 'buds-2-pro', name: 'Galaxy Buds 2 Pro' },
-          { slug: 'buds-2', name: 'Galaxy Buds 2' },
-          { slug: 'buds-pro', name: 'Galaxy Buds Pro' },
-          { slug: 'buds-live', name: 'Galaxy Buds Live' },
-          { slug: 'buds-plus', name: 'Galaxy Buds+' },
-        ],
-      },
-      {
         slug: 'galaxy-m', name: 'Galaxy M Serie', nameEn: 'Galaxy M Series',
         models: [
           { slug: 'galaxy-m54', name: 'Galaxy M54' },
@@ -833,66 +804,6 @@ export const brandCategories: BrandCategory[] = [
           { slug: 'vivo-s19-pro', name: 'S19 Pro' },
           { slug: 'vivo-s18-pro', name: 'S18 Pro' },
           { slug: 'vivo-s18', name: 'S18' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'lenovo',
-    name: 'Lenovo',
-    nameEn: 'Lenovo',
-    subcategories: [
-      {
-        slug: 'lenovo-tab-m', name: 'Tab M Serie', nameEn: 'Tab M Series',
-        models: [
-          { slug: 'lenovo-tab-m11', name: 'Tab M11 (TB-330)' },
-          { slug: 'lenovo-tab-m10-plus-3', name: 'Tab M10 Plus 3rd Gen' },
-          { slug: 'lenovo-tab-m10-3', name: 'Tab M10 3rd Gen' },
-          { slug: 'lenovo-tab-m10-2-fhd', name: 'Tab M10 2nd Gen FHD+' },
-          { slug: 'lenovo-tab-m10-fhd', name: 'Tab M10 FHD' },
-          { slug: 'lenovo-tab-m10-hd', name: 'Tab M10 HD' },
-          { slug: 'lenovo-tab-m8-3', name: 'Tab M8 3rd Gen' },
-        ],
-      },
-      {
-        slug: 'lenovo-tab-p', name: 'Tab P Serie', nameEn: 'Tab P Series',
-        models: [
-          { slug: 'lenovo-tab-p12-pro', name: 'Tab P12 Pro' },
-          { slug: 'lenovo-tab-p12', name: 'Tab P12' },
-          { slug: 'lenovo-tab-p11-pro-2', name: 'Tab P11 Pro 2nd Gen' },
-          { slug: 'lenovo-tab-p11-plus', name: 'Tab P11 Plus' },
-        ],
-      },
-    ],
-  },
-  {
-    slug: 'infinix',
-    name: 'Infinix',
-    nameEn: 'Infinix',
-    subcategories: [
-      {
-        slug: 'infinix-hot', name: 'Hot Serie', nameEn: 'Hot Series',
-        models: [
-          { slug: 'infinix-hot-40-pro', name: 'Hot 40 Pro' },
-          { slug: 'infinix-hot-40', name: 'Hot 40' },
-          { slug: 'infinix-hot-30', name: 'Hot 30' },
-          { slug: 'infinix-hot-20', name: 'Hot 20' },
-        ],
-      },
-      {
-        slug: 'infinix-note', name: 'Note Serie', nameEn: 'Note Series',
-        models: [
-          { slug: 'infinix-note-40-pro', name: 'Note 40 Pro' },
-          { slug: 'infinix-note-40', name: 'Note 40' },
-          { slug: 'infinix-note-30-pro', name: 'Note 30 Pro' },
-          { slug: 'infinix-note-30', name: 'Note 30' },
-        ],
-      },
-      {
-        slug: 'infinix-zero', name: 'Zero Serie', nameEn: 'Zero Series',
-        models: [
-          { slug: 'infinix-zero-30', name: 'Zero 30 5G' },
-          { slug: 'infinix-zero-ultra', name: 'Zero Ultra' },
         ],
       },
     ],

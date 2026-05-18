@@ -88,12 +88,11 @@ export async function GET(request: NextRequest) {
       const catFilter = category || '';
       // Full category path: e.g. "apple/iphone/iphone-17-pro-max"
       const fullPath = catFilter && subFilter ? `${catFilter}/${subFilter}/${model}` : model;
-      const fullPathLike = fullPath + '%';
-      // Also try name search as fallback
-      const modelNameSearch = '%' + model.replace(/-/g, ' ') + '%';
+      // STRICT matching: only exact matches on category path OR exact model match
+      // No LIKE patterns to avoid matching "s26" with "s26-plus" or "s26-ultra"
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE category = ${fullPath} OR category LIKE ${fullPathLike} OR model = ${model} OR LOWER(name) LIKE ${modelNameSearch} OR LOWER(name_en) LIKE ${modelNameSearch} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
-        sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR category LIKE ${fullPathLike} OR model = ${model} OR LOWER(name) LIKE ${modelNameSearch} OR LOWER(name_en) LIKE ${modelNameSearch}`,
+        sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR model = ${model}`,
       ]);
     } else if (subcategory) {
       // Match on full path "apple/iphone" OR "apple/iphone/..." OR subcategory field

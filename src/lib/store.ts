@@ -170,9 +170,9 @@ export async function fetchProducts(params?: Record<string, string>): Promise<Pr
   return first.products.concat(...rest.map(r => r.products));
 }
 
-export async function fetchProductsPaginated(params?: Record<string, string>): Promise<PaginatedProducts> {
+export async function fetchProductsPaginated(params?: Record<string, string>, signal?: AbortSignal): Promise<PaginatedProducts> {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  const res = await fetch(`${API_BASE}/api/products${qs}`);
+  const res = await fetch(`${API_BASE}/api/products${qs}`, { signal });
   if (!res.ok) return { products: [], total: 0, page: 1, limit: 48, totalPages: 0 };
   const data = await res.json();
   if (Array.isArray(data)) return { products: data, total: data.length, page: 1, limit: data.length, totalPages: 1 };
@@ -219,7 +219,11 @@ export async function updateOrderStatusApi(id: string, status: OrderStatus): Pro
 
 export async function registerUserApi(userData: any): Promise<{ success: boolean; message: string }> {
   const res = await fetch(`${API_BASE}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userData) });
-  return res.json();
+  const data = await res.json().catch(() => ({ success: false, message: 'Server fout. Probeer het opnieuw.' }));
+  if (!res.ok && data.success !== false) {
+    return { success: false, message: data.message || 'Server fout. Probeer het opnieuw.' };
+  }
+  return data;
 }
 
 export async function loginUserApi(email: string, password: string): Promise<{ success: boolean; message: string; user?: User }> {

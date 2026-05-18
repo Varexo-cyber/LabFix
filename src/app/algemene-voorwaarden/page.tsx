@@ -30,7 +30,7 @@ export default function AlgemeneVoorwaardenPage() {
                 {locale === 'nl' ? 'Algemene Voorwaarden' : 'General Terms and Conditions'}
               </h1>
               <p className="text-gray-500 mt-1">
-                {locale === 'nl' ? 'Laatst bijgewerkt: 21 april 2026' : 'Last updated: April 21, 2026'}
+                {locale === 'nl' ? 'Laatst bijgewerkt: 18 mei 2026' : 'Last updated: May 18, 2026'}
               </p>
             </div>
           </div>
@@ -57,7 +57,7 @@ export default function AlgemeneVoorwaardenPage() {
             <div className="space-y-3 text-gray-700">
               <p>In deze algemene voorwaarden wordt verstaan onder:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li><strong>LabFix:</strong> De eenmanszaak gevestigd te Roosendaal, KVK-nummer: 12345678, handelend onder de naam LabFix.</li>
+                <li><strong>LabFix:</strong> De onderneming handelend onder de naam LabFix, KVK-nummer: 42035906, BTW-nummer: NL005445900B06.</li>
                 <li><strong>Klant:</strong> De natuurlijke of rechtspersoon die een overeenkomst aangaat met LabFix voor de levering van producten en/of diensten.</li>
                 <li><strong>Overeenkomst:</strong> De overeenkomst tussen LabFix en de Klant betreffende de levering van producten en/of diensten.</li>
                 <li><strong>Producten:</strong> Alle elektronische componenten, reparatieonderdelen, tools en accessoires die LabFix aanbiedt.</li>
@@ -267,10 +267,10 @@ export default function AlgemeneVoorwaardenPage() {
             </h2>
             <div className="space-y-2 text-gray-700">
               <p><strong>LabFix</strong></p>
-              <p className="italic text-gray-500">Adres: [TE VERVULLEN]</p>
-              <p>KVK: [TE VERVULLEN]</p>
-              <p>BTW: [TE VERVULLEN]</p>
-              <p>Email: <span className="text-gray-400">[TE VERVULLEN]</span></p>
+              <p><span className="font-semibold">KVK:</span> 42035906</p>
+              <p><span className="font-semibold">BTW:</span> NL005445900B06</p>
+              <p><span className="font-semibold">IBAN:</span> NL36INGB0115171061</p>
+              <p><span className="font-semibold">Email:</span> <a href="mailto:labfixnl@gmail.com" className="text-primary-600 hover:underline">labfixnl@gmail.com</a></p>
             </div>
           </section>
         </div>

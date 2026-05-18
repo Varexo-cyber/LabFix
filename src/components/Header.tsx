@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid, Smartphone, Package, Monitor, Laptop } from 'lucide-react';
 import { brandCategories, accessoryCategories, pcPartsCategories, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 interface Brand {
@@ -75,6 +75,7 @@ export default function Header() {
   const [moreSearch, setMoreSearch] = useState('');
   const [accessorySearch, setAccessorySearch] = useState('');
   const [dbCategories, setDbCategories] = useState<Brand[] | null>(null);
+  const [allProductsSection, setAllProductsSection] = useState<'phones' | 'accessories' | 'pc' | 'laptop'>('phones');
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -101,7 +102,8 @@ export default function Header() {
   }, [dbCategories]);
 
   const navBrands = categories.filter(b => b.slug === 'apple' || b.slug === 'samsung');
-  const moreBrands = categories;
+  // Filter out unwanted brands from More dropdown
+  const moreBrands = categories.filter(b => !['lenovo', 'infinix', 'sony', 'lg', 'asus'].includes(b.slug));
 
   const handleDropdownEnter = (slug: string) => {
     if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
@@ -333,85 +335,272 @@ export default function Header() {
       <nav className="bg-primary-500 text-white relative hidden lg:block">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center gap-1">
-            {/* All Products Dropdown - Alleen Alle Merken */}
-            <div className="relative" onMouseEnter={() => handleDropdownEnter('all-products')} onMouseLeave={handleDropdownLeave}>
+            {/* All Products Dropdown - Alle Categorieën */}
+            <div className="relative" onMouseEnter={() => { handleDropdownEnter('all-products'); setAllProductsSection('phones'); }} onMouseLeave={handleDropdownLeave}>
               <Link href="/products" className={`px-4 py-3 font-semibold hover:bg-primary-600 transition-colors flex items-center gap-1 ${pathname === '/products' ? 'bg-primary-600' : ''}`}>
                 <Menu size={16} />
                 {t('nav.allProducts')}
                 <ChevronDown size={12} />
               </Link>
               {openDropdown === 'all-products' && (
-                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl min-w-[780px] z-50 border-t-2 border-accent-500 max-h-[85vh] overflow-hidden">
-                  <div className="flex border-b border-gray-200 bg-gray-50 px-4 py-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-primary-600">
-                      <LayoutGrid size={16} />
-                      {locale === 'nl' ? 'Alle merken' : 'All brands'}
-                    </div>
+                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl min-w-[900px] z-50 border-t-2 border-accent-500 max-h-[85vh] overflow-hidden">
+                  {/* Sectie Tabs */}
+                  <div className="flex border-b border-gray-200 bg-gray-50">
+                    <button 
+                      onMouseEnter={() => { setAllProductsSection('phones'); setHoveredMegaBrand(null); setHoveredMegaSub(null); }}
+                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'phones' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+                    >
+                      <Smartphone size={16} />
+                      {locale === 'nl' ? 'Telefoons' : 'Phones'}
+                    </button>
+                    <button 
+                      onMouseEnter={() => { setAllProductsSection('accessories'); setHoveredAccessoryCat(null); }}
+                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'accessories' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+                    >
+                      <Package size={16} />
+                      {locale === 'nl' ? 'Accessoires' : 'Accessories'}
+                    </button>
+                    <button 
+                      onMouseEnter={() => { setAllProductsSection('pc'); setHoveredPcPartsCat(null); setHoveredPcAccessoryCat(null); }}
+                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'pc' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+                    >
+                      <Monitor size={16} />
+                      {locale === 'nl' ? 'PC & Onderdelen' : 'PC & Parts'}
+                    </button>
+                    <button 
+                      onMouseEnter={() => { setAllProductsSection('laptop'); setHoveredLaptopBrand(null); setHoveredLaptopSub(null); }}
+                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'laptop' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+                    >
+                      <Laptop size={16} />
+                      {locale === 'nl' ? 'Laptops' : 'Laptops'}
+                    </button>
                   </div>
-                  <div className="h-[500px] flex">
-                    <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
-                      <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Merken' : 'Brands'}</div>
-                      <div className="p-2 border-b border-gray-100">
-                        <div className="relative">
-                          <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-                          <input type="text" placeholder={locale === 'nl' ? 'Zoek merk...' : 'Search brand...'} value={megaSearch} onChange={(e) => setMegaSearch(e.target.value)} onClick={(e) => e.stopPropagation()} className="w-full pl-8 pr-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+
+                  {/* Content - Phones */}
+                  {allProductsSection === 'phones' && (
+                    <div className="h-[500px] flex">
+                      <div className="w-[220px] border-r border-gray-100 overflow-y-auto">
+                        <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Merken' : 'Brands'}</div>
+                        <div className="p-2 border-b border-gray-100">
+                          <div className="relative">
+                            <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <input type="text" placeholder={locale === 'nl' ? 'Zoek merk...' : 'Search brand...'} value={megaSearch} onChange={(e) => setMegaSearch(e.target.value)} onClick={(e) => e.stopPropagation()} className="w-full pl-8 pr-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                          </div>
                         </div>
+                        {categories.filter(b => !megaSearch || b.name.toLowerCase().includes(megaSearch.toLowerCase())).map((brand) => (
+                          <div key={brand.slug} onMouseEnter={() => { setHoveredMegaBrand(brand.slug); setHoveredMegaSub(null); }}>
+                            <Link href={`/products?brand=${brand.slug}`} className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaBrand === brand.slug ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
+                              {locale === 'en' ? brand.nameEn : brand.name}
+                              <ChevronRight size={14} className="text-gray-400" />
+                            </Link>
+                          </div>
+                        ))}
                       </div>
-                      {categories.filter(b => !megaSearch || b.name.toLowerCase().includes(megaSearch.toLowerCase())).map((brand) => (
-                        <div key={brand.slug} onMouseEnter={() => { setHoveredMegaBrand(brand.slug); setHoveredMegaSub(null); }}>
-                          <Link href={`/products?brand=${brand.slug}`} className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaBrand === brand.slug ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
-                            {locale === 'en' ? brand.nameEn : brand.name}
-                            <ChevronRight size={14} className="text-gray-400" />
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
-                      {hoveredMegaBrand && (() => {
-                        const activeBrand = categories.find(b => b.slug === hoveredMegaBrand);
-                        if (!activeBrand) return null;
-                        return (
-                          <>
-                            <div className="p-3 bg-gray-50 border-b">
-                              <Link href={`/products?brand=${activeBrand.slug}`} className="text-sm font-bold text-primary-600 hover:underline" onClick={() => setOpenDropdown(null)}>
-                                {locale === 'nl' ? `Alle ${activeBrand.name}` : `All ${activeBrand.nameEn}`}
-                              </Link>
-                            </div>
-                            {activeBrand.subcategories?.map((sub) => (
-                              <div key={sub.slug} onMouseEnter={() => setHoveredMegaSub(sub.slug)}>
-                                <Link href={`/products?brand=${activeBrand.slug}&sub=${sub.slug}`} className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaSub === sub.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
-                                  {locale === 'en' ? sub.nameEn : sub.name}
-                                  {sub.models.length > 0 && <ChevronRight size={14} className="text-gray-400" />}
+                      <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
+                        {hoveredMegaBrand && (() => {
+                          const activeBrand = categories.find(b => b.slug === hoveredMegaBrand);
+                          if (!activeBrand) return null;
+                          return (
+                            <>
+                              <div className="p-3 bg-gray-50 border-b">
+                                <Link href={`/products?brand=${activeBrand.slug}`} className="text-sm font-bold text-primary-600 hover:underline" onClick={() => setOpenDropdown(null)}>
+                                  {locale === 'nl' ? `Alle ${activeBrand.name}` : `All ${activeBrand.nameEn}`}
                                 </Link>
                               </div>
-                            ))}
-                          </>
-                        );
-                      })()}
-                      {!hoveredMegaBrand && (
-                        <div className="flex items-center justify-center h-full text-gray-400 text-sm p-4 text-center">{locale === 'nl' ? 'Hover over een merk' : 'Hover over a brand'}</div>
-                      )}
-                    </div>
-                    <div className="w-[340px] overflow-y-auto">
-                      {hoveredMegaBrand && hoveredMegaSub && (() => {
-                        const activeBrand = categories.find(b => b.slug === hoveredMegaBrand);
-                        const activeSub = activeBrand?.subcategories.find(s => s.slug === hoveredMegaSub);
-                        if (!activeSub || activeSub.models.length === 0) return null;
-                        return (
-                          <>
-                            <div className="p-3 bg-gray-50 border-b">
-                              <div className="text-xs font-bold text-gray-500 uppercase mb-1">{locale === 'en' ? activeSub.nameEn : activeSub.name}</div>
-                            </div>
-                            <div className="p-2 grid grid-cols-2 gap-1">
-                              {activeSub.models.map((model) => (
-                                <Link key={model.slug} href={`/products?brand=${activeBrand?.slug}&sub=${activeSub.slug}&model=${model.slug}`} className="block px-3 py-2 text-sm hover:bg-gray-50 hover:text-primary-600 rounded-md" onClick={() => setOpenDropdown(null)}>{model.name}</Link>
+                              {activeBrand.subcategories?.map((sub) => (
+                                <div key={sub.slug} onMouseEnter={() => setHoveredMegaSub(sub.slug)}>
+                                  <Link href={`/products?brand=${activeBrand.slug}&sub=${sub.slug}`} className={`flex items-center justify-between px-3 py-2 text-sm transition-colors text-gray-900 ${hoveredMegaSub === sub.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
+                                    {locale === 'en' ? sub.nameEn : sub.name}
+                                    {sub.models.length > 0 && <ChevronRight size={14} className="text-gray-400" />}
+                                  </Link>
+                                </div>
                               ))}
-                            </div>
-                          </>
-                        );
-                      })()}
+                            </>
+                          );
+                        })()}
+                        {!hoveredMegaBrand && (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm p-4 text-center">{locale === 'nl' ? 'Hover over een merk' : 'Hover over a brand'}</div>
+                        )}
+                      </div>
+                      <div className="flex-1 overflow-y-auto">
+                        {hoveredMegaBrand && hoveredMegaSub && (() => {
+                          const activeBrand = categories.find(b => b.slug === hoveredMegaBrand);
+                          const activeSub = activeBrand?.subcategories.find(s => s.slug === hoveredMegaSub);
+                          if (!activeSub || activeSub.models.length === 0) return null;
+                          return (
+                            <>
+                              <div className="p-3 bg-gray-50 border-b">
+                                <div className="text-xs font-bold text-gray-500 uppercase mb-1">{locale === 'en' ? activeSub.nameEn : activeSub.name}</div>
+                              </div>
+                              <div className="p-2 grid grid-cols-2 gap-1">
+                                {activeSub.models.map((model) => (
+                                  <Link key={model.slug} href={`/products?brand=${activeBrand?.slug}&sub=${activeSub.slug}&model=${model.slug}`} className="block px-3 py-2 text-sm hover:bg-gray-50 hover:text-primary-600 rounded-md" onClick={() => setOpenDropdown(null)}>{model.name}</Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Content - Accessories */}
+                  {allProductsSection === 'accessories' && (
+                    <div className="h-[500px] flex">
+                      <div className="w-[280px] border-r border-gray-100 overflow-y-auto">
+                        <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Accessoire Categorieën' : 'Accessory Categories'}</div>
+                        {accessoryCategories.map((cat) => (
+                          <div key={cat.slug} onMouseEnter={() => setHoveredAccessoryCat(cat.slug)}>
+                            <Link href={`/products?accessory=${cat.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
+                              {locale === 'nl' ? cat.name : cat.nameEn}
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex-1 bg-gray-50 overflow-y-auto p-4">
+                        {hoveredAccessoryCat && (() => {
+                          const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
+                          if (!cat) return null;
+                          return (
+                            <>
+                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'nl' ? cat.name : cat.nameEn}</div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {cat.subcategories?.map((sub) => (
+                                  <Link key={sub.slug} href={`/products?accessory=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-white hover:bg-primary-50 hover:text-primary-600 rounded border border-gray-200" onClick={() => setOpenDropdown(null)}>
+                                    {locale === 'nl' ? sub.name : sub.nameEn}
+                                  </Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })()}
+                        {!hoveredAccessoryCat && (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm">{locale === 'nl' ? 'Hover over een categorie' : 'Hover over a category'}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Content - PC */}
+                  {allProductsSection === 'pc' && (
+                    <div className="h-[500px] flex">
+                      <div className="w-[200px] border-r border-gray-100 bg-gray-50">
+                        <div className="p-3 border-b text-xs font-bold text-primary-600 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
+                        <div className="py-2">
+                          {pcPartsCategories.map((cat) => (
+                            <div key={cat.slug} onMouseEnter={() => setHoveredPcPartsCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-white'}`}>
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="p-3 border-t border-b text-xs font-bold text-primary-600 uppercase">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</div>
+                        <div className="py-2">
+                          {pcAccessoryCategories.map((cat) => (
+                            <div key={cat.slug} onMouseEnter={() => setHoveredPcAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-white'}`}>
+                              {locale === 'en' ? cat.nameEn : cat.name}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-white overflow-y-auto p-4">
+                        {hoveredPcPartsCat ? (() => {
+                          const cat = pcPartsCategories.find(c => c.slug === hoveredPcPartsCat);
+                          if (!cat) return null;
+                          return (
+                            <>
+                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'en' ? cat.nameEn : cat.name}</div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {cat.subcategories?.map((sub) => (
+                                  <Link key={sub.slug} href={`/products?pcpart=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-gray-50 hover:bg-primary-50 hover:text-primary-600 rounded" onClick={() => setOpenDropdown(null)}>
+                                    {locale === 'nl' ? sub.name : sub.nameEn}
+                                  </Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })() : hoveredPcAccessoryCat ? (() => {
+                          const cat = pcAccessoryCategories.find(c => c.slug === hoveredPcAccessoryCat);
+                          if (!cat) return null;
+                          return (
+                            <>
+                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'en' ? cat.nameEn : cat.name}</div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {cat.subcategories?.map((sub) => (
+                                  <Link key={sub.slug} href={`/products?pcacc=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-gray-50 hover:bg-primary-50 hover:text-primary-600 rounded" onClick={() => setOpenDropdown(null)}>
+                                    {locale === 'nl' ? sub.name : sub.nameEn}
+                                  </Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })() : (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm">{locale === 'nl' ? 'Hover over een categorie' : 'Hover over a category'}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Content - Laptop */}
+                  {allProductsSection === 'laptop' && (
+                    <div className="h-[500px] flex">
+                      <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
+                        <Link href="/products?laptopBrand=refurbished" className="block p-3 bg-green-500 text-white text-center text-sm font-medium hover:bg-green-600" onClick={() => setOpenDropdown(null)}>
+                          {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
+                        </Link>
+                        <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Laptop Merken' : 'Laptop Brands'}</div>
+                        {laptopBrands.map((brand) => (
+                          <div key={brand.slug} onMouseEnter={() => { setHoveredLaptopBrand(brand.slug); setHoveredLaptopSub(null); }}>
+                            <Link href={`/products?laptopBrand=${brand.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredLaptopBrand === brand.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
+                              {brand.name}
+                            </Link>
+                          </div>
+                        ))}
+                        <div className="p-3 bg-gray-50 border-b border-t text-xs font-bold text-gray-500 uppercase mt-2">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
+                        {laptopPartsCategories.map((cat) => (
+                          <div key={cat.slug} onMouseEnter={() => setHoveredLaptopPartsCat(cat.slug)}>
+                            <Link href={`/products?laptopPart=${cat.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredLaptopPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
+                              {locale === 'nl' ? cat.name : cat.nameEn}
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex-1 bg-gray-50 overflow-y-auto p-4">
+                        {hoveredLaptopBrand ? (() => {
+                          const brand = laptopBrands.find(b => b.slug === hoveredLaptopBrand);
+                          if (!brand) return null;
+                          return (
+                            <>
+                              <div className="text-sm font-bold text-gray-800 mb-3">{brand.name} {locale === 'nl' ? 'Series' : 'Series'}</div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {brand.subcategories?.map((sub) => (
+                                  <Link key={sub.slug} href={`/products?laptopBrand=${brand.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-white hover:bg-primary-50 hover:text-primary-600 rounded border border-gray-200" onClick={() => setOpenDropdown(null)}>
+                                    {sub.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })() : hoveredLaptopPartsCat ? (() => {
+                          const cat = laptopPartsCategories.find(c => c.slug === hoveredLaptopPartsCat);
+                          if (!cat) return null;
+                          return (
+                            <>
+                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'nl' ? cat.name : cat.nameEn}</div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {cat.subcategories?.map((sub) => (
+                                  <Link key={sub.slug} href={`/products?laptopPart=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-white hover:bg-primary-50 hover:text-primary-600 rounded border border-gray-200" onClick={() => setOpenDropdown(null)}>
+                                    {locale === 'nl' ? sub.name : sub.nameEn}
+                                  </Link>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })() : (
+                          <div className="flex items-center justify-center h-full text-gray-400 text-sm">{locale === 'nl' ? 'Hover over een merk of onderdeel' : 'Hover over a brand or part'}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -520,63 +709,130 @@ export default function Header() {
               </div>
             )}
 
+            {/* Accessories Dropdown */}
+            <div className="relative" onMouseEnter={() => { handleDropdownEnter('accessories'); setHoveredAccessoryCat(null); }} onMouseLeave={handleDropdownLeave}>
+              <button className="px-3 py-3 hover:bg-primary-600 text-sm font-medium flex items-center gap-1">
+                {locale === 'nl' ? 'Accessoires' : 'Accessories'}
+                <ChevronDown size={12} />
+              </button>
+              {openDropdown === 'accessories' && (
+                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[560px] z-50 border-t-2 border-accent-500 flex h-[500px]">
+                  <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
+                    <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Categorieën' : 'Categories'}</div>
+                    {accessoryCategories.map((cat) => (
+                      <div key={cat.slug} onMouseEnter={() => setHoveredAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                        {locale === 'nl' ? cat.name : cat.nameEn}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-3">
+                    {hoveredAccessoryCat && (() => {
+                      const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
+                      if (!cat) return null;
+                      return (
+                        <>
+                          <div className="text-sm font-bold text-primary-600 mb-2">{locale === 'nl' ? cat.name : cat.nameEn}</div>
+                          {cat.subcategories?.map((sub) => (
+                            <Link key={sub.slug} href={`/products?accessory=${cat.slug}&sub=${sub.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
+                              {locale === 'nl' ? sub.name : sub.nameEn}
+                            </Link>
+                          ))}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* PC Dropdown */}
-            <div className="relative" onMouseEnter={() => { handleDropdownEnter('pc'); setPcDropdownSection('parts'); setHoveredPcPartsCat(null); }} onMouseLeave={handleDropdownLeave}>
+            <div className="relative" onMouseEnter={() => { handleDropdownEnter('pc'); setPcDropdownSection('parts'); setHoveredPcPartsCat(null); setHoveredPcAccessoryCat(null); }} onMouseLeave={handleDropdownLeave}>
               <button className="px-3 py-3 hover:bg-primary-600 text-sm font-medium flex items-center gap-1">
                 PC
                 <ChevronDown size={12} />
               </button>
               {openDropdown === 'pc' && (
-                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[640px] z-50 border-t-2 border-accent-500 flex h-[500px]">
-                  <div className="w-[220px] border-r border-gray-100 overflow-y-auto">
-                    <div className="flex border-b">
-                      <div onMouseEnter={() => setPcDropdownSection('parts')} className={`flex-1 px-3 py-2 text-sm cursor-pointer font-semibold whitespace-nowrap ${pcDropdownSection === 'parts' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}>
+                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[720px] z-50 border-t-2 border-accent-500 flex h-[500px]">
+                  {/* Kolom 1: Secties */}
+                  <div className="w-[140px] border-r border-gray-100 bg-gray-50">
+                    <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Categorie' : 'Category'}</div>
+                    <div className="py-2">
+                      <div 
+                        onMouseEnter={() => { setPcDropdownSection('parts'); setHoveredPcPartsCat(null); setHoveredPcAccessoryCat(null); }}
+                        className={`px-4 py-2 text-sm cursor-pointer ${pcDropdownSection === 'parts' ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}
+                      >
                         {locale === 'nl' ? 'Onderdelen' : 'Parts'}
                       </div>
-                      <div onMouseEnter={() => { setPcDropdownSection('accessories'); setHoveredPcPartsCat(null); }} className={`flex-1 px-3 py-2 text-sm cursor-pointer font-semibold whitespace-nowrap ${pcDropdownSection === 'accessories' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50'}`}>
+                      <div 
+                        onMouseEnter={() => { setPcDropdownSection('accessories'); setHoveredPcPartsCat(null); setHoveredPcAccessoryCat(null); }}
+                        className={`px-4 py-2 text-sm cursor-pointer ${pcDropdownSection === 'accessories' ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}
+                      >
                         {locale === 'nl' ? 'Accessoires' : 'Accessories'}
                       </div>
                     </div>
-                    {pcDropdownSection === 'parts' && pcPartsCategories.map((cat) => (
-                      <div key={cat.slug} onMouseEnter={() => setHoveredPcPartsCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
-                        {locale === 'en' ? cat.nameEn : cat.name}
-                      </div>
-                    ))}
-                    {pcDropdownSection === 'accessories' && pcAccessoryCategories.map((cat) => (
-                      <div key={cat.slug} onMouseEnter={() => setHoveredPcAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
-                        {locale === 'en' ? cat.nameEn : cat.name}
-                      </div>
-                    ))}
                   </div>
-                  <div className="flex-1 overflow-y-auto p-3">
-                    {pcDropdownSection === 'parts' && hoveredPcPartsCat && (() => {
+
+                  {/* Kolom 2: Categorieën */}
+                  <div className="w-[200px] border-r border-gray-100 py-2">
+                    {pcDropdownSection === 'parts' && (
+                      <>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
+                        {pcPartsCategories.map((cat) => (
+                          <div key={cat.slug} onMouseEnter={() => setHoveredPcPartsCat(cat.slug)} className={`px-4 py-2 text-sm cursor-pointer ${hoveredPcPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                            {locale === 'en' ? cat.nameEn : cat.name}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {pcDropdownSection === 'accessories' && (
+                      <>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</div>
+                        {pcAccessoryCategories.map((cat) => (
+                          <div key={cat.slug} onMouseEnter={() => setHoveredPcAccessoryCat(cat.slug)} className={`px-4 py-2 text-sm cursor-pointer ${hoveredPcAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                            {locale === 'en' ? cat.nameEn : cat.name}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Kolom 3: Subcategorieën */}
+                  <div className="flex-1 py-2 max-h-[500px] overflow-y-auto">
+                    {pcDropdownSection === 'parts' && hoveredPcPartsCat ? (() => {
                       const cat = pcPartsCategories.find(c => c.slug === hoveredPcPartsCat);
                       if (!cat) return null;
                       return (
                         <>
-                          <div className="text-sm font-bold text-primary-600 mb-2">{locale === 'en' ? cat.nameEn : cat.name}</div>
-                          {cat.subcategories?.map((sub) => (
-                            <Link key={sub.slug} href={`/products?pcpart=${cat.slug}&sub=${sub.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
-                              {locale === 'nl' ? sub.name : sub.nameEn}
-                            </Link>
-                          ))}
+                          <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b">{locale === 'en' ? cat.nameEn : cat.name}</div>
+                          <div className="py-2">
+                            {cat.subcategories?.map((sub) => (
+                              <Link key={sub.slug} href={`/products?pcpart=${cat.slug}&sub=${sub.slug}`} className="block px-4 py-1.5 text-sm hover:bg-gray-50 hover:text-primary-600" onClick={() => setOpenDropdown(null)}>
+                                {locale === 'nl' ? sub.name : sub.nameEn}
+                              </Link>
+                            ))}
+                          </div>
                         </>
                       );
-                    })()}
-                    {pcDropdownSection === 'accessories' && hoveredPcAccessoryCat && (() => {
+                    })() : pcDropdownSection === 'accessories' && hoveredPcAccessoryCat ? (() => {
                       const cat = pcAccessoryCategories.find(c => c.slug === hoveredPcAccessoryCat);
                       if (!cat) return null;
                       return (
                         <>
-                          <div className="text-sm font-bold text-primary-600 mb-2">{locale === 'en' ? cat.nameEn : cat.name}</div>
-                          {cat.subcategories?.map((sub) => (
-                            <Link key={sub.slug} href={`/products?pcacc=${cat.slug}&sub=${sub.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
-                              {locale === 'nl' ? sub.name : sub.nameEn}
-                            </Link>
-                          ))}
+                          <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase border-b">{locale === 'en' ? cat.nameEn : cat.name}</div>
+                          <div className="py-2">
+                            {cat.subcategories?.map((sub) => (
+                              <Link key={sub.slug} href={`/products?pcacc=${cat.slug}&sub=${sub.slug}`} className="block px-4 py-1.5 text-sm hover:bg-gray-50 hover:text-primary-600" onClick={() => setOpenDropdown(null)}>
+                                {locale === 'nl' ? sub.name : sub.nameEn}
+                              </Link>
+                            ))}
+                          </div>
                         </>
                       );
-                    })()}
+                    })() : (
+                      <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                        {locale === 'nl' ? 'Hover over een categorie' : 'Hover over a category'}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -594,6 +850,15 @@ export default function Header() {
                 const wizardParts = laptopPartsCategories;
                 return (
                   <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl z-50 border-t-2 border-accent-500 p-4" style={{width: '340px'}}>
+                    {/* Refurbished Section */}
+                    <Link 
+                      href="/products?laptopBrand=refurbished" 
+                      className="block w-full mb-4 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg text-sm font-semibold transition-colors"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
+                    </Link>
+                    <div className="border-t border-gray-200 mb-4"></div>
                     <div className="text-xs font-bold text-gray-400 uppercase mb-3">{locale === 'nl' ? 'Zoek laptop onderdeel' : 'Find laptop part'}</div>
                     {/* Step 1: Kies Merk */}
                     <div className="mb-3">
@@ -644,42 +909,6 @@ export default function Header() {
                   </div>
                 );
               })()}
-            </div>
-
-            {/* Accessories Dropdown */}
-            <div className="relative" onMouseEnter={() => { handleDropdownEnter('accessories'); setHoveredAccessoryCat(null); }} onMouseLeave={handleDropdownLeave}>
-              <button className="px-3 py-3 hover:bg-primary-600 text-sm font-medium flex items-center gap-1">
-                {locale === 'nl' ? 'Accessoires' : 'Accessories'}
-                <ChevronDown size={12} />
-              </button>
-              {openDropdown === 'accessories' && (
-                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[560px] z-50 border-t-2 border-accent-500 flex h-[500px]">
-                  <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
-                    <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Categorieën' : 'Categories'}</div>
-                    {accessoryCategories.map((cat) => (
-                      <div key={cat.slug} onMouseEnter={() => setHoveredAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
-                        {locale === 'nl' ? cat.name : cat.nameEn}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-3">
-                    {hoveredAccessoryCat && (() => {
-                      const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
-                      if (!cat) return null;
-                      return (
-                        <>
-                          <div className="text-sm font-bold text-primary-600 mb-2">{locale === 'nl' ? cat.name : cat.nameEn}</div>
-                          {cat.subcategories?.map((sub) => (
-                            <Link key={sub.slug} href={`/products?accessory=${cat.slug}&sub=${sub.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
-                              {locale === 'nl' ? sub.name : sub.nameEn}
-                            </Link>
-                          ))}
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="flex-1" />

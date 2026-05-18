@@ -32,8 +32,13 @@ async function ensureTable(sql: any) {
   
   // Fix existing empty KVK strings to NULL so UNIQUE constraint works for particuliers
   try {
-    await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = '' OR kvk_number IS NOT NULL AND TRIM(kvk_number) = ''`;
+    await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = '' OR (kvk_number IS NOT NULL AND TRIM(kvk_number) = '')`;
   } catch {}
+  // Allow NULL in kvk_number so particuliers can register without KVK
+  try { await sql`ALTER TABLE users ALTER COLUMN kvk_number DROP NOT NULL`; } catch {}
+  // Ensure kvk_number unique constraint allows multiple NULLs (DROP and recreate as partial index)
+  try { await sql`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_kvk_number_key`; } catch {}
+  try { await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_kvk_number_unique ON users (kvk_number) WHERE kvk_number IS NOT NULL`; } catch {}
 
   // Add missing columns if they don't exist
   try {
@@ -50,11 +55,13 @@ async function ensureTable(sql: any) {
 }
 
 export async function POST(request: NextRequest) {
+  let customerType = 'individual';
   try {
     const sql = getDb();
     await ensureTable(sql);
     const body = await request.json();
-    const isBusiness = body.customerType === 'business';
+    customerType = body.customerType || 'individual';
+    const isBusiness = customerType === 'business';
 
     // Check existing email
     const existingEmail = await sql`SELECT id FROM users WHERE LOWER(email) = ${body.email.toLowerCase()}`;
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fix any remaining empty KVK strings to NULL before insert
-    try { await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = ''`; } catch {}
+    try { await sql`UPDATE users SET kvk_number = NULL WHERE kvk_number = '' OR (kvk_number IS NOT NULL AND TRIM(kvk_number) = '')`; } catch {}
 
     // Check existing KVK (only for business)
     if (isBusiness && body.kvkNumber) {
@@ -77,20 +84,23 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(body.password, 10);
 
     // Set display name
+    const firstName = (body.firstName || '').trim();
+    const lastName = (body.lastName || '').trim();
     const displayName = isBusiness 
-      ? (body.contactPerson || body.companyName)
-      : `${body.firstName} ${body.lastName}`;
+      ? (body.contactPerson || body.companyName || 'LabFix Klant')
+      : `${firstName} ${lastName}`.trim() || 'LabFix Klant';
 
     // ── MobileSentrix customer sync ───────────────────────────────────────
     let msCustomerId = '';
     try {
-      const nameParts = displayName.trim().split(' ');
-      const msFirstname = body.firstName || nameParts[0] || 'LabFix';
-      const msLastname = body.lastName || nameParts.slice(1).join(' ') || 'Klant';
+      const nameParts = displayName.split(' ');
+      const msFirstname = (body.firstName || nameParts[0] || 'LabFix').trim();
+      const msLastname = (body.lastName || nameParts.slice(1).join(' ') || 'Klant').trim();
       const msUsername = body.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '') + Math.floor(Math.random() * 9000 + 1000);
       const countryCode = body.country === 'Nederland' || !body.country ? 'NL' : body.country;
 
-      const msResult = await msSyncCustomer({
+      const msTimeout = new Promise<null>((_, reject) => setTimeout(() => reject(new Error('MS sync timeout')), 8000));
+      const msResult = await Promise.race([msSyncCustomer({
         firstname: msFirstname,
         lastname: msLastname,
         username: msUsername,
@@ -106,7 +116,7 @@ export async function POST(request: NextRequest) {
         country_id: countryCode,
         telephone: (body.phone || '0000000000').replace(/\D/g, ''),
         vat_numbers: body.btwNumber ? [{ vat_prefix: 'VAT', vat_number: body.btwNumber }] : [],
-      });
+      }), msTimeout]);
 
       if (msResult?.success) {
         // Find the new customer's ID via search
@@ -175,12 +185,15 @@ export async function POST(request: NextRequest) {
     if (msg.includes('users_email')) {
       return NextResponse.json({ success: false, message: 'Dit e-mailadres is al geregistreerd. Wil je inloggen?' }, { status: 400 });
     }
-    if (msg.includes('users_kvk_number_key') || msg.includes('kvk_number')) {
-      return NextResponse.json({ success: false, message: 'Dit KVK-nummer is al geregistreerd. Wil je inloggen?' }, { status: 400 });
+    if (msg.includes('users_kvk_number_key') || msg.includes('users_kvk_number_unique')) {
+      if (customerType === 'business') {
+        return NextResponse.json({ success: false, message: 'Dit KVK-nummer is al geregistreerd. Wil je inloggen?' }, { status: 400 });
+      }
+      return NextResponse.json({ success: false, message: 'Er is een fout opgetreden. Probeer het opnieuw.' }, { status: 500 });
     }
     if (msg.includes('unique') || msg.includes('duplicate')) {
       return NextResponse.json({ success: false, message: 'Dit account bestaat al. Probeer in te loggen.' }, { status: 400 });
     }
-    return NextResponse.json({ success: false, message: 'Er is een fout opgetreden. Probeer het opnieuw.' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Er is een fout opgetreden. Probeer het opnieuw.', _debug: msg, _stack: error.stack?.slice(0, 800) }, { status: 500 });
   }
 }
