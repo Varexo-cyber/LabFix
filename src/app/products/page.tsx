@@ -20,8 +20,8 @@ function ProductsPageContent() {
   const [selectedSub, setSelectedSub] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(() => searchParams.get('search') || '');
+  const [searchInput, setSearchInput] = useState<string>(() => searchParams.get('search') || '');
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const PRODUCTS_PER_PAGE = 24;
@@ -71,12 +71,14 @@ function ProductsPageContent() {
     fetchProductsPaginated({ page: '1', limit: '1' }).then(d => setGrandTotal(d.total));
   }, []);
 
-  // Debounce search input → update searchQuery
+  // Debounce search input → update searchQuery (skip if already in sync)
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setSearchQuery(searchInput);
-      setCurrentPage(1);
+      setSearchQuery(prev => {
+        if (prev !== searchInput) setCurrentPage(1);
+        return searchInput;
+      });
     }, 300);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchInput]);
@@ -97,7 +99,7 @@ function ProductsPageContent() {
     if (sub) setSelectedSub(sub);
     if (model) setSelectedModel(model);
     if (cat) setSelectedBrand(cat);
-    if (search) setSearchQuery(search);
+    if (search) { setSearchQuery(search); setSearchInput(search); }
     if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
     if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcParts: true })); }
     if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcAcc: true })); }
@@ -580,6 +582,29 @@ function ProductsPageContent() {
 
         {/* Main content */}
         <div className="flex-1">
+          {/* Search query banner */}
+          {searchQuery && (
+            <div className="bg-primary-50 border border-primary-200 rounded-xl px-4 py-3 mb-4 flex items-center justify-between animate-fade-in">
+              <div className="flex items-center gap-2 text-sm">
+                <Search size={15} className="text-primary-500 flex-shrink-0" />
+                <span className="text-gray-600">
+                  {locale === 'nl' ? 'Zoekresultaten voor' : 'Search results for'}
+                </span>
+                <span className="font-semibold text-primary-700">"{searchQuery}"</span>
+                {!loadingProducts && (
+                  <span className="text-gray-400">— {totalCount} {locale === 'nl' ? 'producten gevonden' : 'products found'}</span>
+                )}
+              </div>
+              <button
+                onClick={() => { setSearchInput(''); setSearchQuery(''); }}
+                className="text-gray-400 hover:text-gray-600 ml-3 flex-shrink-0"
+                title={locale === 'nl' ? 'Zoekopdracht wissen' : 'Clear search'}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {/* Toolbar */}
           <div className="bg-white rounded-xl shadow-md p-3 sm:p-4 mb-6 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4 animate-slide-down">
             <div className="flex items-center gap-2 flex-shrink-0">
