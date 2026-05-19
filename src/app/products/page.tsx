@@ -210,7 +210,7 @@ function ProductsPageContent() {
                 </button>
                 {expandedSections.brands && (
                   <div className="max-h-[280px] overflow-y-auto space-y-0.5 mt-1">
-                    {brandCategories.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((brand) => {
+                    {brandCategories.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || b.nameEn.toLowerCase().includes(sidebarSearch.toLowerCase())).map((brand) => {
                       const brandCount = products.filter(p => p.category === brand.slug || p.category.startsWith(brand.slug + '/')).length + 
                         (selectedBrand === brand.slug ? totalCount - products.length : 0);
                       const isExpanded = expandedBrands.includes(brand.slug);
@@ -596,14 +596,15 @@ function ProductsPageContent() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              {/* Search in results — queries full database */}
+              {/* Search in results — queries full database with smart NL/EN keyword expansion */}
               <div className="relative flex-1 sm:flex-none">
+                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={t('nav.search')}
-                  className="border rounded-lg pl-3 pr-8 py-1.5 text-sm w-full sm:w-56 focus:outline-none focus:border-primary-500"
+                  placeholder={locale === 'nl' ? 'Zoek producten...' : 'Search products...'}
+                  className="border rounded-lg pl-8 pr-8 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:border-primary-500"
                 />
                 {searchInput && (
                   <button onClick={() => { setSearchInput(''); setSearchQuery(''); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

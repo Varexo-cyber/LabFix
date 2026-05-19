@@ -120,8 +120,8 @@ export async function GET(request: NextRequest) {
     } else if (search) {
       const q = '%' + search.toLowerCase() + '%';
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
-        sql`SELECT COUNT(*)::int AS count FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q}`,
+        sql`SELECT * FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(name_en) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} OR LOWER(description_en) LIKE ${q} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(name_en) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} OR LOWER(description_en) LIKE ${q}`,
       ]);
     } else if (featured === 'true') {
       [rows, totalRows] = await Promise.all([

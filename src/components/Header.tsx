@@ -39,7 +39,8 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{type: string; label: string; sublabel?: string; url: string}[]>([]);
+  const [searchResults, setSearchResults] = useState<{type: string; label: string; sublabel?: string; url: string; image?: string; price?: number}[]>([]);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
@@ -132,37 +133,74 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = searchQuery.trim();
     if (q.length < 2) { setSearchResults([]); setShowSearchDropdown(false); return; }
-    const results: {type: string; label: string; sublabel?: string; url: string}[] = [];
-    for (const brand of categories) {
-      if (brand.name.toLowerCase().includes(q) || brand.nameEn.toLowerCase().includes(q)) {
-        results.push({ type: 'Merk', label: brand.name, url: `/products?brand=${brand.slug}` });
-      }
-      for (const sub of brand.subcategories || []) {
-        if (sub.name.toLowerCase().includes(q) || sub.nameEn.toLowerCase().includes(q)) {
-          results.push({ type: 'Categorie', label: sub.name, sublabel: brand.name, url: `/products?brand=${brand.slug}&sub=${sub.slug}` });
+
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(async () => {
+      const qLower = q.toLowerCase();
+      // 1. Category suggestions (instant, from static data)
+      const catResults: {type: string; label: string; sublabel?: string; url: string; image?: string; price?: number}[] = [];
+      for (const brand of categories) {
+        if (brand.name.toLowerCase().includes(qLower) || brand.nameEn.toLowerCase().includes(qLower)) {
+          catResults.push({ type: locale === 'nl' ? 'Merk' : 'Brand', label: locale === 'nl' ? brand.name : brand.nameEn, url: `/products?brand=${brand.slug}` });
         }
-        for (const model of sub.models || []) {
-          if (model.name.toLowerCase().includes(q)) {
-            results.push({ type: 'Model', label: model.name, sublabel: `${brand.name} - ${sub.name}`, url: `/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}` });
+        for (const sub of brand.subcategories || []) {
+          if (sub.name.toLowerCase().includes(qLower) || sub.nameEn.toLowerCase().includes(qLower)) {
+            catResults.push({ type: locale === 'nl' ? 'Serie' : 'Series', label: locale === 'nl' ? sub.name : sub.nameEn, sublabel: locale === 'nl' ? brand.name : brand.nameEn, url: `/products?brand=${brand.slug}&sub=${sub.slug}` });
+          }
+          for (const model of sub.models || []) {
+            if (model.name.toLowerCase().includes(qLower)) {
+              catResults.push({ type: locale === 'nl' ? 'Model' : 'Model', label: model.name, sublabel: `${locale === 'nl' ? brand.name : brand.nameEn} - ${locale === 'nl' ? sub.name : sub.nameEn}`, url: `/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}` });
+            }
           }
         }
       }
-    }
-    for (const cat of pcPartsCategories) {
-      if (cat.name.toLowerCase().includes(q) || cat.nameEn.toLowerCase().includes(q)) {
-        results.push({ type: 'PC Onderdeel', label: cat.name, url: `/products?pcpart=${cat.slug}` });
+      for (const cat of pcPartsCategories) {
+        if (cat.name.toLowerCase().includes(qLower) || cat.nameEn.toLowerCase().includes(qLower)) {
+          catResults.push({ type: locale === 'nl' ? 'PC Onderdeel' : 'PC Part', label: locale === 'nl' ? cat.name : cat.nameEn, url: `/products?pcpart=${cat.slug}` });
+        }
       }
-    }
-    for (const cat of accessoryCategories) {
-      if (cat.name.toLowerCase().includes(q) || cat.nameEn.toLowerCase().includes(q)) {
-        results.push({ type: 'Accessoire', label: cat.name, url: `/products?accessory=${cat.slug}` });
+      for (const cat of accessoryCategories) {
+        if (cat.name.toLowerCase().includes(qLower) || cat.nameEn.toLowerCase().includes(qLower)) {
+          catResults.push({ type: locale === 'nl' ? 'Accessoire' : 'Accessory', label: locale === 'nl' ? cat.name : cat.nameEn, url: `/products?accessory=${cat.slug}` });
+        }
       }
-    }
-    setSearchResults(results.slice(0, 12));
-    setShowSearchDropdown(results.length > 0);
-  }, [searchQuery, categories]);
+      for (const cat of laptopBrands) {
+        if (cat.name.toLowerCase().includes(qLower)) {
+          catResults.push({ type: 'Laptop', label: cat.name, url: `/products?laptopBrand=${cat.slug}` });
+        }
+      }
+
+      // 2. Live product search via smart API (NL/EN keyword expansion)
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&locale=${locale}&limit=8`);
+        if (res.ok) {
+          const data = await res.json();
+          const productResults = (data.results || []).map((p: any) => ({
+            type: locale === 'nl' ? 'Product' : 'Product',
+            label: p.name,
+            sublabel: `€${p.price?.toFixed(2)} ${p.inStock ? (locale === 'nl' ? '· Op voorraad' : '· In stock') : (locale === 'nl' ? '· Niet op voorraad' : '· Out of stock')}`,
+            url: `/products/${p.id}`,
+            image: p.image,
+            price: p.price,
+          }));
+          // Show: category suggestions first (max 4), then products (max 8)
+          const combined = [...catResults.slice(0, 4), ...productResults];
+          setSearchResults(combined.slice(0, 12));
+          setShowSearchDropdown(combined.length > 0);
+        } else {
+          setSearchResults(catResults.slice(0, 12));
+          setShowSearchDropdown(catResults.length > 0);
+        }
+      } catch {
+        setSearchResults(catResults.slice(0, 12));
+        setShowSearchDropdown(catResults.length > 0);
+      }
+    }, 300);
+
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current); };
+  }, [searchQuery, categories, locale]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,18 +280,35 @@ export default function Header() {
                 </button>
               </form>
               {showSearchDropdown && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto mt-1">
-                  {searchResults.map((result, idx) => (
-                    <Link key={idx} href={result.url} className="block px-4 py-3 hover:bg-gray-50 border-b last:border-b-0" onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-sm">{result.label}</div>
-                          {result.sublabel && <div className="text-xs text-gray-500">{result.sublabel}</div>}
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 mt-1 overflow-hidden">
+                  <div className="max-h-[420px] overflow-y-auto">
+                    {searchResults.map((result, idx) => (
+                      <Link key={idx} href={result.url} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 border-b last:border-b-0 transition-colors" onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}>
+                        {result.image ? (
+                          <img src={result.image} alt={result.label} className="w-10 h-10 object-contain rounded bg-gray-100 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                            <Search size={16} className="text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{result.label}</div>
+                          {result.sublabel && <div className="text-xs text-gray-500 truncate">{result.sublabel}</div>}
                         </div>
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">{result.type}</span>
-                      </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
+                          result.type === 'Product' ? 'bg-blue-50 text-blue-600' :
+                          result.type === 'Model' ? 'bg-primary-50 text-primary-600' :
+                          'bg-gray-100 text-gray-500'
+                        }`}>{result.type}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="px-4 py-2.5 border-t bg-gray-50">
+                    <Link href={`/products?search=${encodeURIComponent(searchQuery)}`} className="flex items-center justify-center gap-2 text-sm font-medium text-primary-600 hover:text-primary-700" onClick={() => { setShowSearchDropdown(false); }}>
+                      <Search size={14} />
+                      {locale === 'nl' ? `Alle resultaten voor "${searchQuery}"` : `All results for "${searchQuery}"`}
                     </Link>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -313,18 +368,31 @@ export default function Header() {
               </button>
             </form>
             {showSearchDropdown && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto mt-1">
-                {searchResults.map((result, idx) => (
-                  <Link key={idx} href={result.url} className="block px-4 py-3 hover:bg-gray-50 border-b last:border-b-0" onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-sm">{result.label}</div>
-                        {result.sublabel && <div className="text-xs text-gray-500">{result.sublabel}</div>}
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 mt-1 overflow-hidden">
+                <div className="max-h-[360px] overflow-y-auto">
+                  {searchResults.map((result, idx) => (
+                    <Link key={idx} href={result.url} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 border-b last:border-b-0" onClick={() => { setShowSearchDropdown(false); setSearchQuery(''); }}>
+                      {result.image ? (
+                        <img src={result.image} alt={result.label} className="w-9 h-9 object-contain rounded bg-gray-100 flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      ) : (
+                        <div className="w-9 h-9 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                          <Search size={14} className="text-gray-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{result.label}</div>
+                        {result.sublabel && <div className="text-xs text-gray-500 truncate">{result.sublabel}</div>}
                       </div>
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">{result.type}</span>
-                    </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${result.type === 'Product' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>{result.type}</span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="px-4 py-2.5 border-t bg-gray-50">
+                  <Link href={`/products?search=${encodeURIComponent(searchQuery)}`} className="flex items-center justify-center gap-2 text-sm font-medium text-primary-600" onClick={() => setShowSearchDropdown(false)}>
+                    <Search size={14} />
+                    {locale === 'nl' ? `Alle resultaten voor "${searchQuery}"` : `All results for "${searchQuery}"`}
                   </Link>
-                ))}
+                </div>
               </div>
             )}
           </div>
@@ -944,7 +1012,7 @@ export default function Header() {
                 <div className="bg-gray-50">
                   {categories.map((brand) => (
                     <div key={brand.slug}>
-                      <button onClick={() => setMobileMoreBrand(mobileMoreBrand === brand.slug ? null : brand.slug)} className={`w-full px-6 py-2 hover:bg-gray-100 flex items-center justify-between text-sm ${mobileMoreBrand === brand.slug ? 'bg-primary-50 text-primary-600' : ''}`}>
+                      <button onClick={() => { setMobileMoreBrand(mobileMoreBrand === brand.slug ? null : brand.slug); setMobileMoreSub(null); }} className={`w-full px-6 py-2 hover:bg-gray-100 flex items-center justify-between text-sm ${mobileMoreBrand === brand.slug ? 'bg-primary-50 text-primary-600' : ''}`}>
                         <span>{locale === 'en' ? brand.nameEn : brand.name}</span>
                         <ChevronDown size={14} className={`transition-transform ${mobileMoreBrand === brand.slug ? 'rotate-180' : ''}`} />
                       </button>
@@ -954,9 +1022,38 @@ export default function Header() {
                             {locale === 'nl' ? `Alle ${brand.name}` : `All ${brand.nameEn}`}
                           </Link>
                           {brand.subcategories?.map((sub) => (
-                            <Link key={sub.slug} href={`/products?brand=${brand.slug}&sub=${sub.slug}`} className="block px-8 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
-                              {locale === 'en' ? sub.nameEn : sub.name}
-                            </Link>
+                            <div key={sub.slug}>
+                              <button
+                                className={`w-full flex items-center justify-between px-8 py-2 text-sm text-left hover:bg-gray-100 ${mobileMoreSub === sub.slug ? 'text-primary-600 bg-primary-50' : 'text-gray-700'}`}
+                                onClick={() => setMobileMoreSub(mobileMoreSub === sub.slug ? null : sub.slug)}
+                              >
+                                <span>{locale === 'en' ? sub.nameEn : sub.name}</span>
+                                {sub.models && sub.models.length > 0 && (
+                                  <ChevronDown size={13} className={`transition-transform flex-shrink-0 ${mobileMoreSub === sub.slug ? 'rotate-180' : ''}`} />
+                                )}
+                              </button>
+                              {mobileMoreSub === sub.slug && sub.models && sub.models.length > 0 && (
+                                <div className="bg-gray-50 border-t border-b border-gray-100">
+                                  <Link
+                                    href={`/products?brand=${brand.slug}&sub=${sub.slug}`}
+                                    className="block px-10 py-2 text-xs font-semibold text-primary-600 hover:bg-gray-100 border-b border-gray-100"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    {locale === 'nl' ? `Alle ${sub.name}` : `All ${sub.nameEn}`}
+                                  </Link>
+                                  {sub.models.map((model) => (
+                                    <Link
+                                      key={model.slug}
+                                      href={`/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}`}
+                                      className="block px-10 py-1.5 text-xs text-gray-600 hover:bg-gray-100 hover:text-primary-600"
+                                      onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                      {model.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}

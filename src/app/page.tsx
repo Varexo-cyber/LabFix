@@ -123,12 +123,12 @@ export default function HomePage() {
               >
                 <div className="grid md:grid-cols-2 gap-0">
                   {/* Left Content */}
-                  <div className="p-6 md:p-12 lg:p-16 flex flex-col justify-center order-1">
+                  <div className="p-5 md:p-12 lg:p-16 flex flex-col justify-center order-2 md:order-1">
                     <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-medium mb-4">
                       <span className="text-lg">{slide.badgeIcon}</span>
                       <span className="uppercase tracking-wider">{slide.badge}</span>
                     </div>
-                    <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                    <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 leading-tight">
                       {slide.title}
                     </h1>
                     <p className="text-gray-600 text-base md:text-lg mb-6">
@@ -154,7 +154,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Right Image - Full coverage */}
-                  <div className="relative h-[220px] md:h-full md:min-h-[380px] lg:min-h-[420px] order-2">
+                  <div className="relative h-[200px] md:h-full md:min-h-[380px] lg:min-h-[420px] order-1 md:order-2">
                     <img
                       src={slide.image}
                       alt={slide.title}
@@ -185,7 +185,7 @@ export default function HomePage() {
       <ScrollReveal animation="fade-up">
       <section className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+          <div className="flex flex-nowrap md:flex-wrap overflow-x-auto md:justify-center items-center gap-6 md:gap-12 pb-2 md:pb-0 scrollbar-hide">
             {[
               { icon: <BadgeCheck size={20} />, text: locale === 'nl' ? 'Kwaliteitsgarantie' : 'Quality Guarantee' },
               { icon: <Clock size={20} />, text: locale === 'nl' ? 'Snelle levering 1-3 dagen' : 'Fast delivery 1-3 days' },
@@ -221,10 +221,10 @@ export default function HomePage() {
               <Link
                 key={brand.slug}
                 href={`/products?brand=${brand.slug}`}
-                className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
+                className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 md:p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
                 style={{ animationDelay: `${(i + 1) * 0.05}s` }}
               >
-                <div className="w-16 h-16 mx-auto mb-4 bg-primary-50 rounded-2xl flex items-center justify-center p-3 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">
+                <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-primary-50 rounded-2xl flex items-center justify-center p-2.5 md:p-3 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">
                   {logoPath ? (
                     <img
                       src={logoPath}

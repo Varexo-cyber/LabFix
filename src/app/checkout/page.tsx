@@ -158,13 +158,13 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('checkout.title')}</h1>
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-12">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">{t('checkout.title')}</h1>
 
       <form onSubmit={handlePlaceOrder}>
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Shipping details */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-bold mb-4">Verzending</h2>
               
@@ -373,8 +373,8 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order summary */}
-          <div>
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-32">
+          <div className="order-1 lg:order-2">
+            <div className="bg-white rounded-xl shadow-md p-5 lg:sticky lg:top-32">
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <ShoppingBag size={20} className="text-primary-500" />
                 {t('checkout.summary')}

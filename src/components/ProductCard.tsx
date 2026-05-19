@@ -12,10 +12,14 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { t, locale, formatPrice, addToCart } = useApp();
+  const { t, locale, addToCart } = useApp();
 
-  const name = locale === 'nl' ? product.name : product.nameEn;
-  const description = locale === 'nl' ? product.description : product.descriptionEn;
+  const name = locale === 'nl'
+    ? (product.name || product.nameEn || '')
+    : (product.nameEn || product.name || '');
+  const description = locale === 'nl'
+    ? (product.description || product.descriptionEn || '')
+    : (product.descriptionEn || product.description || '');
 
   return (
     <div className="product-card bg-white rounded-xl shadow-md overflow-hidden group border border-gray-100">
@@ -58,9 +62,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="text-gray-500 text-xs mt-1 line-clamp-1">{product.sku}</p>
         <div className="flex items-center justify-between mt-3">
           <div>
-            <span className="text-lg font-bold text-primary-500">{formatPrice(product.price)}</span>
+            <span className="text-lg font-bold text-primary-500">€{product.price.toFixed(2)}</span>
             {product.comparePrice && (
-              <span className="text-sm text-gray-400 line-through ml-2">{formatPrice(product.comparePrice)}</span>
+              <span className="text-sm text-gray-400 line-through ml-2">€{product.comparePrice.toFixed(2)}</span>
             )}
             <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
           </div>
@@ -72,7 +76,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               }
             }}
             disabled={!product.inStock}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2.5 rounded-lg transition-colors active:scale-95 ${
               product.inStock
                 ? 'bg-accent-500 text-white hover:bg-accent-600'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'

@@ -10,8 +10,8 @@ export default function CartPage() {
   const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">{t('cart.title')}</h1>
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">{t('cart.title')}</h1>
 
       {cart.length === 0 ? (
         <div className="bg-white rounded-xl shadow-md p-12 text-center animate-scale-in">
@@ -26,54 +26,56 @@ export default function CartPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Cart items */}
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item, i) => {
               const name = locale === 'nl' ? item.product.name : item.product.nameEn;
               return (
-                <div key={item.product.id} className="bg-white rounded-xl shadow-md p-4 flex gap-4 animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
-                  <Link href={`/products/${item.product.id}`} className="flex-shrink-0">
-                    <img
-                      src={item.product.image}
-                      alt={name}
-                      className="w-24 h-24 object-cover rounded-lg"
-                    />
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <Link href={`/products/${item.product.id}`}>
-                      <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors">
-                        {name}
-                      </h3>
+                <div key={item.product.id} className="bg-white rounded-xl shadow-md p-4 animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <div className="flex gap-3">
+                    <Link href={`/products/${item.product.id}`} className="flex-shrink-0">
+                      <img
+                        src={item.product.image}
+                        alt={name}
+                        className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg"
+                      />
                     </Link>
-                    <p className="text-sm text-gray-500">{item.product.sku}</p>
-                    <p className="text-primary-500 font-bold mt-1">{formatPrice(item.product.price)}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <Link href={`/products/${item.product.id}`} className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors text-sm md:text-base line-clamp-2">
+                            {name}
+                          </h3>
+                        </Link>
+                        <button
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-gray-400 hover:text-red-500 transition-colors p-1 flex-shrink-0"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.product.sku}</p>
+                      <p className="text-primary-500 font-bold mt-1 text-sm md:text-base">€{item.product.price.toFixed(2)}</p>
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end justify-between">
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                     <div className="flex items-center border rounded-lg">
                       <button
                         onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="p-1.5 hover:bg-gray-100"
+                        className="p-2 hover:bg-gray-100 active:bg-gray-200"
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="px-3 text-sm font-semibold">{item.quantity}</span>
+                      <span className="px-4 text-sm font-semibold">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="p-1.5 hover:bg-gray-100"
+                        className="p-2 hover:bg-gray-100 active:bg-gray-200"
                       >
                         <Plus size={14} />
                       </button>
                     </div>
-                    <p className="font-bold text-gray-800">
-                      {formatPrice(item.product.price * item.quantity)}
-                    </p>
+                    <p className="font-bold text-gray-800">€{(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
               );
@@ -82,13 +84,13 @@ export default function CartPage() {
 
           {/* Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-32">
+            <div className="bg-white rounded-xl shadow-md p-5 lg:sticky lg:top-32">
               <h2 className="text-xl font-bold mb-4">{t('cart.title')}</h2>
 
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.subtotal')}</span>
-                  <span className="font-semibold">{formatPrice(cartTotal)}</span>
+                  <span className="font-semibold">€{cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.shipping')}</span>
