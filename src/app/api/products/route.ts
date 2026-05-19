@@ -2,6 +2,41 @@ import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 
+// NL ↔ EN keyword translation for search
+const KEYWORD_TRANSLATIONS: Record<string, string[]> = {
+  'batterij': ['battery'], 'accu': ['battery'], 'battery': ['batterij', 'accu'],
+  'scherm': ['screen', 'display', 'lcd', 'oled'], 'beeldscherm': ['screen', 'display'],
+  'screen': ['scherm', 'beeldscherm'], 'display': ['scherm', 'beeldscherm'],
+  'lcd': ['scherm'], 'oled': ['scherm'],
+  'glas': ['glass'], 'glass': ['glas'],
+  'achterkant': ['back cover', 'rear cover'], 'achterglas': ['back glass', 'rear glass'],
+  'lader': ['charger'], 'oplader': ['charger'], 'charger': ['lader', 'oplader'],
+  'kabel': ['cable'], 'cable': ['kabel'],
+  'laadpoort': ['charging port'], 'oplaadpoort': ['charging port'],
+  'charging port': ['laadpoort', 'oplaadpoort'],
+  'speaker': ['luidspreker'], 'luidspreker': ['speaker'],
+  'microfoon': ['microphone', 'mic'], 'microphone': ['microfoon'],
+  'camera': ['camera'],
+  'knop': ['button'], 'button': ['knop'],
+  'moederbord': ['motherboard'], 'motherboard': ['moederbord'],
+  'toetsenbord': ['keyboard'], 'keyboard': ['toetsenbord'],
+  'hoesje': ['case', 'cover'], 'case': ['hoesje'],
+  'beschermglas': ['tempered glass', 'screen protector'],
+  'screenprotector': ['screen protector', 'tempered glass'],
+  'koptelefoon': ['headphones', 'headset'], 'headphones': ['koptelefoon', 'oortjes'],
+  'oortjes': ['earphones', 'earbuds'], 'earphones': ['oortjes'],
+  'behuizing': ['housing', 'frame'], 'housing': ['behuizing'],
+  'frame': ['behuizing', 'housing'],
+};
+
+function translateSearchWords(words: string[]): string[][] {
+  return words.map(w => {
+    const variants = new Set<string>([w]);
+    if (KEYWORD_TRANSLATIONS[w]) KEYWORD_TRANSLATIONS[w].forEach(v => variants.add(v));
+    return Array.from(variants);
+  });
+}
+
 export const runtime = 'nodejs';
 
 // Ensure table exists
@@ -118,11 +153,45 @@ export async function GET(request: NextRequest) {
         sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${category} OR category LIKE ${likePattern}`,
       ]);
     } else if (search) {
-      const q = '%' + search.toLowerCase() + '%';
-      [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(name_en) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} OR LOWER(description_en) LIKE ${q} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
-        sql`SELECT COUNT(*)::int AS count FROM products WHERE LOWER(name) LIKE ${q} OR LOWER(name_en) LIKE ${q} OR LOWER(sku) LIKE ${q} OR LOWER(description) LIKE ${q} OR LOWER(description_en) LIKE ${q}`,
-      ]);
+      const words = search.toLowerCase().split(/\s+/).filter((w: string) => w.length > 1);
+      if (words.length === 0) {
+        rows = [];
+        totalRows = [{ count: 0 }];
+      } else {
+        // Translate each word to NL+EN variants, build per-term ANY patterns
+        const termVariantGroups = translateSearchWords(words);
+        // For ILIKE ALL, we need one pattern per term that covers all its variants.
+        // Strategy: for each term group, use ILIKE ANY(variants) joined with AND in SQL.
+        // Since we can't dynamically build N AND clauses, we fetch candidates matching
+        // the original terms (strict), then use JS scoring for translated variants.
+        const originalPatterns = words.map((w: string) => `%${w}%`);
+        const allVariantPatterns = termVariantGroups.flat().map(v => `%${v}%`);
+
+        // Primary: AND on original words against combined name+name_en
+        [rows, totalRows] = await Promise.all([
+          sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${originalPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${originalPatterns})`,
+        ]);
+
+        // If zero results: try AND of original words except the last one + ANY of last term's variants
+        // (handles "iphone 17 pro max battery" when product has "batterij")
+        if ((totalRows[0]?.count ?? 0) === 0 && words.length > 1) {
+          const withoutLastPatterns = words.slice(0, -1).map((w: string) => `%${w}%`);
+          const lastVariantPatterns = termVariantGroups[termVariantGroups.length - 1].map(v => `%${v}%`);
+          [rows, totalRows] = await Promise.all([
+            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${withoutLastPatterns}) AND (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${lastVariantPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+            sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${withoutLastPatterns}) AND (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${lastVariantPatterns})`,
+          ]);
+        }
+
+        // Final fallback: any variant matches (original OR approach)
+        if ((totalRows[0]?.count ?? 0) === 0) {
+          [rows, totalRows] = await Promise.all([
+            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+            sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns})`,
+          ]);
+        }
+      }
     } else if (featured === 'true') {
       [rows, totalRows] = await Promise.all([
         sql`SELECT * FROM products WHERE featured = true ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
