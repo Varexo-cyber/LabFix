@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { ChevronLeft, FileText, Scale, Truck, RotateCcw, CreditCard, Shield, AlertCircle, HelpCircle } from 'lucide-react';
+import { ChevronLeft, FileText, Shield, RotateCcw, CreditCard, Truck, AlertCircle, Scale } from 'lucide-react';
 
 export default function AlgemeneVoorwaardenPage() {
   const { locale } = useApp();
@@ -26,28 +26,20 @@ export default function AlgemeneVoorwaardenPage() {
               <FileText className="text-primary-600" size={32} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {locale === 'nl' ? 'Algemene Voorwaarden' : 'General Terms and Conditions'}
-              </h1>
-              <p className="text-gray-500 mt-1">
-                {locale === 'nl' ? 'Laatst bijgewerkt: 18 mei 2026' : 'Last updated: May 18, 2026'}
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">Algemene Voorwaarden – LabFix</h1>
+              <p className="text-gray-500 mt-1">Laatst bijgewerkt: 20 mei 2026</p>
             </div>
           </div>
-          
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
             <p className="text-yellow-800 text-sm">
-              <strong>{locale === 'nl' ? 'Belangrijk:' : 'Important:'}</strong>{' '}
-              {locale === 'nl' 
-                ? 'Door gebruik te maken van onze website en diensten gaat u akkoord met deze algemene voorwaarden. Lees ze zorgvuldig door.'
-                : 'By using our website and services, you agree to these general terms and conditions. Please read them carefully.'}
+              <strong>Belangrijk:</strong> Door gebruik te maken van onze website en diensten gaat u akkoord met deze algemene voorwaarden. Lees ze zorgvuldig door.
             </p>
           </div>
         </div>
 
         {/* Content */}
         <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
-          
+
           {/* Artikel 1 */}
           <section id="artikel-1">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
@@ -57,12 +49,12 @@ export default function AlgemeneVoorwaardenPage() {
             <div className="space-y-3 text-gray-700">
               <p>In deze algemene voorwaarden wordt verstaan onder:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li><strong>LabFix:</strong> De onderneming handelend onder de naam LabFix, KVK-nummer: 42035906, BTW-nummer: NL005445900B06.</li>
-                <li><strong>Klant:</strong> De natuurlijke of rechtspersoon die een overeenkomst aangaat met LabFix voor de levering van producten en/of diensten.</li>
-                <li><strong>Overeenkomst:</strong> De overeenkomst tussen LabFix en de Klant betreffende de levering van producten en/of diensten.</li>
-                <li><strong>Producten:</strong> Alle elektronische componenten, reparatieonderdelen, tools en accessoires die LabFix aanbiedt.</li>
-                <li><strong>Diensten:</strong> Alle reparatiediensten, technische ondersteuning en advies die LabFix levert.</li>
-                <li><strong>Website:</strong> De website van LabFix, bereikbaar via www.labfix.nl.</li>
+                <li><strong>Ondernemer / LabFix:</strong> LabFix, de natuurlijke of rechtspersoon die producten en/of reparatiediensten aanbiedt aan consumenten.</li>
+                <li><strong>Consument:</strong> de natuurlijke persoon die niet handelt in de uitoefening van beroep of bedrijf en een overeenkomst op afstand aangaat met LabFix.</li>
+                <li><strong>Overeenkomst op afstand:</strong> een overeenkomst die tot stand komt via een door LabFix georganiseerd systeem voor verkoop op afstand, waarbij tot en met het sluiten van de overeenkomst uitsluitend gebruik wordt gemaakt van technieken voor communicatie op afstand.</li>
+                <li><strong>Herroepingsrecht:</strong> het recht van de consument om binnen de bedenktijd zonder opgave van redenen af te zien van de overeenkomst.</li>
+                <li><strong>Bedenktijd:</strong> de wettelijke termijn van 14 dagen waarbinnen de consument gebruik kan maken van het herroepingsrecht.</li>
+                <li><strong>Duurzame gegevensdrager:</strong> elk middel dat de consument of LabFix in staat stelt om informatie die aan hem persoonlijk is gericht, op te slaan op een manier die toekomstige raadpleging en ongewijzigde reproductie mogelijk maakt.</li>
               </ul>
             </div>
           </section>
@@ -71,13 +63,16 @@ export default function AlgemeneVoorwaardenPage() {
           <section id="artikel-2">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 2</span>
-              Toepasselijkheid
+              Identiteit van de ondernemer
             </h2>
-            <div className="space-y-3 text-gray-700">
-              <p>1. Deze algemene voorwaarden zijn van toepassing op alle aanbiedingen, offertes, overeenkomsten en leveringen van LabFix, tenzij uitdrukkelijk anders overeengekomen.</p>
-              <p>2. Afwijkingen van deze algemene voorwaarden zijn slechts geldig indien deze uitdrukkelijk en schriftelijk zijn overeengekomen.</p>
-              <p>3. Indien één of meerdere bepalingen in deze algemene voorwaarden nietig of vernietigbaar zijn, blijven de overige bepalingen onverminderd van kracht.</p>
-              <p>4. LabFix behoudt zich het recht voor om deze algemene voorwaarden van tijd tot tijd te wijzigen. De meest actuele versie is altijd beschikbaar op de website.</p>
+            <div className="space-y-2 text-gray-700">
+              <p><strong>LabFix</strong></p>
+              <p><span className="font-semibold">Adres:</span> Leyweg 303, 2545 CK, Den Haag</p>
+              <p><span className="font-semibold">Telefoon klantenservice:</span> <a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 651131133</a></p>
+              <p><span className="font-semibold">Telefoon zakelijk contact:</span> <a href="tel:0657646467" className="text-primary-600 hover:underline">0657646467</a></p>
+              <p><span className="font-semibold">E-mail:</span> <a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></p>
+              <p><span className="font-semibold">KvK-nummer:</span> 42035906</p>
+              <p><span className="font-semibold">BTW-nummer:</span> NL005445900B06</p>
             </div>
           </section>
 
@@ -85,14 +80,13 @@ export default function AlgemeneVoorwaardenPage() {
           <section id="artikel-3">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 3</span>
-              Offertes en Prijzen
+              Toepasselijkheid
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Alle offertes van LabFix zijn vrijblijvend en geldig gedurende 14 dagen na datum van uitgifte, tenzij anders vermeld.</p>
-              <p>2. Prijzen worden vermeld in Euro's en zijn exclusief BTW, tenzij anders aangegeven.</p>
-              <p>3. Verzendkosten worden apart vermeld en zijn voor rekening van de Klant, tenzij anders overeengekomen.</p>
-              <p>4. Prijzen op de website zijn onder voorbehoud van typefouten. LabFix behoudt zich het recht voor om prijzen te corrigeren.</p>
-              <p>5. LabFix is niet gebonden aan prijsafwijkingen indien deze het gevolg zijn van wijzigingen in wet- en regelgeving, belastingen, in- en uitvoerrechten, valutakoersen of inkoopprijzen.</p>
+              <p>Deze algemene voorwaarden zijn van toepassing op elk aanbod van LabFix en op elke tot stand gekomen overeenkomst op afstand tussen LabFix en de consument.</p>
+              <p>Voorafgaand aan het sluiten van de overeenkomst worden deze algemene voorwaarden aan de consument beschikbaar gesteld. Indien redelijkerwijs niet mogelijk, zal LabFix aangeven waar de voorwaarden kunnen worden ingezien en op verzoek kosteloos worden toegezonden.</p>
+              <p>Bij elektronische overeenkomsten kunnen de voorwaarden digitaal worden verstrekt op een wijze die opslag op een duurzame gegevensdrager mogelijk maakt.</p>
+              <p>Indien naast deze algemene voorwaarden specifieke product- of dienstvoorwaarden gelden, kan de consument bij tegenstrijdigheden altijd een beroep doen op de voor hem meest gunstige bepaling.</p>
             </div>
           </section>
 
@@ -100,179 +94,182 @@ export default function AlgemeneVoorwaardenPage() {
           <section id="artikel-4">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 4</span>
-              Bestellingen en Overeenkomst
+              Het aanbod
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Een overeenkomst komt tot stand door aanvaarding door de Klant van het aanbod van LabFix en het voldoen aan de daarbij gestelde voorwaarden.</p>
-              <p>2. LabFix behoudt zich het recht voor om bestellingen te weigeren of aanvullende voorwaarden te stellen, bijvoorbeeld in geval van onvolledige of onjuiste klantgegevens.</p>
-              <p>3. Bij producten die op maat worden gemaakt of besteld, kan een aanbetaling vereist zijn. Dit wordt vooraf met de Klant overeengekomen.</p>
-              <p>4. De Klant is verantwoordelijk voor de juistheid en volledigheid van de verstrekte gegevens.</p>
+              <p>Het aanbod bevat een volledige en nauwkeurige omschrijving van de producten en/of diensten. Afbeeldingen zijn een waarheidsgetrouwe weergave. Kennelijke vergissingen of fouten in het aanbod binden LabFix niet. Elk aanbod vermeldt duidelijk de rechten en verplichtingen van de consument bij aanvaarding, waaronder prijs (incl. BTW voor consumenten), eventuele verzendkosten, de wijze van betaling en aflevering, en het al dan niet van toepassing zijn van het herroepingsrecht.</p>
             </div>
           </section>
 
-          {/* Artikel 5 - Betaling */}
+          {/* Artikel 5 */}
           <section id="artikel-5">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <CreditCard className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 5</span>
-              Betaling
+              De overeenkomst
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Betalingsvoorwaarden worden per overeenkomst vastgesteld.</p>
-              <p>2. Bij betalingsachterstand is LabFix gerechtigd om wettelijke rente en incassokosten in rekening te brengen conform de wettelijke bepalingen.</p>
-              <p>3. In geval van liquidatie, faillissement, beslaglegging of surseance van betaling van de Klant, zijn alle vorderingen van LabFix op de Klant onmiddellijk opeisbaar.</p>
-              <p>4. LabFix accepteert verschillende betaalmethoden. De beschikbare opties worden tijdens het bestelproces vermeld.</p>
+              <p>De overeenkomst komt tot stand op het moment dat de consument het aanbod aanvaardt en voldoet aan de gestelde voorwaarden.</p>
+              <p>Om reparatiediensten af te nemen, dient de consument meerderjarig te zijn (18 jaar of ouder).</p>
+              <p>Bij elektronische aanvaarding bevestigt LabFix direct de ontvangst van de aanvaarding. Zolang deze bevestiging niet is ontvangen, kan de consument de overeenkomst ontbinden.</p>
+              <p>LabFix treft passende technische en organisatorische maatregelen ter beveiliging van elektronische gegevensoverdracht en betalingen.</p>
+              <p>LabFix behoudt zich het recht voor een bestelling of aanvraag te weigeren of aan bijzondere voorwaarden te verbinden, indien er gegronde redenen zijn (bijv. kredietwaardigheid).</p>
+              <p>LabFix verstrekt de consument de nodige informatie, waaronder het adres voor klachten, de voorwaarden van het herroepingsrecht, garantie-informatie en contactgegevens.</p>
             </div>
           </section>
 
-          {/* Artikel 6 - Levering */}
+          {/* Artikel 6 */}
           <section id="artikel-6">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Truck className="text-primary-500" size={20} />
+              <RotateCcw className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 6</span>
-              Levering en Verzending
+              Herroepingsrecht bij producten (accessoires en onderdelen)
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Levering geschiedt op het door de Klant opgegeven adres, tenzij anders overeengekomen.</p>
-              <p>2. De opgegeven levertijden zijn indicatief en geen fatale termijnen. Overschrijding van de levertijd geeft de Klant geen recht op schadevergoeding of ontbinding.</p>
-              <p>3. Het risico van verlies of beschadiging van producten gaat over op de Klant op het moment van levering.</p>
-              <p>4. LabFix is niet aansprakelijk voor vertragingen bij de vervoerder. Klachten over vertragingen dienen direct bij de vervoerder te worden ingediend.</p>
-              <p>5. Voor zendingen naar het buitenland kunnen aanvullende kosten van toepassing zijn, zoals douanekosten en importbelastingen. Deze zijn voor rekening van de Klant.</p>
+              <p>De consument heeft bij de aankoop van producten en accessoires een bedenktijd van 14 dagen, ingaande de dag na ontvangst. Tijdens deze periode mag het product slechts in die mate worden uitgepakt of gebruikt voor zover nodig om de aard, kenmerken en werking te beoordelen. Bij uitoefening van het herroepingsrecht dient het product in originele staat, met alle toebehoren en in de originele verpakking te worden geretourneerd volgens de instructies van LabFix. Voor zakelijke klanten geldt het herroepingsrecht niet.</p>
             </div>
           </section>
 
-          {/* Artikel 7 - Herroeping */}
+          {/* Artikel 7 */}
           <section id="artikel-7">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
               <RotateCcw className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 7</span>
-              Herroepingsrecht
+              Herroepingsrecht bij diensten (reparaties)
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. De Klant heeft het recht om binnen 14 dagen na ontvangst van het product, zonder opgave van redenen, de overeenkomst te herroepen.</p>
-              <p>2. Het herroepingsrecht is uitgesloten voor:</p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Producten die volgens specificaties van de consument zijn vervaardigd (maatwerk)</li>
-                <li>Producten die om hygiënische redenen niet geschikt zijn om te retourneren</li>
-                <li>Producten die na levering onherroepelijk vermengd zijn met andere producten</li>
-                <li>Digitale producten na download</li>
-                <li>Diensten die volledig zijn uitgevoerd met voorafgaande uitdrukkelijke toestemming</li>
-              </ul>
-              <p>3. Bij uitoefening van het herroepingsrecht dient de Klant het product ongebruikt, onbeschadigd en in originele verpakking te retourneren.</p>
-              <p>4. De retourkosten zijn voor rekening van de Klant, tenzij anders overeengekomen.</p>
-              <p>5. LabFix zal het bedrag binnen 14 dagen na ontvangst van de retourzending terugbetalen, gebruikmakend van hetzelfde betaalmiddel als bij de oorspronkelijke transactie.</p>
+              <p>Bij reparatiediensten bedraagt de bedenktijd 14 dagen, ingaande op de dag van het aangaan van de overeenkomst. Zodra met de reparatie is begonnen met uitdrukkelijke instemming van de consument, vervalt het herroepingsrecht voor het reeds uitgevoerde gedeelte. Voor zakelijke klanten geldt het herroepingsrecht niet.</p>
             </div>
           </section>
 
-          {/* Artikel 8 - Garantie */}
+          {/* Artikel 8 */}
           <section id="artikel-8">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Shield className="text-primary-500" size={20} />
+              <CreditCard className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 8</span>
-              Garantie en Conformiteit
+              Kosten bij herroeping
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. LabFix staat ervoor in dat de producten voldoen aan de overeenkomst, de in het aanbod vermelde specificaties, en de redelijke eisen van deugdelijkheid en bruikbaarheid.</p>
-              <p>2. De wettelijke garantieperiode is 2 jaar na levering voor consumenten.</p>
-              <p>3. Voor zakelijke klanten geldt een garantieperiode van 12 maanden, tenzij anders overeengekomen.</p>
-              <p>4. Garantieclaims dienen binnen redelijke termijn na ontdekking van het gebrek te worden gemeld.</p>
-              <p>5. Garantie is uitgesloten voor:</p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>Slijtage door normaal gebruik</li>
-                <li>Onjuist gebruik of nalatigheid</li>
-                <li>Reparaties door derden zonder toestemming van LabFix</li>
-                <li>Schade door externe oorzaken (valschade, waterschade, etc.)</li>
-              </ul>
+              <p>Indien de consument gebruikmaakt van het herroepingsrecht, komen de directe kosten van retourzending voor zijn rekening. Reeds betaalde bedragen worden door LabFix zo spoedig mogelijk, doch uiterlijk binnen 14 dagen na ontvangst van het product terugbetaald.</p>
             </div>
           </section>
 
-          {/* Artikel 9 - Reparatie Diensten */}
+          {/* Artikel 9 */}
           <section id="artikel-9">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
               <AlertCircle className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 9</span>
-              Reparatiediensten
+              Uitsluiting herroepingsrecht
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Reparatieafspraken dienen minimaal 24 uur van tevoren te worden geannuleerd of verzet.</p>
-              <p>2. No-show zonder tijdige annulering kan resulteren in kosten.</p>
-              <p>3. LabFix biedt geen garantie op reparaties van apparaten met voorafgaande schade of modificaties.</p>
-              <p>4. Dataverlies tijdens reparatie is voor risico van de Klant. LabFix raadt aan een back-up te maken voorafgaand aan de reparatie.</p>
-              <p>5. Voor onderdelen die tijdens reparatie worden vervangen, geldt de garantie van de fabrikant van het betreffende onderdeel.</p>
-              <p>6. Indien een apparaat niet meer te repareren blijkt, kunnen onderzoekskosten in rekening worden gebracht.</p>
+              <p>Het herroepingsrecht is niet van toepassing op producten die op maat zijn gemaakt volgens specificaties van de consument, op producten die snel kunnen bederven, of op audio-/video-opnamen en software waarvan de verzegeling is verbroken. Voor diensten geldt de uitsluiting zodra de uitvoering met instemming van de consument is begonnen.</p>
             </div>
           </section>
 
           {/* Artikel 10 */}
           <section id="artikel-10">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <Scale className="text-primary-500" size={20} />
+              <CreditCard className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 10</span>
-              Aansprakelijkheid
+              Prijs en betaling
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. LabFix is niet aansprakelijk voor schade die het gevolg is van onjuiste of onvolledige informatie verstrekt door de Klant.</p>
-              <p>2. LabFix is uitsluitend aansprakelijk voor directe schade die het rechtstreeks en uitsluitend gevolg is van een aan LabFix toerekenbare tekortkoming.</p>
-              <p>3. LabFix is niet aansprakelijk voor indirecte schade, waaronder maar niet beperkt tot: gevolgschade, gederfde winst, verlies van data, en immateriële schade.</p>
-              <p>4. De aansprakelijkheid van LabFix is beperkt tot maximaal het factuurbedrag van de betreffende overeenkomst.</p>
-              <p>5. LabFix is niet aansprakelijk voor schade veroorzaakt door overmacht, waaronder begrepen: oorlog, terrorisme, natuurrampen, epidemieën, overstromingen, brand, staking, en storingen in energievoorziening of telecommunicatie.</p>
+              <p>Prijzen voor consumenten zijn inclusief BTW. Prijsverhogingen binnen drie maanden na totstandkoming van de overeenkomst zijn alleen toegestaan indien zij het gevolg zijn van wettelijke wijzigingen. Betaling voor producten dient te geschieden voor of bij levering, tenzij anders overeengekomen. Bij reparaties ontvangt de consument na afronding een betaallink. Zonder tijdige betaling behoudt LabFix zich het recht voor het toestel niet retour te zenden.</p>
             </div>
           </section>
 
           {/* Artikel 11 */}
           <section id="artikel-11">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <Shield className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 11</span>
-              Intellectuele Eigendom
+              Conformiteit, garantie en reparaties
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Alle intellectuele eigendomsrechten op producten, documenten, afbeeldingen, en andere materialen van LabFix blijven eigendom van LabFix of haar licentiegevers.</p>
-              <p>2. De Klant mag deze materialen alleen gebruiken voor persoonlijk, niet-commercieel gebruik, tenzij anders overeengekomen.</p>
-              <p>3. Het is niet toegestaan om de website of delen daarvan te kopiëren, reproduceren, verspreiden, of exploiten zonder voorafgaande schriftelijke toestemming van LabFix.</p>
+              <p>LabFix garandeert dat de geleverde producten en uitgevoerde reparaties voldoen aan de overeenkomst en aan de redelijke eisen van deugdelijkheid. Naast de wettelijke garantie (recht op een deugdelijk product) biedt LabFix de volgende commerciële garantie (bovenop uw wettelijke rechten):</p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li>3 maanden op LCD-schermen en correct verwerkte onderdelen</li>
+                <li>3 maanden op accu's, accessoires en reparatiesets</li>
+              </ul>
+              <p>De garantie vervalt bij onzorgvuldig gebruik, schade door vallen/water, opening door derden, of onjuiste montage. LabFix is niet aansprakelijk voor verlies van data; maak altijd zelf een back-up voor een reparatie. Bij reparaties geldt een inspanningsverplichting.</p>
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded mt-2">
+                <p className="text-red-800 text-sm font-medium">Er is geen garantie op waterschade reparaties en moederbord storingen.</p>
+              </div>
             </div>
           </section>
 
           {/* Artikel 12 */}
           <section id="artikel-12">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <Truck className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 12</span>
-              Persoonsgegevens
+              Levering en uitvoering
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. LabFix verwerkt persoonsgegevens in overeenstemming met de Algemene Verordening Gegevensbescherming (AVG).</p>
-              <p>2. Meer informatie over de verwerking van persoonsgegevens is te vinden in onze <Link href="/privacy-policy" className="text-primary-600 hover:underline">Privacy Policy</Link>.</p>
-              <p>3. Door een overeenkomst aan te gaan met LabFix, geeft de Klant toestemming voor de verwerking van persoonsgegevens zoals beschreven in de Privacy Policy.</p>
+              <p>LabFix voert geaccepteerde bestellingen met de grootst mogelijke zorg uit, uiterlijk binnen 30 dagen, tenzij een langere termijn is overeengekomen. Bij vertraging of onmogelijkheid van levering wordt de consument hiervan op de hoogte gesteld en heeft hij het recht de overeenkomst kosteloos te ontbinden. Het risico van beschadiging of vermissing ligt bij LabFix tot het moment van bezorging aan de consument.</p>
             </div>
           </section>
 
           {/* Artikel 13 */}
           <section id="artikel-13">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <HelpCircle className="text-primary-500" size={20} />
+              <AlertCircle className="text-primary-500" size={20} />
               <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 13</span>
-              Geschillen en Toepasselijk Recht
+              Klachtenregeling
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>1. Op alle overeenkomsten tussen LabFix en de Klant is Nederlands recht van toepassing.</p>
-              <p>2. Geschillen worden voorgelegd aan de bevoegde rechter in het arrondissement waar LabFix is gevestigd.</p>
-              <p>3. Indien enige bepaling van deze algemene voorwaarden nietig of vernietigbaar is, blijven de overige bepalingen volledig van kracht.</p>
-              <p>4. Voor consumenten is het ook mogelijk om een klacht in te dienen via het ODR-platform van de Europese Commissie: https://ec.europa.eu/consumers/odr.</p>
+              <p>Klachten over de uitvoering van de overeenkomst dienen binnen 14 dagen nadat de gebreken zijn geconstateerd, volledig en duidelijk omschreven te worden ingediend bij LabFix (bij voorkeur per e-mail). LabFix beantwoordt klachten binnen 14 dagen na ontvangst. Indien een klacht langere verwerkingstijd vraagt, wordt de consument hiervan binnen 14 dagen op de hoogte gesteld.</p>
+            </div>
+          </section>
+
+          {/* Artikel 14 */}
+          <section id="artikel-14">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <Truck className="text-primary-500" size={20} />
+              <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 14</span>
+              Verzending en aansprakelijkheid
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <p>Bij verzending naar LabFix wordt aangeraden dit aangetekend en goed verpakt te doen. LabFix is niet aansprakelijk voor vermissing of beschadiging tijdens verzending door de klant. Accessoires zoals hoesjes, simkaarten en geheugenkaarten dienen verwijderd te worden. LabFix is niet verantwoordelijk voor verlies van data of persoonlijke accounts.</p>
+            </div>
+          </section>
+
+          {/* Artikel 15 */}
+          <section id="artikel-15">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <AlertCircle className="text-primary-500" size={20} />
+              <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 15</span>
+              Overmacht
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <p>Onder overmacht wordt verstaan alle omstandigheden die redelijkerwijs niet aan LabFix kunnen worden toegerekend en die nakoming van de overeenkomst tijdelijk of blijvend onmogelijk maken.</p>
+            </div>
+          </section>
+
+          {/* Artikel 16 */}
+          <section id="artikel-16">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <Scale className="text-primary-500" size={20} />
+              <span className="bg-primary-100 text-primary-700 px-3 py-1 rounded text-sm">Artikel 16</span>
+              Geschillen
+            </h2>
+            <div className="space-y-3 text-gray-700">
+              <p>Op alle overeenkomsten en deze algemene voorwaarden is uitsluitend Nederlands recht van toepassing. Geschillen worden bij voorkeur in onderling overleg opgelost. Indien dit niet lukt, kan een geschil worden voorgelegd aan de bevoegde rechter.</p>
             </div>
           </section>
 
           {/* Contact */}
-          <section id="contact" className="bg-gray-50 rounded-lg p-6 mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              {locale === 'nl' ? 'Contact' : 'Contact'}
-            </h2>
+          <section id="contact" className="bg-gray-50 rounded-lg p-6 mt-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Contact</h2>
             <div className="space-y-2 text-gray-700">
               <p><strong>LabFix</strong></p>
-              <p><span className="font-semibold">KVK:</span> 42035906</p>
-              <p><span className="font-semibold">BTW:</span> NL005445900B06</p>
-              <p><span className="font-semibold">IBAN:</span> NL36INGB0115171061</p>
-              <p><span className="font-semibold">Email:</span> <a href="mailto:labfixnl@gmail.com" className="text-primary-600 hover:underline">labfixnl@gmail.com</a></p>
+              <p><span className="font-semibold">Adres:</span> Leyweg 303, 2545 CK, Den Haag</p>
+              <p><span className="font-semibold">KvK-nummer:</span> 42035906</p>
+              <p><span className="font-semibold">BTW-nummer:</span> NL005445900B06</p>
+              <p><span className="font-semibold">Telefoon:</span> <a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 651131133</a></p>
+              <p><span className="font-semibold">E-mail:</span> <a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></p>
             </div>
           </section>
+
         </div>
       </div>
     </div>

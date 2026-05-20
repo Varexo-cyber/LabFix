@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
           device_type TEXT NOT NULL,
           device_model TEXT NOT NULL,
           problem_description TEXT NOT NULL,
-          appointment_date DATE NOT NULL,
-          appointment_time TIME NOT NULL,
+          appointment_date DATE,
+          appointment_time TIME,
           service_type TEXT NOT NULL DEFAULT 'bring_in',
           shipping_address TEXT DEFAULT '',
           status TEXT NOT NULL DEFAULT 'pending',
@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
           updated_at TIMESTAMP DEFAULT NOW()
         )
       `;
+      // Drop NOT NULL constraints on date/time if they exist (pickup requests don't need them)
+      await sql`ALTER TABLE repair_appointments ALTER COLUMN appointment_date DROP NOT NULL`.catch(() => {});
+      await sql`ALTER TABLE repair_appointments ALTER COLUMN appointment_time DROP NOT NULL`.catch(() => {});
     } catch (dbError: any) {
       console.error('Database connection error:', dbError);
       return NextResponse.json(
@@ -61,9 +64,11 @@ export async function POST(request: NextRequest) {
     const shipping_address = formData.get('shipping_address') as string;
 
     // Validation
+    const isPickup = service_type === 'pickup';
     if (!name || !email || !phone || !device_type || 
-        !device_model || !problem_description || !appointment_date || 
-        !appointment_time) {
+        !device_model || !problem_description ||
+        (!isPickup && !appointment_date) ||
+        (!isPickup && !appointment_time)) {
       return NextResponse.json(
         { success: false, message: 'Alle verplichte velden moeten worden ingevuld' },
         { status: 400 }
@@ -100,8 +105,8 @@ export async function POST(request: NextRequest) {
         service_type, shipping_address, status, attachments, created_at, updated_at
       ) VALUES (
         ${id}, ${name}, ${email}, ${phone}, ${device_type}, 
-        ${device_model}, ${problem_description}, ${appointment_date}, 
-        ${appointment_time}, ${service_type || 'bring_in'}, 
+        ${device_model}, ${problem_description}, ${appointment_date || null}, 
+        ${appointment_time || null}, ${service_type || 'bring_in'}, 
         ${shipping_address || ''}, 'pending', ${JSON.stringify(attachments)}, NOW(), NOW()
       )
     `;

@@ -395,7 +395,7 @@ export default function RepairPage() {
               >
                 <Package size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Opsturen</h3>
-                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. Na goedkeuring van uw aanvraag ontvangt u het verzendadres via email. We repareren en sturen het gratis retour.</p>
+                <p className="text-gray-600 text-sm">Stuur uw apparaat op naar ons. Na goedkeuring van uw aanvraag ontvangt u een offerte via e-mail. We repareren en sturen het gratis retour.</p>
               </button>
             </div>
 
@@ -430,7 +430,7 @@ export default function RepairPage() {
               <div className="mb-8">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-blue-800">
-                    <strong>Belangrijk:</strong> Na goedkeuring van uw aanvraag ontvangt u het exacte verzendadres en verpakkingsinstructies via email.
+                    <strong>Belangrijk:</strong> Na goedkeuring van uw aanvraag ontvangt u een offerte via e-mail.
                   </p>
                 </div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Uw Adres *</label>

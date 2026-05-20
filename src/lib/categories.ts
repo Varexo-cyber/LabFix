@@ -938,6 +938,9 @@ export function getAllProductCategories(): BrandCategory[] {
     // PC Accessoires section header
     { slug: '_section_pca', name: '── 🖱️ PC ACCESSOIRES ──', nameEn: '── 🖱️ PC ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(pcAccessoryCategories, 'pca-'),
+    // Laptop Onderdelen section header
+    { slug: '_section_lp', name: '── 💻 LAPTOP ONDERDELEN ──', nameEn: '── 💻 LAPTOP PARTS ──', subcategories: [] },
+    ...convertAccessory(laptopPartsCategories, 'lp-'),
   ];
 }
 

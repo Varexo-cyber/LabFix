@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Download, RefreshCw, Package, TrendingUp, CheckCircle, AlertCircle, ExternalLink, Play, Settings, Search, Edit3 } from 'lucide-react';
-import { brandCategories } from '@/lib/categories';
+import { getAllProductCategories } from '@/lib/categories';
 
 interface MSCategory {
   entity_id: string;
@@ -23,15 +23,20 @@ interface MSProduct {
   description: string;
 }
 
-// Build flat list of ALL categories from hierarchical brandCategories
-function buildCategoryOptions(): { value: string; label: string; depth: number }[] {
-  const options: { value: string; label: string; depth: number }[] = [];
-  for (const brand of brandCategories) {
-    options.push({ value: brand.slug, label: brand.name, depth: 0 });
+// Build flat list of ALL categories: brands (3-level) + accessories + PC parts + PC accessories + laptop parts
+function buildCategoryOptions(): { value: string; label: string; depth: number; isHeader: boolean }[] {
+  const options: { value: string; label: string; depth: number; isHeader: boolean }[] = [];
+  for (const brand of getAllProductCategories()) {
+    const isHeader = brand.slug.startsWith('_section_');
+    if (isHeader) {
+      options.push({ value: '', label: brand.name, depth: 0, isHeader: true });
+      continue;
+    }
+    options.push({ value: brand.slug, label: brand.name, depth: 0, isHeader: false });
     for (const sub of brand.subcategories) {
-      options.push({ value: `${brand.slug}/${sub.slug}`, label: `${brand.name} > ${sub.name}`, depth: 1 });
-      for (const model of sub.models) {
-        options.push({ value: `${brand.slug}/${sub.slug}/${model.slug}`, label: `${brand.name} > ${sub.name} > ${model.name}`, depth: 2 });
+      options.push({ value: `${brand.slug}/${sub.slug}`, label: `${brand.name} > ${sub.name}`, depth: 1, isHeader: false });
+      for (const model of (sub as any).models || []) {
+        options.push({ value: `${brand.slug}/${sub.slug}/${model.slug}`, label: `${brand.name} > ${sub.name} > ${model.name}`, depth: 2, isHeader: false });
       }
     }
   }
@@ -400,11 +405,13 @@ export default function MobileSentrixImport() {
               >
                 <option value="">-- Kies een categorie --</option>
                 {allCategoryOptions
-                  .filter(cat => !categorySearch || cat.label.toLowerCase().includes(categorySearch.toLowerCase()))
-                  .map((cat) => (
-                  <option key={cat.value} value={cat.value} style={{ paddingLeft: cat.depth * 16 }}>
-                    {cat.depth === 0 ? `📁 ${cat.label}` : cat.depth === 1 ? `  📂 ${cat.label.split(' > ').pop()}` : `    📄 ${cat.label.split(' > ').pop()}`}
-                  </option>
+                  .filter(cat => cat.isHeader || !categorySearch || cat.label.toLowerCase().includes(categorySearch.toLowerCase()))
+                  .map((cat, i) => (
+                  cat.isHeader
+                    ? <option key={`header-${i}`} value="" disabled style={{ fontWeight: 'bold', color: '#374151', background: '#f3f4f6' }}>{cat.label}</option>
+                    : <option key={cat.value} value={cat.value} style={{ paddingLeft: cat.depth * 16 }}>
+                        {cat.depth === 0 ? `📁 ${cat.label}` : cat.depth === 1 ? `  📂 ${cat.label.split(' > ').pop()}` : `    📄 ${cat.label.split(' > ').pop()}`}
+                      </option>
                 ))}
               </select>
               {targetCategory && (

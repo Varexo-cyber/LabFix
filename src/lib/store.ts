@@ -368,11 +368,12 @@ export async function createRepairAppointment(
       body: isFormData ? appointment : JSON.stringify(appointment),
     });
     
+    const data = await response.json();
     if (!response.ok) {
-      throw new Error('Failed to create appointment');
+      return { success: false, error: data.message || 'Failed to create appointment' };
     }
     
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('Error creating repair appointment:', error);
     return { success: false, error: 'Failed to create appointment' };

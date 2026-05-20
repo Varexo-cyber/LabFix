@@ -107,7 +107,7 @@ function translateTerm(term: string): string[] {
 
 // Score a product row against the original query terms (AND logic)
 // Returns a number: lower = more relevant. Returns -1 if it doesn't match all required terms.
-function scoreRow(name: string, nameEn: string, requiredTermGroups: string[][]): number {
+function scoreRow(name: string, nameEn: string, requiredTermGroups: string[][], originalWords: string[]): number {
   const combined = `${name} ${nameEn}`.toLowerCase();
   // Every term group must match at least one variant (AND across groups, OR within group)
   for (const group of requiredTermGroups) {
@@ -122,7 +122,18 @@ function scoreRow(name: string, nameEn: string, requiredTermGroups: string[][]):
     if (group.some(v => nlName.includes(v))) score += 2;
     else if (group.some(v => enName.includes(v))) score += 1;
   }
-  return requiredTermGroups.length * 2 - score; // lower = better
+  let base = requiredTermGroups.length * 2 - score; // lower = better
+
+  // Word-boundary penalty: penalise when a model-like term (e.g. "s22") is a substring
+  // of a longer alphanumeric token in the product name (e.g. "s22ultra", "s22plus")
+  for (const word of originalWords) {
+    if (!/^[a-z0-9]+$/.test(word) || word.length < 2) continue;
+    const exactBoundary = new RegExp(`(?<![a-z0-9])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'i');
+    if (combined.includes(word) && !exactBoundary.test(combined)) {
+      base += 100; // Strong penalty for substring-only match
+    }
+  }
+  return base;
 }
 
 export async function GET(request: NextRequest) {
@@ -220,7 +231,7 @@ export async function GET(request: NextRequest) {
 
     // Step 2: Filter candidates with strict AND logic (every term group must match)
     const scored = candidates
-      .map((p: any) => ({ p, score: scoreRow(p.name || '', p.name_en || '', termGroups) }))
+      .map((p: any) => ({ p, score: scoreRow(p.name || '', p.name_en || '', termGroups, originalTerms) }))
       .filter(({ score }) => score >= 0)
       .sort((a, b) => a.score - b.score)
       .slice(0, limit);

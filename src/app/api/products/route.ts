@@ -37,6 +37,28 @@ function translateSearchWords(words: string[]): string[][] {
   });
 }
 
+// Score a product for word-boundary relevance.
+// Returns lower number = more relevant (0 = perfect).
+// Penalises results where a model-like term (alphanumeric, e.g. "s22") appears as a prefix
+// of a longer word in the product name (e.g. "s22ultra", "s22plus"), pushing exact matches up.
+function wordBoundaryScore(name: string, nameEn: string, words: string[]): number {
+  const combined = (name + ' ' + nameEn).toLowerCase();
+  let penalty = 0;
+  for (const word of words) {
+    // Only apply boundary logic for model-like terms (letters+digits, no spaces, len >= 2)
+    if (!/^[a-z0-9]+$/.test(word) || word.length < 2) continue;
+    // Build a word-boundary regex: the term must be followed by space, punctuation, or end
+    const exactBoundary = new RegExp(`(?<![a-z0-9])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`, 'i');
+    const looseMatch = combined.includes(word);
+    const exactMatch = exactBoundary.test(combined);
+    if (looseMatch && !exactMatch) {
+      // Term exists but NOT at a word boundary → strong penalty (substring of longer word)
+      penalty += 100;
+    }
+  }
+  return penalty;
+}
+
 export const runtime = 'nodejs';
 
 // Ensure table exists
@@ -190,6 +212,15 @@ export async function GET(request: NextRequest) {
             sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
             sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns})`,
           ]);
+        }
+
+        // Re-sort by word-boundary score: exact model matches (e.g. "S22") rank above
+        // substring matches (e.g. "S22 Ultra", "S22+"). Lower score = more relevant.
+        if (rows.length > 1) {
+          rows = rows
+            .map((r: any) => ({ r, wbScore: wordBoundaryScore(r.name || '', r.name_en || '', words) }))
+            .sort((a: any, b: any) => a.wbScore - b.wbScore)
+            .map(({ r }: any) => r);
         }
       }
     } else if (featured === 'true') {
