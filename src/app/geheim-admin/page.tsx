@@ -43,7 +43,7 @@ export default function AdminPage() {
   const [filterSubCategory, setFilterSubCategory] = useState('');
   const [filterModel, setFilterModel] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'newsletter' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'email-test' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [creatingNews, setCreatingNews] = useState(false);
@@ -61,10 +61,9 @@ export default function AdminPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [emailMessage, setEmailMessage] = useState('');
   const [emailSent, setEmailSent] = useState(false);
-  const [subscribers, setSubscribers] = useState<{id: string, email: string, company_name: string, subscribed_at: string}[]>([]);
-  const [newsletterSubject, setNewsletterSubject] = useState('');
-  const [newsletterBody, setNewsletterBody] = useState('');
-  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  // Email test state
+  const [testEmail, setTestEmail] = useState('');
+  const [testingEmail, setTestingEmail] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [contactFilter, setContactFilter] = useState<'all' | 'unread' | 'read' | 'replied'>('all');
@@ -134,12 +133,6 @@ export default function AdminPage() {
   const productCategories = getAllProductCategories();
 
   useEffect(() => {
-    if (activeTab === 'newsletter') {
-      fetch('/api/newsletter')
-        .then(res => res.ok ? res.json() : [])
-        .then(data => setSubscribers(data))
-        .catch(() => console.error('Failed to load subscribers'));
-    }
     if (activeTab === 'contact') {
       loadContactMessages();
     }
@@ -419,44 +412,6 @@ export default function AdminPage() {
     );
   };
 
-  const handleSendNewsletter = async () => {
-    if (!newsletterSubject.trim() || !newsletterBody.trim()) {
-      showToast('Vul onderwerp en bericht in', 'error');
-      return;
-    }
-    setSendingNewsletter(true);
-    try {
-      for (const sub of subscribers) {
-        await sendEmailApi(sub.email, newsletterSubject, newsletterBody);
-      }
-      showToast(`Nieuwsbrief verstuurd naar ${subscribers.length} abonnees!`, 'success');
-      setNewsletterSubject('');
-      setNewsletterBody('');
-    } catch {
-      showToast('Nieuwsbrief versturen mislukt', 'error');
-    } finally {
-      setSendingNewsletter(false);
-    }
-  };
-
-  const handleDeleteSubscriber = async (id: string) => {
-    showConfirm(
-      'Abonnee verwijderen',
-      'Weet je zeker dat je deze abonnee wilt verwijderen?',
-      async () => {
-        try {
-          const res = await fetch(`/api/newsletter?id=${id}`, { method: 'DELETE' });
-          if (res.ok) {
-            setSubscribers(prev => prev.filter(sub => sub.id !== id));
-          }
-        } catch {
-          // silently fail
-        }
-        closeConfirm();
-      }
-    );
-  };
-
   // Repair appointment handlers
   const handleApproveRepair = async (id: string) => {
     try {
@@ -554,8 +509,8 @@ export default function AdminPage() {
             <button onClick={() => setActiveTab('customers')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'customers' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Users size={16} /> Klanten ({users.length})
             </button>
-            <button onClick={() => setActiveTab('newsletter')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'newsletter' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
-              <Mail size={16} /> Nieuwsbrief
+            <button onClick={() => setActiveTab('email-test')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'email-test' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <Mail size={16} /> Email Test
             </button>
             <button onClick={() => setActiveTab('news')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'news' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Newspaper size={16} /> Nieuws ({newsArticles.length})
@@ -1315,73 +1270,86 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Newsletter Tab */}
-        {activeTab === 'newsletter' && (
+        {/* Email Test Tab */}
+        {activeTab === 'email-test' && (
           <div className="max-w-7xl mx-auto px-4 animate-fade-in-up">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Nieuwsbrief</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Subscribers list */}
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="font-semibold text-gray-700 mb-4">Abonnees ({subscribers.length})</h3>
-                <div className="overflow-y-auto max-h-96">
-                  {subscribers.map((sub) => (
-                    <div key={sub.id} className="flex justify-between items-center py-2 border-b last:border-0 group">
-                      <div>
-                        <p className="font-medium text-sm">{sub.email}</p>
-                        <p className="text-xs text-gray-500">{sub.company_name}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{new Date(sub.subscribed_at).toLocaleDateString('nl-NL')}</span>
-                        <button
-                          onClick={() => handleDeleteSubscriber(sub.id)}
-                          className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
-                          title="Verwijder abonnee"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {subscribers.length === 0 && (
-                    <p className="text-gray-400 text-center py-4">Nog geen abonnees</p>
-                  )}
+            <h2 className="text-xl font-bold text-gray-800 mb-6">Email Test</h2>
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+              <h3 className="font-semibold text-gray-700 mb-4">Test Email Versturen</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ontvanger Email</label>
+                  <input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
+                    placeholder="test@example.com"
+                  />
                 </div>
-              </div>
-
-              {/* Send newsletter form */}
-              <div className="bg-white rounded-xl shadow-md p-6">
-                <h3 className="font-semibold text-gray-700 mb-4">Nieuwsbrief versturen</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Onderwerp</label>
-                    <input
-                      type="text"
-                      value={newsletterSubject}
-                      onChange={(e) => setNewsletterSubject(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
-                      placeholder="Nieuwe producten beschikbaar!"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Bericht (HTML)</label>
-                    <textarea
-                      value={newsletterBody}
-                      onChange={(e) => setNewsletterBody(e.target.value)}
-                      rows={8}
-                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500"
-                      placeholder="<h1>Hallo!</h1><p>We hebben nieuwe producten...</p>"
-                    />
-                  </div>
+                <p className="text-sm text-gray-500">Je ontvangt hier een test van alle automatische emails:</p>
+                <div className="grid md:grid-cols-3 gap-4">
                   <button
-                    onClick={handleSendNewsletter}
-                    disabled={sendingNewsletter || subscribers.length === 0}
-                    className="w-full bg-primary-500 text-white py-2 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                    onClick={async () => {
+                      setTestingEmail(true);
+                      try {
+                        await fetch('/api/test-email/account', { method: 'POST', body: JSON.stringify({ email: testEmail }) });
+                        alert('Account bevestigingsmail verstuurd!');
+                      } catch {
+                        alert('Fout bij versturen');
+                      }
+                      setTestingEmail(false);
+                    }}
+                    disabled={!testEmail || testingEmail}
+                    className="bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    <Send size={18} />
-                    {sendingNewsletter ? 'Versturen...' : `Versturen naar ${subscribers.length} abonnees`}
+                    <User size={18} />
+                    Account Email
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setTestingEmail(true);
+                      try {
+                        await fetch('/api/test-email/order', { method: 'POST', body: JSON.stringify({ email: testEmail }) });
+                        alert('Order bevestigingsmail verstuurd!');
+                      } catch {
+                        alert('Fout bij versturen');
+                      }
+                      setTestingEmail(false);
+                    }}
+                    disabled={!testEmail || testingEmail}
+                    className="bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <Package size={18} />
+                    Order Email
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setTestingEmail(true);
+                      try {
+                        await fetch('/api/test-email/repair', { method: 'POST', body: JSON.stringify({ email: testEmail }) });
+                        alert('Reparatie bevestigingsmail verstuurd!');
+                      } catch {
+                        alert('Fout bij versturen');
+                      }
+                      setTestingEmail(false);
+                    }}
+                    disabled={!testEmail || testingEmail}
+                    className="bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <Wrench size={18} />
+                    Repair Email
                   </button>
                 </div>
               </div>
+            </div>
+            <div className="bg-blue-50 rounded-xl p-6">
+              <h3 className="font-semibold text-blue-800 mb-2">Email Templates</h3>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>✅ Account bevestiging (Zakelijk & Particulier)</li>
+                <li>✅ Order bevestiging met logo</li>
+                <li>✅ Reparatie bevestiging (Ophalen & Opsturen)</li>
+              </ul>
             </div>
           </div>
         )}

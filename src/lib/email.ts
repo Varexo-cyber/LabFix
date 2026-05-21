@@ -54,7 +54,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <span style="color:#1e40af;font-size:28px;font-weight:bold;letter-spacing:-1px">LabFix</span>
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>
@@ -244,7 +244,7 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <span style="color:#1e40af;font-size:28px;font-weight:bold;letter-spacing:-1px">LabFix</span>
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>
@@ -435,7 +435,7 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <span style="color:#1e40af;font-size:28px;font-weight:bold;letter-spacing:-1px">LabFix</span>
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>

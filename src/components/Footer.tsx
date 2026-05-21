@@ -1,37 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
-import { Mail, Phone, MessageCircle, HelpCircle, MapPinIcon, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MessageCircle, HelpCircle, MapPinIcon } from 'lucide-react';
 
 export default function Footer() {
   const { t, locale, setLocale, currency, setCurrency } = useApp();
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newsletterEmail) return;
-    
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: newsletterEmail })
-      });
-      
-      if (res.ok) {
-        setNewsletterStatus('success');
-        setNewsletterEmail('');
-        setTimeout(() => setNewsletterStatus('idle'), 3000);
-      } else {
-        setNewsletterStatus('error');
-      }
-    } catch {
-      setNewsletterStatus('error');
-    }
-  };
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -132,10 +107,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Support + Newsletter */}
+          {/* Support */}
           <div>
             <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">{locale === 'nl' ? 'Klantenservice' : 'Support'}</h3>
-            <ul className="space-y-3 text-sm mb-6">
+            <ul className="space-y-3 text-sm">
               <li>
                 <Link href="/contact" className="flex items-center gap-2 hover:text-white transition-colors">
                   <Phone size={15} className="text-gray-400" />
@@ -161,41 +136,6 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-            
-            {/* Newsletter Signup */}
-            <div className="border-t border-gray-700 pt-4">
-              <h4 className="text-white font-semibold text-sm mb-3">
-                {locale === 'nl' ? 'Nieuwsbrief' : 'Newsletter'}
-              </h4>
-              {newsletterStatus === 'success' ? (
-                <div className="flex items-center gap-2 text-green-400 text-sm">
-                  <CheckCircle size={16} />
-                  {locale === 'nl' ? 'Bedankt voor je aanmelding!' : 'Thanks for subscribing!'}
-                </div>
-              ) : (
-                <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-2">
-                  <input
-                    type="email"
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    placeholder={locale === 'nl' ? 'Jouw e-mailadres' : 'Your email address'}
-                    className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-primary-500"
-                  />
-                  <button
-                    type="submit"
-                    className="flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded text-sm font-medium transition-colors"
-                  >
-                    <Send size={14} />
-                    {locale === 'nl' ? 'Aanmelden' : 'Subscribe'}
-                  </button>
-                  {newsletterStatus === 'error' && (
-                    <span className="text-red-400 text-xs">
-                      {locale === 'nl' ? 'Er ging iets mis. Probeer opnieuw.' : 'Something went wrong. Try again.'}
-                    </span>
-                  )}
-                </form>
-              )}
-            </div>
           </div>
         </div>
       </div>
