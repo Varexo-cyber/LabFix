@@ -23,8 +23,8 @@ export default function FaqPage() {
           <section>
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Heb ik een afspraak nodig?</h2>
             <p className="text-gray-600">
-              Nee, je kunt gewoon binnenlopen tijdens onze openingstijden. 
-              Voor drukke periodes raden we wel aan om van tevoren een afspraak te maken.
+              Ja, we werken op afspraak. Dit zorgt voor een snelle en persoonlijke service.
+              Maak gemakkelijk een afspraak via onze website of neem contact met ons op.
             </p>
           </section>
 

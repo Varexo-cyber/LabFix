@@ -277,8 +277,8 @@ function generateSmartResponse(
       
     case 'contact':
       response = nl
-        ? `Je kunt ons op verschillende manieren bereiken:\n📧 Email: info@labfix.nl (antwoord binnen 2 uur op werkdagen)\n📱 WhatsApp: +31 6 5113 1133 (ook voor urgente vragen)\n📞 Telefoon: +31 6 5113 1133\n🕐 Beschikbaar: Ma-Vr 09:00-17:00\n\nVoor support vragen: support@labfix.nl\nVoor sales/offertes: sales@labfix.nl`
-        : `You can reach us in several ways:\n📧 Email: info@labfix.nl (reply within 2 hours on business days)\n📱 WhatsApp: +31 6 5113 1133 (also for urgent questions)\n📞 Phone: +31 6 5113 1133\n🕐 Available: Mon-Fri 09:00-17:00\n\nFor support: support@labfix.nl\nFor sales/quotes: sales@labfix.nl`;
+        ? `Je kunt ons op verschillende manieren bereiken:\n📧 Email: info@labfix.nl (antwoord binnen 2 uur op werkdagen)\n📱 WhatsApp: +31 6 5113 1133 (ook voor urgente vragen)\n📞 Telefoon: +31 6 5113 1133\n\nVoor support vragen: support@labfix.nl\nVoor sales/offertes: sales@labfix.nl`
+        : `You can reach us in several ways:\n📧 Email: info@labfix.nl (reply within 2 hours on business days)\n📱 WhatsApp: +31 6 5113 1133 (also for urgent questions)\n📞 Phone: +31 6 5113 1133\n\nFor support: support@labfix.nl\nFor sales/quotes: sales@labfix.nl`;
       followUp = nl ? 'Ik heb een dringende vraag' : 'I have an urgent question';
       break;
       
@@ -786,9 +786,6 @@ export default function HelpWidget() {
                 <ExternalLink size={14} className="text-gray-400" />
               </Link>
 
-              <div className="mx-5 mt-3 p-3 bg-gray-50 rounded-xl text-xs text-gray-500 text-center">
-                {nl ? 'Ma - Vr: 09:00 - 17:00 | Za - Zo: Gesloten' : 'Mon - Fri: 09:00 - 17:00 | Sat - Sun: Closed'}
-              </div>
             </div>
           </div>
 

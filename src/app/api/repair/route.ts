@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { randomUUID } from 'crypto';
+import { sendRepairConfirmation, sendEmail } from '@/lib/email';
 
 // Use Node.js runtime for file system operations
 export const runtime = 'nodejs';
@@ -111,8 +112,64 @@ export async function POST(request: NextRequest) {
       )
     `;
 
-    return NextResponse.json({ 
-      success: true, 
+    // Send email notifications
+    try {
+      // 1. Send beautiful confirmation email to customer (from info@labfix.nl)
+      await sendRepairConfirmation({
+        to: email,
+        name,
+        phone,
+        deviceType: device_type,
+        deviceModel: device_model,
+        problemDescription: problem_description,
+        serviceType: service_type as 'pickup' | 'shipping',
+        pickupLocation: shipping_address,
+        repairId: id,
+      });
+
+      // 2. Send admin notification to LabFix (from info@varexo.nl)
+      const adminHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+          <div style="background:#1e40af;padding:24px;text-align:center">
+            <h1 style="color:#fff;margin:0;font-size:24px">Nieuwe Reparatie Aanvraag</h1>
+          </div>
+          <div style="padding:24px;background:#fff">
+            <p style="font-size:16px"><strong>Er is een nieuwe reparatie aanvraag binnengekomen:</strong></p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0">
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Aanvraag ID:</strong></td><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;color:#1e40af">#${id.slice(0,8).toUpperCase()}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Naam:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${name}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>E-mail:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${email}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Telefoon:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${phone}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Apparaat:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${device_type} - ${device_model}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Service:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${service_type === 'pickup' ? 'Ophalen' : 'Opsturen'}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Datum/Tijd:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${appointment_date || 'Nog niet ingepland'} ${appointment_time || ''}</td></tr>
+            </table>
+            <p style="margin-top:16px"><strong>Probleem beschrijving:</strong><br/>${problem_description}</p>
+            ${attachments.length > 0 ? `<p style="margin-top:16px"><strong>Bijlagen:</strong> ${attachments.length} foto(s) toegevoegd</p>` : ''}
+            <p style="margin-top:24px"><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://labfix.nl'}/geheim-admin" style="background:#1e40af;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block">Bekijk in Admin</a></p>
+          </div>
+        </div>
+      `;
+
+      // Send to both admin addresses
+      await sendEmail({
+        to: 'info@labfix.nl',
+        subject: `Nieuwe Reparatie Aanvraag #${id.slice(0,8).toUpperCase()} - ${name}`,
+        html: adminHtml,
+      });
+
+      await sendEmail({
+        to: 'info@varexo.nl',
+        subject: `Nieuwe Reparatie Aanvraag #${id.slice(0,8).toUpperCase()} - ${name}`,
+        html: adminHtml,
+      });
+    } catch (emailError) {
+      console.error('Failed to send repair notification emails:', emailError);
+      // Don't fail the request if email fails
+    }
+
+    return NextResponse.json({
+      success: true,
       message: 'Afspraak succesvol aangemaakt',
       id,
       attachments

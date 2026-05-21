@@ -19,10 +19,43 @@ export default function RepairPage() {
   
   // Gratis ophalen alleen beschikbaar voor deze locaties
   const allowedPickupLocations = [
-    'den haag', 'delft', 'rijswijk', 'zoetermeer', 'nootdorp', 
+    'den haag', 'delft', 'rijswijk', 'zoetermeer', 'nootdorp',
     'pijnacker', 'leidschendam', 'wateringen', 'monster', 'poeldijk',
-    'naaldwijk', 'honselersdijk', "'s-gravenzande", 's-gravenzande',
+    'naaldwijk', 'honselersdijk', "'s-gravenzande", 's-gravenzande', 'gravenzande',
     'denhaag', 'rijswijkzh', 'pijnackernootdorp'
+  ];
+
+  // Postcodes voor ophaalgebied (eerste 4 cijfers)
+  const allowedPostalCodes = [
+    // Den Haag (2490-2597)
+    '2490', '2491', '2492', '2493', '2496', '2497', '2498', '2511', '2512', '2513',
+    '2514', '2515', '2516', '2517', '2518', '2521', '2522', '2523', '2524', '2525',
+    '2526', '2531', '2532', '2533', '2541', '2542', '2543', '2544', '2545', '2546',
+    '2547', '2548', '2551', '2552', '2553', '2554', '2555', '2561', '2562', '2563',
+    '2564', '2565', '2566', '2571', '2572', '2573', '2574', '2581', '2582', '2583',
+    '2584', '2585', '2586', '2587', '2591', '2592', '2593', '2594', '2595', '2596', '2597',
+    // Delft (2611-2629)
+    '2611', '2612', '2613', '2614', '2616', '2621', '2622', '2623', '2624', '2625', '2626', '2627', '2628', '2629',
+    // Rijswijk (2280-2289)
+    '2280', '2281', '2282', '2283', '2284', '2285', '2286', '2287', '2288', '2289',
+    // Zoetermeer (2711-2729)
+    '2711', '2712', '2713', '2714', '2715', '2716', '2717', '2718', '2719', '2721', '2722', '2723', '2724', '2725', '2726', '2727', '2728', '2729',
+    // Nootdorp (2631-2633)
+    '2631', '2632', '2633',
+    // Pijnacker (2641-2645)
+    '2641', '2642', '2643', '2645',
+    // Leidschendam (2260-2267)
+    '2260', '2261', '2262', '2263', '2264', '2265', '2266', '2267',
+    // Wateringen (2291-2295)
+    '2291', '2292', '2293', '2294', '2295',
+    // Monster (2681-2682)
+    '2681', '2682',
+    // Poeldijk (2685-2686)
+    '2685', '2686',
+    // Naaldwijk (2671-2676)
+    '2671', '2672', '2673', '2674', '2675', '2676',
+    // 's-Gravenzande (2691-2695)
+    '2691', '2692', '2693', '2694', '2695',
   ];
   
   const [formData, setFormData] = useState<{
@@ -47,7 +80,15 @@ export default function RepairPage() {
 
   const checkPickupLocation = (location: string) => {
     const normalized = location.toLowerCase().trim();
-    const isValid = allowedPickupLocations.some(loc => normalized.includes(loc));
+    // Check if input contains a known city name
+    const isValidLocation = allowedPickupLocations.some(loc => normalized.includes(loc));
+
+    // Check if input contains a valid 4-digit postal code (e.g., "2694 BA" or just "2694")
+    const postalCodeMatch = location.match(/(\d{4})\s*[a-z]{0,2}/i);
+    const extractedPostalCode = postalCodeMatch ? postalCodeMatch[1] : null;
+    const isValidPostalCode = !!(extractedPostalCode && allowedPostalCodes.includes(extractedPostalCode));
+
+    const isValid = isValidLocation || isValidPostalCode;
     setPickupValid(isValid);
     return isValid;
   };
@@ -157,7 +198,7 @@ export default function RepairPage() {
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Afspraak Verzonden!</h1>
             <p className="text-gray-600 mb-6">
-              Bedankt voor uw aanvraag. We hebben een bevestiging gestuurd naar <strong>{formData.email}</strong>.
+              Bedankt voor uw aanvraag. We hebben een bevestiging gestuurd naar <strong>info@labfix.nl</strong>.
             </p>
             <p className="text-gray-500 text-sm mb-8">
               U ontvangt binnen 24 uur een reactie of uw afspraak is goedgekeurd. We nemen zo snel mogelijk contact met u op om een passend tijdstip af te spreken.
@@ -165,9 +206,37 @@ export default function RepairPage() {
             <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
               <h3 className="font-semibold text-gray-700 mb-4">Afspraak Details:</h3>
               <div className="space-y-2 text-sm">
+                <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
+                <p><span className="text-gray-500">E-mail:</span> {formData.email}</p>
+                <p><span className="text-gray-500">Telefoon:</span> {formData.phone}</p>
                 <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
+                <p><span className="text-gray-500">Probleem:</span> {formData.problemDescription}</p>
                 <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'pickup' ? 'Ophalen' : 'Opsturen'}</p>
+                {formData.serviceType === 'pickup' && pickupLocation && (
+                  <p><span className="text-gray-500">Ophaaladres:</span> {pickupLocation}</p>
+                )}
+                {formData.serviceType === 'shipping' && (
+                  <p className="text-blue-600 italic">U ontvangt het verzendadres en instructies via e-mail.</p>
+                )}
               </div>
+
+              {/* Attachments */}
+              {previewUrls.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-gray-500 text-sm mb-3">Bijlagen ({previewUrls.length} foto{previewUrls.length > 1 ? "'s" : ""}):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {previewUrls.map((url, idx) => (
+                      <div key={idx} className="relative">
+                        <img
+                          src={url}
+                          alt={`Bijlage ${idx + 1}`}
+                          className="w-24 h-24 object-cover rounded-lg border border-gray-200"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <Link href="/" className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
               <ChevronLeft size={20} />
@@ -382,7 +451,7 @@ export default function RepairPage() {
               >
                 <MapPin size={32} className="text-primary-500 mb-3" />
                 <h3 className="font-bold text-lg mb-2">Ophalen</h3>
-                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis. Zelfde dag of volgende werkdag brengen we het gerepareerd terug.</p>
+                <p className="text-gray-600 text-sm">Wij komen uw apparaat ophalen bij u thuis. Alleen mogelijk in regio Den Haag en omstreken (ca. 25km). Zelfde dag of volgende werkdag brengen we het gerepareerd terug.</p>
               </button>
               
               <button
@@ -428,20 +497,11 @@ export default function RepairPage() {
 
             {formData.serviceType === 'shipping' && (
               <div className="mb-8">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    <strong>Belangrijk:</strong> Na goedkeuring van uw aanvraag ontvangt u een offerte via e-mail.
+                    <strong>Belangrijk:</strong> Na goedkeuring van uw aanvraag ontvangt u een offerte via e-mail inclusief het verzendadres en verdere instructies voor het opsturen van uw apparaat.
                   </p>
                 </div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Uw Adres *</label>
-                <textarea
-                  name="shippingAddress"
-                  value={formData.shippingAddress}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
-                  placeholder="Straat, huisnummer, postcode, stad"
-                />
               </div>
             )}
 
@@ -455,10 +515,6 @@ export default function RepairPage() {
               </button>
               <button
                 onClick={() => {
-                  if (formData.serviceType === 'shipping' && !formData.shippingAddress) {
-                    setError('Vul uw adres in');
-                    return;
-                  }
                   if (formData.serviceType === 'pickup' && !pickupValid) {
                     setError('Vul een geldige postcode/plaats in voor ophalen');
                     return;
@@ -473,7 +529,7 @@ export default function RepairPage() {
                 disabled={loading}
                 className="flex-[2] bg-primary-600 text-white py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                {loading ? 'Verzenden...' : formData.serviceType === 'pickup' ? 'Aanvraag Indienen' : 'Volgende: Verzend Informatie'}
+                {loading ? 'Verzenden...' : formData.serviceType === 'pickup' ? 'Aanvraag Indienen' : 'Volgende: Bevestiging'}
                 <ChevronRight size={20} />
               </button>
             </div>
@@ -522,27 +578,19 @@ export default function RepairPage() {
               </>
             ) : (
               <>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Verzend Informatie</h2>
-                
-                {/* LabFix Address */}
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Stap 3: Bevestiging</h2>
+
+                {/* Contact Info */}
                 <div className="bg-blue-50 rounded-xl p-6 mb-6">
                   <h3 className="font-bold text-blue-800 mb-4 flex items-center gap-2">
-                    <MapPin size={20} />
-                    Verzend uw apparaat naar:
+                    <Phone size={20} />
+                    Contact
                   </h3>
-                  <div className="bg-white rounded-lg p-4 mb-4">
-                    <p className="font-semibold text-gray-800">LabFix Repair Center</p>
-                    <p className="text-gray-600">Kerketuinenweg 163</p>
-                    <p className="text-gray-600">2288 AA Rijswijk ZH</p>
-                    <p className="text-gray-600">Nederland</p>
-                  </div>
                   <p className="text-blue-700 text-sm mb-2">
-                    <Phone size={14} className="inline mr-1" />
-                    +31 6 5113 1133
+                    <strong>Tel:</strong> +31 6 5113 1133
                   </p>
                   <p className="text-blue-700 text-sm">
-                    <Mail size={14} className="inline mr-1" />
-                    info@labfix.nl
+                    <strong>E-mail:</strong> info@labfix.nl
                   </p>
                 </div>
 
@@ -561,15 +609,14 @@ export default function RepairPage() {
                   </ul>
                 </div>
 
-                {/* Important Note */}
-                <div className="bg-green-50 rounded-xl p-6 mb-8">
-                  <h3 className="font-bold text-green-800 mb-2 flex items-center gap-2">
-                    <CheckCircle size={20} />
-                    Belangrijk
+                {/* Address Notice */}
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
+                  <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2">
+                    <MapPin size={20} />
+                    Verzendadres
                   </h3>
                   <p className="text-green-700 text-sm">
-                    U hoeft <strong>geen afspraak</strong> te maken voor opsturen. Stuur het apparaat op naar bovenstaand adres, 
-                    wij repareren het en sturen het gratis retour naar: <strong>{formData.shippingAddress}</strong>
+                    Het verzendadres ontvangt u per e-mail na goedkeuring van uw aanvraag.
                   </p>
                 </div>
 
@@ -578,9 +625,10 @@ export default function RepairPage() {
                   <h3 className="font-bold text-gray-800 mb-4">Samenvatting</h3>
                   <div className="space-y-2 text-sm">
                     <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
+                    <p><span className="text-gray-500">E-mail:</span> {formData.email}</p>
+                    <p><span className="text-gray-500">Telefoon:</span> {formData.phone}</p>
                     <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
                     <p><span className="text-gray-500">Service:</span> Opsturen</p>
-                    <p><span className="text-gray-500">Retouradres:</span> {formData.shippingAddress}</p>
                   </div>
                 </div>
 

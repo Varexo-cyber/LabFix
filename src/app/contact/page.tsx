@@ -122,7 +122,6 @@ export default function ContactPage() {
                 <Mail className="text-accent-500 flex-shrink-0" size={20} />
                 <div>
                   <a href="mailto:info@labfix.nl" className="text-primary-500 hover:underline block">info@labfix.nl</a>
-                  <a href="mailto:labfixnl@gmail.com" className="text-primary-500 hover:underline block">labfixnl@gmail.com</a>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -132,17 +131,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-8 text-white animate-fade-in-right delay-400">
-            <h3 className="text-xl font-bold mb-2">
-              {locale === 'nl' ? 'Openingstijden' : 'Business Hours'}
-            </h3>
-            <div className="space-y-2 text-blue-100">
-              <p>{locale === 'nl' ? 'Maandag - Vrijdag: 09:00 - 17:00' : 'Monday - Friday: 09:00 - 17:00'}</p>
-              <p>{locale === 'nl' ? 'Zaterdag - Zondag: Gesloten' : 'Saturday - Sunday: Closed'}</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-8 animate-fade-in-right delay-600">
+          <div className="bg-white rounded-xl shadow-md p-8 animate-fade-in-right delay-400">
             <h3 className="text-xl font-bold mb-4">
               {locale === 'nl' ? 'Bedrijfsgegevens' : 'Company Details'}
             </h3>

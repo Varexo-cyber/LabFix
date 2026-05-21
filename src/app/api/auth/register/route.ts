@@ -1,7 +1,7 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { sendEmail } from '@/lib/email';
+import { sendAccountConfirmation } from '@/lib/email';
 import { randomUUID } from 'crypto';
 import { createCustomer as msSyncCustomer, findMsCustomerByEmail } from '@/lib/mobilesentrix-new';
 
@@ -140,38 +140,21 @@ export async function POST(request: NextRequest) {
       VALUES (${id}, ${body.email}, ${hashedPassword}, ${body.customerType || 'individual'}, ${body.firstName || ''}, ${body.lastName || ''}, ${body.companyName || ''}, ${kvkValue}, ${body.btwNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.address || ''}, ${body.city || ''}, ${body.postalCode || ''}, ${body.country || 'Nederland'}, ${msCustomerId})
     `;
 
-    // Send welcome email
+    // Send beautiful welcome email
     try {
-      const emailContent = isBusiness ? `
-        <h2 style="color: #1e40af;">Welkom bij LabFix!</h2>
-        <p>Beste ${body.contactPerson},</p>
-        <p>Uw zakelijke account is succesvol aangemaakt. U kunt nu inloggen en producten bestellen.</p>
-        <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin: 20px 0;">
-          <p style="margin: 0;"><strong>Bedrijf:</strong> ${body.companyName}</p>
-          <p style="margin: 8px 0 0;"><strong>KVK:</strong> ${body.kvkNumber}</p>
-        </div>
-      ` : `
-        <h2 style="color: #1e40af;">Welkom bij LabFix!</h2>
-        <p>Beste ${body.firstName},</p>
-        <p>Uw account is succesvol aangemaakt. U kunt nu inloggen en producten bestellen.</p>
-      `;
+      const displayName = isBusiness
+        ? (body.contactPerson || body.companyName || 'LabFix Klant')
+        : `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'LabFix Klant';
 
-      await sendEmail({
+      await sendAccountConfirmation({
         to: body.email,
-        subject: 'Welkom bij LabFix - Uw account is aangemaakt',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height: 50px;" />
-            </div>
-            ${emailContent}
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://stellar-brioche-27fb7f.netlify.app/account/login" style="background: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block;">Inloggen</a>
-            </div>
-            <p>Heeft u vragen? Neem contact met ons op via <a href="mailto:info@labfix.nl">info@labfix.nl</a></p>
-            <p>Met vriendelijke groet,<br/>Het LabFix Team</p>
-          </div>
-        `
+        name: displayName,
+        email: body.email,
+        customerType: isBusiness ? 'business' : 'individual',
+        companyName: isBusiness ? body.companyName : undefined,
+        kvkNumber: isBusiness ? body.kvkNumber : undefined,
+        btwNumber: isBusiness ? body.btwNumber : undefined,
+        phone: body.phone,
       });
     } catch (emailErr) {
       console.error('Welcome email failed:', emailErr);

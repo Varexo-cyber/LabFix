@@ -723,8 +723,8 @@ export default function Header() {
                   <ChevronDown size={12} />
                 </button>
                 {openDropdown === 'more' && (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[480px] z-50 border-t-2 border-accent-500 flex h-[500px]">
-                    <div className="w-[160px] border-r border-gray-100 overflow-y-auto">
+                  <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[700px] z-50 border-t-2 border-accent-500 flex h-[500px]">
+                    <div className="w-[180px] border-r border-gray-100 overflow-y-auto">
                       <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Merken' : 'Brands'}</div>
                       <div className="p-2 border-b">
                         <input type="text" placeholder={locale === 'nl' ? 'Zoek...' : 'Search...'} value={moreSearch} onChange={(e) => setMoreSearch(e.target.value)} className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none" />
@@ -735,7 +735,7 @@ export default function Header() {
                         </div>
                       ))}
                     </div>
-                    <div className="w-[180px] border-r border-gray-100 overflow-y-auto">
+                    <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
                       {hoveredMoreBrand && (() => {
                         const brand = moreBrands.find(b => b.slug === hoveredMoreBrand);
                         if (!brand) return null;
