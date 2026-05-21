@@ -54,7 +54,7 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>
@@ -244,7 +244,7 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>
@@ -281,7 +281,7 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
 
         <p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px">
           Beste ${data.name},<br><br>
-          Bedankt voor uw registratie! Uw zakelijke account is succesvol aangemaakt.
+          Bedankt voor uw registratie! Uw account is succesvol aangemaakt.
         </p>
 
         <!-- Success Badge -->
@@ -435,7 +435,7 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
       <!-- Header with Logo -->
       <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
         <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:40px;width:auto;display:block;" />
+          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
         </div>
         <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
       </div>
