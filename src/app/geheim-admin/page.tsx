@@ -1303,7 +1303,7 @@ export default function AdminPage() {
                     disabled={!testEmail || testingEmail}
                     className="bg-primary-500 text-white py-3 rounded-lg font-semibold hover:bg-primary-600 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    <User size={18} />
+                    <Users size={18} />
                     Account Email
                   </button>
                   <button

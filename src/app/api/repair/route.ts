@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { sendRepairConfirmation, sendEmail } from '@/lib/email';
 
-// Use Edge runtime for serverless compatibility
-export const runtime = 'edge';
+// Use Node.js runtime for database compatibility
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
