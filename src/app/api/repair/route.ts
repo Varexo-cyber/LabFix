@@ -1,13 +1,10 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import { mkdir } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { sendRepairConfirmation, sendEmail } from '@/lib/email';
 
-// Use Node.js runtime for file system operations
-export const runtime = 'nodejs';
+// Use Edge runtime for serverless compatibility
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,8 +65,8 @@ export async function POST(request: NextRequest) {
     const isPickup = service_type === 'pickup';
     if (!name || !email || !phone || !device_type || 
         !device_model || !problem_description ||
-        (!isPickup && !appointment_date) ||
-        (!isPickup && !appointment_time)) {
+        (isPickup && !appointment_date) ||
+        (isPickup && !appointment_time)) {
       return NextResponse.json(
         { success: false, message: 'Alle verplichte velden moeten worden ingevuld' },
         { status: 400 }
@@ -78,23 +75,24 @@ export async function POST(request: NextRequest) {
 
     const id = randomUUID();
     
-    // Handle file uploads
+    // Handle file uploads - NOTE: File uploads not supported on Netlify serverless
+    // Files are stored as base64 in the database instead
     const attachments: string[] = [];
     const files = formData.getAll('attachments') as File[];
     
     if (files && files.length > 0) {
-      // Create upload directory if it doesn't exist
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'repair-attachments', id);
-      await mkdir(uploadDir, { recursive: true });
-      
       for (const file of files) {
-        if (file.size > 0) {
-          const bytes = await file.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          const fileName = `${Date.now()}_${file.name}`;
-          const filePath = join(uploadDir, fileName);
-          await writeFile(filePath, buffer);
-          attachments.push(`/uploads/repair-attachments/${id}/${fileName}`);
+        if (file.size > 0 && file.size < 2 * 1024 * 1024) { // Max 2MB
+          try {
+            const bytes = await file.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+            const base64 = buffer.toString('base64');
+            const mimeType = file.type || 'application/octet-stream';
+            const dataUrl = `data:${mimeType};base64,${base64}`;
+            attachments.push(dataUrl);
+          } catch (fileError) {
+            console.error('Error processing file:', fileError);
+          }
         }
       }
     }
