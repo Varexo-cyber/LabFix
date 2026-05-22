@@ -50,6 +50,7 @@ function ProductsPageContent() {
     if (selectedSub) params.subcategory = selectedSub;
     if (selectedModel) params.model = selectedModel;
     if (searchQuery) params.search = searchQuery;
+    if (sortBy && sortBy !== 'newest') params.sort = sortBy;
     fetchProductsPaginated(params, abortController.signal)
       .then((data) => {
         setProducts(data.products);
@@ -63,7 +64,7 @@ function ProductsPageContent() {
       })
       .finally(() => setLoadingProducts(false));
     return () => abortController.abort();
-  }, [currentPage, selectedBrand, selectedSub, selectedModel, searchQuery]);
+  }, [currentPage, selectedBrand, selectedSub, selectedModel, searchQuery, sortBy]);
 
   // Fetch grand total once on mount (in case page loads with a filter active)
   useEffect(() => {

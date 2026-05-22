@@ -133,9 +133,28 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
     const isNew = searchParams.get('isNew');
+    const sort = searchParams.get('sort') || 'newest';
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(500, Math.max(1, parseInt(searchParams.get('limit') || '24')));
     const offset = (page - 1) * limit;
+
+    // Build ORDER BY clause based on sort parameter
+    let orderBy: any;
+    switch (sort) {
+      case 'price-asc':
+        orderBy = sql`price ASC`;
+        break;
+      case 'price-desc':
+        orderBy = sql`price DESC`;
+        break;
+      case 'name':
+        orderBy = sql`name ASC`;
+        break;
+      case 'newest':
+      default:
+        orderBy = sql`sort_order ASC, created_at DESC`;
+        break;
+    }
 
     let rows: any[];
     let totalRows: any[];
@@ -148,7 +167,7 @@ export async function GET(request: NextRequest) {
       // STRICT matching: only exact matches on category path OR exact model match
       // No LIKE patterns to avoid matching "s26" with "s26-plus" or "s26-ultra"
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR model = ${model}`,
       ]);
     } else if (subcategory) {
@@ -157,13 +176,13 @@ export async function GET(request: NextRequest) {
       const subPathLike = subPath + '/%';
       if (category) {
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT * FROM products WHERE category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
           sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory})`,
         ]);
       } else {
         const subPathLike2 = '%/' + subcategory + '/%';
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE subcategory = ${subcategory} OR category LIKE ${subPathLike2} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT * FROM products WHERE subcategory = ${subcategory} OR category LIKE ${subPathLike2} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
           sql`SELECT COUNT(*)::int AS count FROM products WHERE subcategory = ${subcategory} OR category LIKE ${subPathLike2}`,
         ]);
       }
@@ -171,7 +190,7 @@ export async function GET(request: NextRequest) {
       // Support hierarchical categories: exact match OR starts with category/
       const likePattern = category + '/%';
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE category = ${category} OR category LIKE ${likePattern} ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT * FROM products WHERE category = ${category} OR category LIKE ${likePattern} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${category} OR category LIKE ${likePattern}`,
       ]);
     } else if (search) {
@@ -191,7 +210,7 @@ export async function GET(request: NextRequest) {
 
         // Primary: AND on original words against combined name+name_en
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${originalPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${originalPatterns}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
           sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${originalPatterns})`,
         ]);
 
@@ -201,7 +220,7 @@ export async function GET(request: NextRequest) {
           const withoutLastPatterns = words.slice(0, -1).map((w: string) => `%${w}%`);
           const lastVariantPatterns = termVariantGroups[termVariantGroups.length - 1].map(v => `%${v}%`);
           [rows, totalRows] = await Promise.all([
-            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${withoutLastPatterns}) AND (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${lastVariantPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${withoutLastPatterns}) AND (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${lastVariantPatterns}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
             sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ALL(${withoutLastPatterns}) AND (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${lastVariantPatterns})`,
           ]);
         }
@@ -209,7 +228,7 @@ export async function GET(request: NextRequest) {
         // Final fallback: any variant matches (original OR approach)
         if ((totalRows[0]?.count ?? 0) === 0) {
           [rows, totalRows] = await Promise.all([
-            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns}) ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+            sql`SELECT * FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
             sql`SELECT COUNT(*)::int AS count FROM products WHERE (LOWER(name) || ' ' || LOWER(name_en)) ILIKE ANY(${allVariantPatterns})`,
           ]);
         }
@@ -225,17 +244,17 @@ export async function GET(request: NextRequest) {
       }
     } else if (featured === 'true') {
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE featured = true ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT * FROM products WHERE featured = true ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         sql`SELECT COUNT(*)::int AS count FROM products WHERE featured = true`,
       ]);
     } else if (isNew === 'true') {
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE is_new = true ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT * FROM products WHERE is_new = true ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         sql`SELECT COUNT(*)::int AS count FROM products WHERE is_new = true`,
       ]);
     } else {
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products ORDER BY sort_order ASC, created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT * FROM products ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
         sql`SELECT COUNT(*)::int AS count FROM products`,
       ]);
     }
