@@ -387,7 +387,54 @@ export default function AdminPage() {
   const handleSendEmail = async (order: Order) => {
     if (!emailMessage.trim()) return;
     try {
-      await sendEmailApi(order.userEmail, `LabFix - Update bestelling ${order.id}`, emailMessage);
+      // Build order details HTML
+      const itemsHtml = order.items.map(item => `
+        <tr>
+          <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${item.product?.name || item.name}</td>
+          <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">${item.quantity}x</td>
+          <td style="padding:8px;border-bottom:1px solid #e2e8f0;">€${(item.priceAtPurchase || item.price || 0).toFixed(2)}</td>
+          <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${item.product?.sku || '-'}</td>
+        </tr>
+      `).join('');
+
+      const orderDetails = `
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:20px;">
+          <h3 style="margin:0 0 16px 0;color:#1e293b;font-size:16px;">Bestelgegevens</h3>
+          <p style="margin:4px 0;font-size:14px;"><strong>Bestelnummer:</strong> ${order.id}</p>
+          <p style="margin:4px 0;font-size:14px;"><strong>Klant:</strong> ${order.companyName || order.contactPerson || order.userEmail}</p>
+          <p style="margin:4px 0;font-size:14px;"><strong>Email:</strong> ${order.userEmail}</p>
+          <p style="margin:4px 0;font-size:14px;"><strong>Telefoon:</strong> ${order.phone || '-'}</p>
+          
+          <h4 style="margin:16px 0 8px 0;color:#1e293b;font-size:14px;">Adres:</h4>
+          <p style="margin:4px 0;font-size:14px;">${order.shippingAddress || '-'}</p>
+          <p style="margin:4px 0;font-size:14px;">${order.shippingPostalCode || ''} ${order.shippingCity || ''}</p>
+          <p style="margin:4px 0;font-size:14px;">${order.shippingCountry || '-'}</p>
+          
+          <h4 style="margin:16px 0 8px 0;color:#1e293b;font-size:14px;">Producten:</h4>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="background:#e2e8f0;">
+                <th style="padding:8px;text-align:left;">Product</th>
+                <th style="padding:8px;text-align:center;">Aantal</th>
+                <th style="padding:8px;text-align:left;">Prijs</th>
+                <th style="padding:8px;text-align:left;">SKU</th>
+              </tr>
+            </thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
+          
+          <p style="margin:16px 0 4px 0;font-size:14px;text-align:right;"><strong>Subtotaal:</strong> €${order.subtotal.toFixed(2)}</p>
+          <p style="margin:4px 0;font-size:14px;text-align:right;"><strong>Verzendkosten:</strong> €${order.shippingCost.toFixed(2)}</p>
+          <p style="margin:4px 0;font-size:16px;text-align:right;color:#dc2626;"><strong>Totaal: €${order.total.toFixed(2)}</strong></p>
+        </div>
+        
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px 0;color:#1e293b;font-size:16px;">Bericht van LabFix</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${emailMessage}</p>
+        </div>
+      `;
+
+      await sendEmailApi(order.userEmail, `LabFix - Update bestelling ${order.id}`, orderDetails);
       setEmailSent(true);
       setTimeout(() => { setEmailSent(false); setEmailMessage(''); }, 3000);
     } catch {
