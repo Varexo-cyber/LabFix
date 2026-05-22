@@ -2,6 +2,207 @@ import { createMollieClient } from '@mollie/api-client';
 import { neon } from '@neondatabase/serverless';
 import nodemailer from 'nodemailer';
 
+// MobileSentrix API Config
+const MS_API_URL = process.env.MS_API_URL || 'https://www.mobilesentrix.eu/api/v1';
+const MS_USERNAME = process.env.MS_USERNAME || 'info@labfix.nl';
+const MS_PASSWORD = process.env.MS_PASSWORD || '';
+const SHIPPING_METHODS = {
+  'postnl_standard': 'flatrate0p0',  // PostNL Standard Delivery (Europe/NL)
+  'postnl_12': 'flatrate0p1',         // PostNL before 12:00
+  'postnl_pickup': 'flatrate0p2',     // PostNL pickup point
+  'dhl_express': 'flatrate0d4',       // DHL Express Worldwide
+  'ups_standard': 'flatrate011',      // UPS Standard
+  'pickup': 'flatrate1'               // In Store Pick Up
+};
+
+// MobileSentrix API helper
+async function msApiCall(endpoint, method = 'GET', data = null) {
+  const url = `${MS_API_URL}${endpoint}`;
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + Buffer.from(`${MS_USERNAME}:${MS_PASSWORD}`).toString('base64')
+    }
+  };
+  if (data) options.body = JSON.stringify(data);
+  
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error(`MS API ${endpoint} failed: ${res.status}`);
+  return res.json();
+}
+
+// Find or create MS customer
+async function findOrCreateMsCustomer(email, orderData) {
+  try {
+    console.log('🔍 Looking up MS customer by email:', email);
+    const customers = await msApiCall(`/customers?search=${encodeURIComponent(email)}`);
+    if (customers?.data?.length > 0) {
+      console.log('✅ Found existing MS customer:', customers.data[0].customer_id);
+      return customers.data[0].customer_id;
+    }
+    
+    // Create new customer
+    console.log('➕ Creating new MS customer for:', email);
+    const nameParts = (orderData.contactPerson || '').trim().split(' ');
+    const firstname = nameParts[0] || orderData.companyName || 'LabFix';
+    const lastname = nameParts.slice(1).join(' ') || 'Klant';
+    const company = orderData.companyName || `${firstname} ${lastname}`;
+    
+    const newCustomer = await msApiCall('/customers', 'POST', {
+      firstname,
+      lastname,
+      username: email,
+      email,
+      mobile: orderData.phone || '0000000000',
+      password: Math.random().toString(36).slice(2, 12) + 'A1!',
+      company,
+      company_short: company.substring(0, 8),
+      street: [orderData.shippingAddress || ''],
+      city: orderData.shippingCity || '',
+      region: '',
+      postcode: orderData.shippingPostalCode || '',
+      country_id: orderData.shippingCountryCode || 'NL',
+      telephone: orderData.phone || '0000000000',
+    });
+    
+    console.log('✅ New MS customer created:', newCustomer?.customer_id);
+    return newCustomer?.customer_id;
+  } catch (err) {
+    console.error('❌ MS customer lookup/creation failed:', err.message);
+    return null;
+  }
+}
+
+// Get or create MS address
+async function getOrCreateMsAddress(customerId, addressData) {
+  try {
+    const addresses = await msApiCall(`/customers/${customerId}/addresses`);
+    const existing = addresses?.data?.find(a => 
+      a.street?.[0] === addressData.street[0] && 
+      a.postcode === addressData.postcode
+    );
+    if (existing) return existing.address_id;
+    
+    const newAddr = await msApiCall(`/customers/${customerId}/addresses`, 'POST', addressData);
+    return newAddr?.address_id;
+  } catch (err) {
+    console.error('❌ MS address creation failed:', err.message);
+    return null;
+  }
+}
+
+// Sync order to MobileSentrix
+async function syncToMobileSentrix(orderData, orderId) {
+  let msOrderId = '';
+  let msIncrementId = '';
+  
+  try {
+    console.log('🚀 Starting MobileSentrix sync for order:', orderId);
+    
+    // 1. Get or create customer
+    const msCustomerId = await findOrCreateMsCustomer(orderData.userEmail, orderData);
+    if (!msCustomerId) {
+      console.error('❌ Could not resolve MS customer');
+      return { msOrderId, msIncrementId, success: false };
+    }
+    
+    // 2. Prepare addresses
+    const nameParts = (orderData.contactPerson || '').trim().split(' ');
+    const firstname = nameParts[0] || orderData.companyName || 'LabFix';
+    const lastname = nameParts.slice(1).join(' ') || 'Klant';
+    
+    const shippingAddr = {
+      firstname,
+      lastname,
+      street: [orderData.shippingAddress || ''],
+      city: orderData.shippingCity || '',
+      country_id: orderData.shippingCountryCode || 'NL',
+      region: '',
+      postcode: orderData.shippingPostalCode || '',
+      telephone: orderData.phone || '0000000000',
+      company: orderData.companyName || '',
+      vat_id: orderData.vatNumber || '',
+    };
+    
+    const billingAddr = orderData.billingSameAsShipping ? shippingAddr : {
+      firstname,
+      lastname,
+      street: [orderData.billingAddress || ''],
+      city: orderData.billingCity || '',
+      country_id: orderData.billingCountryCode || 'NL',
+      region: '',
+      postcode: orderData.billingPostalCode || '',
+      telephone: orderData.phone || '0000000000',
+      company: orderData.companyName || '',
+      vat_id: orderData.vatNumber || '',
+    };
+    
+    // 3. Get/create addresses
+    console.log('📍 Getting/creating MS addresses...');
+    const [shippingId, billingId] = await Promise.all([
+      getOrCreateMsAddress(msCustomerId, shippingAddr),
+      getOrCreateMsAddress(msCustomerId, billingAddr),
+    ]);
+    console.log('📍 MS Addresses:', { shippingId, billingId });
+    
+    if (!shippingId || !billingId) {
+      console.error('❌ Missing MS address IDs');
+      return { msOrderId, msIncrementId, success: false };
+    }
+    
+    // 4. Clear cart and add items
+    console.log('🛒 Clearing MS cart...');
+    await msApiCall('/cart', 'DELETE', { customrest: 1 });
+    
+    const msProducts = orderData.items.map(item => ({
+      sku: item.product?.sku || item.sku,
+      qty: item.quantity,
+    }));
+    console.log('🛒 Adding to MS cart:', msProducts);
+    
+    const cartRes = await msApiCall('/cart', 'POST', { 
+      customrest: 1, 
+      products: msProducts 
+    });
+    const quoteId = cartRes?.quote_id;
+    console.log('🛒 MS Quote ID:', quoteId);
+    
+    if (!quoteId) {
+      console.error('❌ No quote ID from cart');
+      return { msOrderId, msIncrementId, success: false };
+    }
+    
+    // 5. Create order (using correct endpoint /createorder)
+    console.log('📦 Creating MS order via /createorder...');
+    const msOrder = await msApiCall('/createorder', 'POST', {
+      customrest: 1,
+      ordertype: 0,
+      quote_id: parseInt(quoteId),
+      billing_id: parseInt(billingId),
+      shipping_id: parseInt(shippingId),
+      shipping_method: orderData.msShippingMethod || SHIPPING_METHODS['postnl_standard'] || 'flatrate0p0',
+      payment_method: 'mygateway',
+      po_number: orderId,
+    });
+    
+    msOrderId = msOrder?.order_id || '';
+    msIncrementId = msOrder?.increment_id || '';
+    
+    if (msOrderId) {
+      console.log(`✅ MobileSentrix order created: ${msOrderId} / ${msIncrementId}`);
+      return { msOrderId, msIncrementId, success: true };
+    } else {
+      console.error('❌ MS order creation returned no order ID');
+      return { msOrderId, msIncrementId, success: false };
+    }
+    
+  } catch (err) {
+    console.error('❌ MobileSentrix sync failed:', err.message);
+    return { msOrderId, msIncrementId, success: false, error: err.message };
+  }
+}
+
 // Email transporter (using same config as Geheim Admin)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST_LABFIX || 'smtp.zoho.eu',
@@ -158,14 +359,25 @@ export const handler = async (event, context) => {
         return { statusCode: 200, body: JSON.stringify({ received: true, orderId, alreadyExists: true }) };
       }
 
-      // Create order with all columns
+      // Sync to MobileSentrix FIRST (before creating local order)
+      console.log('🔄 Starting MobileSentrix sync...');
+      const msResult = await syncToMobileSentrix(orderData, orderId);
+      
+      if (msResult.success) {
+        console.log(`✅ MobileSentrix sync successful: ${msResult.msOrderId} / ${msResult.msIncrementId}`);
+      } else {
+        console.error('❌ MobileSentrix sync failed, but continuing with local order creation');
+      }
+
+      // Create order with all columns (including MS order IDs)
       await sql`
         INSERT INTO orders (
           id, user_id, user_email, company_name, kvk_number, vat_number,
           contact_person, phone,
           shipping_address, shipping_city, shipping_postal_code, shipping_country,
           billing_address, billing_city, billing_postal_code, billing_country,
-          items, subtotal, shipping_cost, total, status, notes
+          items, subtotal, shipping_cost, total, status, notes,
+          ms_order_id, ms_increment_id
         ) VALUES (
           ${orderId},
           ${orderData.userId || null},
@@ -188,14 +400,20 @@ export const handler = async (event, context) => {
           ${orderData.shippingCost},
           ${orderData.total},
           'paid',
-          ${orderData.notes || ''}
+          ${orderData.notes || ''},
+          ${msResult.msOrderId || ''},
+          ${msResult.msIncrementId || ''}
         )
       `;
 
-      console.log('✅ Order created:', orderId);
+      console.log('✅ Order created:', orderId, 'MS Order:', msResult.msOrderId || 'N/A');
 
-      // Send order confirmation email
-      await sendOrderConfirmationEmail(orderData, orderId);
+      // Send order confirmation email (don't fail if email fails)
+      try {
+        await sendOrderConfirmationEmail(orderData, orderId);
+      } catch (emailErr) {
+        console.error('❌ Email failed but order was created:', emailErr.message);
+      }
 
       await sql`UPDATE payments SET status = 'paid', order_id = ${orderId} WHERE mollie_payment_id = ${molliePaymentId}`;
     }
