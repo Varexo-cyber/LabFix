@@ -237,21 +237,6 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
       totalRow('Totaal', `€ ${grandTotal.toFixed(2)}`, { bold: true, big: true, color: COLORS.primary });
 
-      // ---------- PAYMENT INFO ----------
-      const payY = totalsY + 30;
-      if (payY < 700) {
-        doc.roundedRect(50, payY, tableWidth, 60, 4).fillColor(COLORS.light).fill();
-        doc.fillColor(COLORS.text).fontSize(10).font('Helvetica-Bold')
-          .text('Betaalgegevens', 60, payY + 10);
-        doc.fontSize(9).font('Helvetica').fillColor(COLORS.muted)
-          .text(`IBAN: ${COMPANY.iban}`, 60, payY + 25)
-          .text(`T.n.v.: ${COMPANY.name}`, 60, payY + 38);
-        if (data.paymentMethod) {
-          doc.text(`Betaalmethode: ${data.paymentMethod}${data.paymentStatus ? ' (' + data.paymentStatus + ')' : ''}`, 280, payY + 25);
-        }
-        doc.text(`Vermeld bij betaling: ${data.orderId}`, 280, payY + 38);
-      }
-
       // ---------- FOOTER ----------
       const footerY = doc.page.height - 70;
       doc.moveTo(50, footerY).lineTo(pageWidth - 50, footerY)
@@ -259,11 +244,11 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       doc.fillColor(COLORS.muted).fontSize(8).font('Helvetica')
         .text(
           `${COMPANY.name}  •  KvK ${COMPANY.kvk}  •  BTW ${COMPANY.btw}  •  ${COMPANY.email}  •  ${COMPANY.phone}`,
-          50, footerY + 10, { width: pageWidth - 100, align: 'center' }
+          50, footerY + 10, { width: pageWidth - 100, align: 'center', lineBreak: false }
         )
         .text(
           'Bedankt voor uw bestelling! Voor vragen kunt u contact met ons opnemen.',
-          50, footerY + 24, { width: pageWidth - 100, align: 'center' }
+          50, footerY + 24, { width: pageWidth - 100, align: 'center', lineBreak: false }
         );
 
       doc.end();
