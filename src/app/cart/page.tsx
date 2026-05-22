@@ -118,7 +118,7 @@ export default function CartPage() {
                 <p className="text-xs text-gray-400 mt-1">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
               </div>
 
-              <Link href={user ? '/checkout' : '/account/login'} className="block w-full bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors text-center">
+              <Link href={user ? '/checkout' : '/account/login?redirect=/cart'} className="block w-full bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors text-center">
                 {t('cart.checkout')}
               </Link>
               {!user && (

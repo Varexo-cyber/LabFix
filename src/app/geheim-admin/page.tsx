@@ -289,6 +289,8 @@ export default function AdminPage() {
   const startEdit = (product: Product) => {
     setEditing(product);
     setCreating(false);
+    // Scroll to top so the edit form is visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setFormData({
       name: product.name,
       nameEn: product.nameEn,
@@ -310,6 +312,8 @@ export default function AdminPage() {
   const startCreate = () => {
     setCreating(true);
     setEditing(null);
+    // Scroll to top so the create form is visible
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     setFormData(emptyProduct);
   };
 

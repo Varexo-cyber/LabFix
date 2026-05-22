@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { loginUserApi, setCurrentUser } from '@/lib/store';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, User, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const { t, setUser } = useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/account';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +27,7 @@ export default function LoginPage() {
       if (result.success && result.user) {
         setCurrentUser(result.user);
         setUser(result.user);
-        router.push('/account');
+        router.push(redirect);
       } else {
         setError(result.message);
       }
@@ -94,7 +96,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-500 text-sm">
               {t('auth.noAccount')}{' '}
-              <Link href="/account/register" className="text-primary-500 font-semibold hover:underline">
+              <Link href={`/account/register?redirect=${encodeURIComponent(redirect)}`} className="text-primary-500 font-semibold hover:underline">
                 {t('auth.register')}
               </Link>
             </p>

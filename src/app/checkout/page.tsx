@@ -249,7 +249,7 @@ export default function CheckoutPage() {
                     <div className="mt-4 pt-4 border-t text-center">
                       <p className="text-sm text-gray-500">
                         Al een account?{' '}
-                        <Link href="/account/login" className="text-primary-600 hover:underline">
+                        <Link href="/account/login?redirect=/checkout" className="text-primary-600 hover:underline">
                           Log in
                         </Link>
                       </p>

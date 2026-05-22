@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { registerUserApi } from '@/lib/store';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { UserPlus, Building2, AlertCircle, CheckCircle, User, Briefcase } from 'lucide-react';
 
 export default function RegisterPage() {
   const { t } = useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/account';
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [customerType, setCustomerType] = useState<'individual' | 'business'>('individual');
@@ -90,7 +92,9 @@ export default function RegisterPage() {
 
       if (result.success) {
         setSuccess(t('auth.registerSuccess'));
-        setTimeout(() => router.push('/account/login'), 2000);
+        // Registration succeeded, go to login with redirect parameter
+        // so user can log in and be redirected to cart/checkout
+        setTimeout(() => router.push(`/account/login?redirect=${encodeURIComponent(redirect)}`), 2000);
       } else {
         setError(result.message);
       }
@@ -301,7 +305,7 @@ export default function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-500 text-sm">
               {t('auth.hasAccount')}{' '}
-              <Link href="/account/login" className="text-primary-500 font-semibold hover:underline">
+              <Link href={`/account/login?redirect=${encodeURIComponent(redirect)}`} className="text-primary-500 font-semibold hover:underline">
                 {t('auth.login')}
               </Link>
             </p>
