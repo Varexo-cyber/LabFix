@@ -246,20 +246,34 @@ const transporter = nodemailer.createTransport({
 // Send order confirmation email
 async function sendOrderConfirmationEmail(orderData, orderId) {
   try {
-    const itemRows = orderData.items
-      .map(item => `
+    // Parse items if they're stored as JSON string
+    const items = typeof orderData.items === 'string' 
+      ? JSON.parse(orderData.items) 
+      : orderData.items;
+
+    const itemRows = items
+      .map(item => {
+        const name = item.product?.name || item.name || 'Product';
+        const price = item.priceAtPurchase || item.price || 0;
+        const qty = item.quantity || 1;
+        return `
         <tr>
-          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;font-size:14px">${item.name}</td>
-          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;text-align:center;font-size:14px;color:#64748b">${item.quantity}x</td>
-          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;text-align:right;font-size:14px;font-weight:600">€${(item.price * item.quantity).toFixed(2)}</td>
-        </tr>`
-      ).join('');
+          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;font-size:14px">${name}</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;text-align:center;font-size:14px;color:#64748b">${qty}x</td>
+          <td style="padding:12px 8px;border-bottom:1px solid #e2e8f0;text-align:right;font-size:14px;font-weight:600">€${(price * qty).toFixed(2)}</td>
+        </tr>`;
+      })
+      .join('');
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #f8fafc; padding: 40px 20px; text-align: center;">
-          <h1 style="color: #1e293b; margin: 0 0 10px 0; font-size: 28px;">Bedankt voor je bestelling!</h1>
-          <p style="color: #64748b; margin: 0; font-size: 16px;">We hebben je bestelling succesvol ontvangen</p>
+        <!-- Header with Logo -->
+        <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
+          <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
+            <img src="https://labfix.nl/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
+          </div>
+          <h1 style="color:#fff;margin:0;font-size:28px;">Bedankt voor je bestelling!</h1>
+          <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
         </div>
         
         <div style="padding: 30px 20px; background: white;">
@@ -286,32 +300,41 @@ async function sendOrderConfirmationEmail(orderData, orderId) {
           <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span style="color: #64748b;">Subtotaal</span>
-              <span style="font-weight: 600;">€${orderData.subtotal.toFixed(2)}</span>
+              <span style="font-weight: 600;">€${Number(orderData.subtotal || 0).toFixed(2)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span style="color: #64748b;">Verzendkosten</span>
-              <span style="font-weight: 600;">€${orderData.shippingCost.toFixed(2)}</span>
+              <span style="font-weight: 600;">€${Number(orderData.shippingCost || 0).toFixed(2)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #e2e8f0;">
               <span style="font-weight: 600; font-size: 18px;">Totaal</span>
-              <span style="font-weight: 700; font-size: 18px; color: #dc2626;">€${orderData.total.toFixed(2)}</span>
+              <span style="font-weight: 700; font-size: 18px; color: #dc2626;">€${Number(orderData.total || 0).toFixed(2)}</span>
             </div>
           </div>
           
           <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 8px;">
             <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #1e293b;">Afleveradres</h3>
             <p style="margin: 0; color: #475569; line-height: 1.6;">
-              ${orderData.contactPerson || ''}<br>
-              ${orderData.shippingAddress || ''}<br>
-              ${orderData.shippingPostalCode || ''} ${orderData.shippingCity || ''}<br>
-              ${orderData.shippingCountry || ''}
+              ${orderData.contactPerson || orderData.contact_person || ''}<br>
+              ${orderData.shippingAddress || orderData.shipping_address || ''}<br>
+              ${orderData.shippingPostalCode || orderData.shipping_postal_code || ''} ${orderData.shippingCity || orderData.shipping_city || ''}<br>
+              ${orderData.shippingCountry || orderData.shipping_country || ''}
             </p>
           </div>
         </div>
         
-        <div style="background: #f8fafc; padding: 30px 20px; text-align: center;">
-          <p style="color: #64748b; margin: 0 0 10px 0;">Vragen over je bestelling?</p>
-          <p style="color: #1e293b; margin: 0; font-weight: 600;">info@labfix.nl</p>
+        <!-- Footer -->
+        <div style="background:#1e293b;padding:24px;text-align:center;color:#94a3b8;font-size:12px">
+          <p style="margin:0 0 8px">
+            <strong style="color:#fff">LabFix Repair Center</strong>
+          </p>
+          <p style="margin:4px 0">KvK: 42035906 | BTW: NL005445900B06</p>
+          <p style="margin:4px 0">Bank: NL36INGB0115171061</p>
+          <p style="margin:8px 0">
+            <span style="color:#60a5fa">📞 +31 6 5113 1133</span> |
+            <span style="color:#60a5fa">✉️ info@labfix.nl</span>
+          </p>
+          <p style="margin:16px 0 0;font-size:11px;color:#64748b">© ${new Date().getFullYear()} LabFix - Alle rechten voorbehouden</p>
         </div>
       </div>
     `;
@@ -398,7 +421,7 @@ export const handler = async (event, context) => {
         console.error('❌ MobileSentrix sync failed, but continuing with local order creation');
       }
 
-      // Create order with all columns (including MS order IDs)
+      // Create order with MS order IDs
       await sql`
         INSERT INTO orders (
           id, user_id, user_email, company_name, kvk_number, vat_number,

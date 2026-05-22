@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench } from 'lucide-react';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench, Truck } from 'lucide-react';
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
@@ -1160,6 +1160,56 @@ export default function AdminPage() {
                     </button>
                     {emailSent && <span className="text-green-600 text-sm font-medium">✓ E-mail verstuurd!</span>}
                   </div>
+                </div>
+
+                {/* MobileSentrix Sync Section */}
+                <div className="border-t pt-6 mt-6">
+                  <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <Database size={18} /> MobileSentrix
+                  </h3>
+                  {selectedOrder.ms_order_id ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-green-700 text-sm">
+                        ✅ Al gesynchroniseerd met MobileSentrix
+                      </p>
+                      <p className="text-green-600 text-xs mt-1">
+                        MS Order ID: {selectedOrder.ms_order_id} / {selectedOrder.ms_increment_id}
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-gray-500 text-sm mb-3">
+                        ⚠️ Nog niet gesynchroniseerd met MobileSentrix
+                      </p>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/orders/sync-mobilesentrix', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ orderId: selectedOrder.id })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                              showToast('✅ Order gesynchroniseerd met MobileSentrix!', 'success');
+                              // Refresh order data
+                              const ords = await fetchOrders();
+                              setOrders(ords);
+                              const updated = ords.find((o: Order) => o.id === selectedOrder.id);
+                              if (updated) setSelectedOrder(updated);
+                            } else {
+                              showToast(data.error || '❌ Sync mislukt', 'error');
+                            }
+                          } catch (err: any) {
+                            showToast('❌ Error: ' + err.message, 'error');
+                          }
+                        }}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
+                      >
+                        <Upload size={14} /> Nu syncen naar MobileSentrix
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (

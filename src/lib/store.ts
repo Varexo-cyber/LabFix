@@ -105,6 +105,8 @@ export interface Order {
   total: number;
   status: OrderStatus;
   notes: string;
+  ms_order_id?: string;
+  ms_increment_id?: string;
   createdAt: string;
   updatedAt: string;
 }

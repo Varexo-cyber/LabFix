@@ -40,6 +40,7 @@ export default function AccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -63,11 +64,17 @@ export default function AccountPage() {
 
   // Redirect if not logged in + fetch orders
   useEffect(() => {
-    if (!user) {
-      router.push('/account/login');
-      return;
-    }
-    fetchOrders(user.id).then(setOrders);
+    // Wait a bit for user to be loaded from sessionStorage
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      if (!user) {
+        router.push('/account/login');
+      } else {
+        fetchOrders(user.id).then(setOrders);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [user, router]);
 
   // Initialize form data when user data changes
@@ -107,7 +114,16 @@ export default function AccountPage() {
     }
   }, [formData.address, formData.city, formData.postalCode, formData.country, formData.billingSameAsShipping]);
 
-  if (!user) return null;
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+          <p className="text-gray-500">Laden...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     logout();
