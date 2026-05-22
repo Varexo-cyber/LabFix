@@ -62,7 +62,8 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
     try {
       const doc = new PDFDocument({
         size: 'A4',
-        margin: 50,
+        margins: { top: 50, bottom: 10, left: 50, right: 50 },
+        bufferPages: true,
         info: {
           Title: `Factuur ${data.orderId}`,
           Author: 'LabFix',
@@ -189,16 +190,20 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       doc.text('PRIJS', colX.unit, tableTop + 8, { width: 60, align: 'right' });
       doc.text('TOTAAL', colX.total, tableTop + 8, { width: 65, align: 'right' });
 
-      // Rows
+      // Rows - dynamic height based on product name wrap
       let rowY = tableTop + 30;
       doc.fillColor(COLORS.text).fontSize(10).font('Helvetica');
+      const descColWidth = colX.sku - colX.desc - 12;
       data.items.forEach((item, i) => {
+        // Calculate row height based on description wrap
+        const nameHeight = doc.heightOfString(item.name, { width: descColWidth });
+        const rowHeight = Math.max(22, nameHeight + 10);
         // Alternate row background
         if (i % 2 === 0) {
-          doc.rect(50, rowY - 4, tableWidth, 22).fillColor(COLORS.light).fill();
+          doc.rect(50, rowY - 4, tableWidth, rowHeight).fillColor(COLORS.light).fill();
         }
-        doc.fillColor(COLORS.text).font('Helvetica');
-        doc.text(item.name, colX.desc + 8, rowY, { width: 220, ellipsis: true });
+        doc.fillColor(COLORS.text).font('Helvetica').fontSize(10);
+        doc.text(item.name, colX.desc + 8, rowY, { width: descColWidth });
         doc.fillColor(COLORS.muted).fontSize(9);
         doc.text(item.sku || '-', colX.sku, rowY + 1, { width: 70, ellipsis: true });
         doc.fillColor(COLORS.text).fontSize(10);
@@ -206,7 +211,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
         doc.text(`€ ${item.price.toFixed(2)}`, colX.unit, rowY, { width: 60, align: 'right' });
         doc.font('Helvetica-Bold').text(`€ ${(item.price * item.quantity).toFixed(2)}`, colX.total, rowY, { width: 65, align: 'right' });
         doc.font('Helvetica');
-        rowY += 22;
+        rowY += rowHeight;
       });
 
       // ---------- TOTALS ----------
@@ -220,9 +225,9 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
 
       const totalRow = (label: string, value: string, opts: { bold?: boolean; big?: boolean; color?: string } = {}) => {
         doc.fillColor(opts.color || COLORS.muted).font(opts.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(opts.big ? 12 : 10);
-        doc.text(label, totalsX, totalsY, { width: 100 });
+        doc.text(label, totalsX, totalsY, { width: 110, lineBreak: false });
         doc.fillColor(opts.color || COLORS.text).font(opts.bold ? 'Helvetica-Bold' : 'Helvetica');
-        doc.text(value, totalsX + 100, totalsY, { width: 80, align: 'right' });
+        doc.text(value, totalsX + 110, totalsY, { width: 70, align: 'right', lineBreak: false });
         totalsY += opts.big ? 20 : 16;
       };
 
