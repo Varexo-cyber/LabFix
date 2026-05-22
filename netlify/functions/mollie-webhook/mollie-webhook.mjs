@@ -2,10 +2,12 @@ import { createMollieClient } from '@mollie/api-client';
 import { neon } from '@neondatabase/serverless';
 import nodemailer from 'nodemailer';
 
-// MobileSentrix API Config
-const MS_API_URL = process.env.MS_API_URL || 'https://www.mobilesentrix.eu/api/v1';
-const MS_USERNAME = process.env.MS_USERNAME || 'info@labfix.nl';
-const MS_PASSWORD = process.env.MS_PASSWORD || '';
+// MobileSentrix API Config (OAuth 1.0a)
+const MS_API_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu/api/rest';
+const MS_CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
+const MS_CONSUMER_SECRET = process.env.MOBILESENTRIX_CONSUMER_SECRET || '';
+const MS_ACCESS_TOKEN = process.env.MOBILESENTRIX_ACCESS_TOKEN || '';
+const MS_ACCESS_TOKEN_SECRET = process.env.MOBILESENTRIX_ACCESS_TOKEN_SECRET || '';
 const SHIPPING_METHODS = {
   'postnl_standard': 'flatrate0p0',  // PostNL Standard Delivery (Europe/NL)
   'postnl_12': 'flatrate0p1',         // PostNL before 12:00
@@ -15,14 +17,41 @@ const SHIPPING_METHODS = {
   'pickup': 'flatrate1'               // In Store Pick Up
 };
 
-// MobileSentrix API helper
+// MobileSentrix API helper (OAuth)
 async function msApiCall(endpoint, method = 'GET', data = null) {
   const url = `${MS_API_URL}${endpoint}`;
+  
+  // Build OAuth authorization header
+  const oauthParams = {
+    oauth_consumer_key: MS_CONSUMER_KEY,
+    oauth_token: MS_ACCESS_TOKEN,
+    oauth_signature_method: 'HMAC-SHA1',
+    oauth_timestamp: Math.floor(Date.now() / 1000),
+    oauth_nonce: Math.random().toString(36).substring(2),
+    oauth_version: '1.0'
+  };
+  
+  // Create signature base string
+  const params = new URLSearchParams(oauthParams);
+  const sortedParams = Array.from(params.entries()).sort().map(([k, v]) => `${k}=${v}`).join('&');
+  const signatureBase = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(sortedParams)}`;
+  const signingKey = `${MS_CONSUMER_SECRET}&${MS_ACCESS_TOKEN_SECRET}`;
+  
+  // Generate signature (simplified - in production use crypto)
+  const crypto = await import('crypto');
+  const signature = crypto.createHmac('sha1', signingKey).update(signatureBase).digest('base64');
+  oauthParams.oauth_signature = signature;
+  
+  // Build Authorization header
+  const authHeader = 'OAuth ' + Object.entries(oauthParams)
+    .map(([k, v]) => `${k}="${v}"`)
+    .join(', ');
+  
   const options = {
     method,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + Buffer.from(`${MS_USERNAME}:${MS_PASSWORD}`).toString('base64')
+      'Authorization': authHeader
     }
   };
   if (data) options.body = JSON.stringify(data);
