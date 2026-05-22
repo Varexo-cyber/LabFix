@@ -12,6 +12,12 @@ const nextConfig = {
   // Optimize page loading
   experimental: {
     optimizeCss: true,
+    serverComponentsExternalPackages: ['pdfkit'],
+    outputFileTracingIncludes: {
+      '/api/orders/[id]/invoice': ['./node_modules/pdfkit/js/data/**/*'],
+      '/api/orders': ['./node_modules/pdfkit/js/data/**/*'],
+      '/api/test-email/order': ['./node_modules/pdfkit/js/data/**/*'],
+    },
   },
   // Enable static optimization for pages
   trailingSlash: false,
