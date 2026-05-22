@@ -3,7 +3,8 @@ import { neon } from '@neondatabase/serverless';
 import nodemailer from 'nodemailer';
 
 // MobileSentrix API Config (OAuth 1.0a)
-const MS_API_URL = process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu/api/rest';
+// Use proxy URL if available, otherwise fall back to direct API URL
+const MS_API_URL = process.env.MOBILESENTRIX_PROXY_URL || process.env.MOBILESENTRIX_API_URL || 'https://www.mobilesentrix.eu/api/rest';
 const MS_CONSUMER_KEY = process.env.MOBILESENTRIX_CONSUMER_KEY || '';
 const MS_CONSUMER_SECRET = process.env.MOBILESENTRIX_CONSUMER_SECRET || '';
 const MS_ACCESS_TOKEN = process.env.MOBILESENTRIX_ACCESS_TOKEN || '';
