@@ -392,7 +392,7 @@ export default function AdminPage() {
         <tr>
           <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${item.product?.name || 'Product'}</td>
           <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:center;">${item.quantity}x</td>
-          <td style="padding:8px;border-bottom:1px solid #e2e8f0;">€${(item.priceAtPurchase || item.price || 0).toFixed(2)}</td>
+          <td style="padding:8px;border-bottom:1px solid #e2e8f0;">€${(item.priceAtPurchase || 0).toFixed(2)}</td>
           <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${item.product?.sku || '-'}</td>
         </tr>
       `).join('');
