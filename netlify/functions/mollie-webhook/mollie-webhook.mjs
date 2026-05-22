@@ -58,10 +58,10 @@ export const handler = async (event, context) => {
         return { statusCode: 200, body: JSON.stringify({ received: true, orderId, alreadyExists: true }) };
       }
 
-      // Create order (only use columns that exist in database)
+      // Create order with all columns
       await sql`
         INSERT INTO orders (
-          id, user_id, user_email, company_name, kvk_number,
+          id, user_id, user_email, company_name, kvk_number, vat_number,
           contact_person, phone,
           shipping_address, shipping_city, shipping_postal_code, shipping_country,
           billing_address, billing_city, billing_postal_code, billing_country,
@@ -72,6 +72,7 @@ export const handler = async (event, context) => {
           ${orderData.userEmail},
           ${orderData.companyName || ''},
           ${orderData.kvkNumber || ''},
+          ${orderData.vatNumber || ''},
           ${orderData.contactPerson || ''},
           ${orderData.phone || ''},
           ${orderData.shippingAddress || ''},
