@@ -380,11 +380,33 @@ async function sendOrderConfirmationEmail(orderData, orderId) {
       </div>
     `;
 
+    // Try to fetch the invoice PDF from our API and attach it
+    let attachments;
+    try {
+      const baseUrl = process.env.URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://labfix.nl';
+      const pdfRes = await fetch(`${baseUrl}/api/orders/${encodeURIComponent(orderId)}/invoice?download=1`);
+      if (pdfRes.ok) {
+        const arrayBuf = await pdfRes.arrayBuffer();
+        const pdfBuffer = Buffer.from(arrayBuf);
+        attachments = [{
+          filename: `factuur-${orderId}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        }];
+        console.log('📎 Invoice PDF attached:', pdfBuffer.length, 'bytes');
+      } else {
+        console.warn('⚠️ Could not fetch invoice PDF, sending email without attachment. Status:', pdfRes.status);
+      }
+    } catch (pdfErr) {
+      console.error('⚠️ Failed to fetch invoice PDF:', pdfErr.message);
+    }
+
     await transporter.sendMail({
       from: '"LabFix" <info@labfix.nl>',
       to: orderData.userEmail,
       subject: `Bedankt voor je bestelling #${orderId}`,
       html: emailHtml,
+      attachments,
     });
 
     console.log('✅ Order confirmation email sent to:', orderData.userEmail);

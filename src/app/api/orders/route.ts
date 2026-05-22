@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmation } from '@/lib/email';
+import { generateInvoicePDF } from '@/lib/invoice';
 import { addToCart as msAddToCart, clearCart as msClearCart, createOrder as msCreateOrder, getOrCreateMsAddress, SHIPPING_METHODS } from '@/lib/mobilesentrix-new';
 
 export const runtime = 'nodejs';
@@ -173,7 +174,39 @@ export async function POST(request: NextRequest) {
       VALUES (${id}, ${body.userId}, ${body.userEmail}, ${body.companyName || ''}, ${body.kvkNumber || ''}, ${body.vatNumber || ''}, ${body.contactPerson || ''}, ${body.phone || ''}, ${body.shippingAddress || ''}, ${body.shippingCity || ''}, ${body.shippingPostalCode || ''}, ${body.shippingCountry || ''}, ${body.billingAddress || body.shippingAddress || ''}, ${body.billingCity || body.shippingCity || ''}, ${body.billingPostalCode || body.shippingPostalCode || ''}, ${body.billingCountry || body.shippingCountry || ''}, ${JSON.stringify(body.items)}, ${body.subtotal}, ${body.shippingCost}, ${body.total}, 'pending', ${body.notes || ''}, ${msOrderId}, ${msIncrementId})
     `;
 
-    // Send confirmation email
+    // Generate invoice PDF
+    let invoiceBuffer: Buffer | undefined;
+    try {
+      invoiceBuffer = await generateInvoicePDF({
+        orderId: id,
+        orderDate: new Date(),
+        customer: {
+          companyName: body.companyName || undefined,
+          contactPerson: body.contactPerson || body.userEmail,
+          email: body.userEmail,
+          phone: body.phone || undefined,
+          kvkNumber: body.kvkNumber || undefined,
+          vatNumber: body.vatNumber || undefined,
+          address: body.shippingAddress || '',
+          postalCode: body.shippingPostalCode || '',
+          city: body.shippingCity || '',
+          country: body.shippingCountry || 'Nederland',
+        },
+        items: body.items.map((item: any) => ({
+          name: item.product?.name || 'Product',
+          sku: item.product?.sku || '',
+          quantity: item.quantity,
+          price: item.priceAtPurchase,
+        })),
+        subtotal: body.subtotal,
+        shippingCost: body.shippingCost,
+        total: body.total,
+      });
+    } catch (pdfErr) {
+      console.error('Invoice PDF generation failed:', pdfErr);
+    }
+
+    // Send confirmation email (with invoice PDF attached)
     try {
       await sendOrderConfirmation({
         to: body.userEmail,
@@ -192,6 +225,7 @@ export async function POST(request: NextRequest) {
         shippingCity: body.shippingCity,
         shippingPostalCode: body.shippingPostalCode,
         shippingCountry: body.shippingCountry,
+        invoiceBuffer,
       });
     } catch (emailErr) {
       console.error('Email send failed (order still created):', emailErr);

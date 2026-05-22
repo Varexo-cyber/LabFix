@@ -10,6 +10,26 @@ import ProductCard from '@/components/ProductCard';
 import ImageSlideshow from '@/components/ImageSlideshow';
 import { normalizeImageUrl } from '@/lib/utils';
 
+// Highlight important model keywords for better distinction
+function highlightModelKeywords(name: string) {
+  const keywords = [
+    { pattern: /\bPro Max\b/gi, className: 'text-primary-600 font-bold' },
+    { pattern: /\bPro\b(?! Max)/gi, className: 'text-primary-600 font-semibold' },
+    { pattern: /\bPlus\b/gi, className: 'text-blue-600 font-semibold' },
+    { pattern: /\bMini\b/gi, className: 'text-green-600 font-semibold' },
+    { pattern: /\bUltra\b/gi, className: 'text-purple-600 font-semibold' },
+    { pattern: /\bMax\b(?! Pro)/gi, className: 'text-orange-600 font-semibold' },
+    { pattern: /\bSE\b/gi, className: 'text-gray-600 font-semibold' },
+  ];
+
+  let highlighted = name;
+  keywords.forEach(({ pattern, className }) => {
+    highlighted = highlighted.replace(pattern, `<span class="${className}">$&</span>`);
+  });
+
+  return <span dangerouslySetInnerHTML={{ __html: highlighted }} />;
+}
+
 export default function ProductDetailPage() {
   const { t, locale, formatPrice, addToCart } = useApp();
   const params = useParams();
@@ -58,7 +78,7 @@ export default function ProductDetailPage() {
         <span className="mx-2">/</span>
         <Link href="/products" className="hover:text-primary-500">{t('products.title')}</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-800">{name}</span>
+        <span className="text-gray-800">{highlightModelKeywords(name)}</span>
       </nav>
 
       <Link href="/products" className="inline-flex items-center gap-1 text-primary-500 hover:text-primary-600 mb-6">
@@ -93,7 +113,7 @@ export default function ProductDetailPage() {
         <div className="animate-fade-in-right delay-200">
           <div className="mb-2"></div>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{name}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{highlightModelKeywords(name)}</h1>
 
           <p className="text-sm text-gray-500 mb-4">
             {t('products.sku')}: {product.sku}

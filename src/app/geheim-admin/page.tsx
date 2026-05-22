@@ -1057,9 +1057,27 @@ export default function AdminPage() {
           <div className="animate-fade-in-up">
             {selectedOrder ? (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
                   <h2 className="text-xl font-bold">Bestelling {selectedOrder.id}</h2>
-                  <button onClick={() => setSelectedOrder(null)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`/api/orders/${selectedOrder.id}/invoice`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm border border-primary-500 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                      title="Open factuur in nieuw tabblad"
+                    >
+                      <ClipboardList size={16} /> Bekijk factuur
+                    </a>
+                    <a
+                      href={`/api/orders/${selectedOrder.id}/invoice?download=1`}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                      title="Download factuur als PDF"
+                    >
+                      <ClipboardList size={16} /> Download PDF
+                    </a>
+                    <button onClick={() => setSelectedOrder(null)} className="text-gray-400 hover:text-gray-600"><X size={24} /></button>
+                  </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -1444,11 +1462,36 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            {/* Invoice PDF Preview */}
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <ClipboardList size={18} /> Voorbeeld Factuur PDF
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">Bekijk of download een voorbeeld van de factuur die klanten krijgen.</p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/api/orders/preview/invoice?test=1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-primary-500 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                >
+                  <ClipboardList size={16} /> Bekijk voorbeeld factuur
+                </a>
+                <a
+                  href="/api/orders/preview/invoice?test=1&download=1"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                >
+                  <ClipboardList size={16} /> Download PDF
+                </a>
+              </div>
+            </div>
+
             <div className="bg-blue-50 rounded-xl p-6">
               <h3 className="font-semibold text-blue-800 mb-2">Email Templates</h3>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>✅ Account bevestiging (Zakelijk & Particulier)</li>
-                <li>✅ Order bevestiging met logo</li>
+                <li>✅ Order bevestiging met logo + factuur PDF bijlage</li>
                 <li>✅ Reparatie bevestiging (Ophalen & Opsturen)</li>
               </ul>
             </div>

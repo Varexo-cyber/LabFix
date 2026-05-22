@@ -35,6 +35,7 @@ interface OrderEmailData {
   shippingCity: string;
   shippingPostalCode: string;
   shippingCountry: string;
+  invoiceBuffer?: Buffer; // optional invoice PDF
 }
 
 export async function sendOrderConfirmation(data: OrderEmailData) {
@@ -178,11 +179,22 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 
   const fullHtml = headerHtml + bodyHtml + footerHtml;
 
+  const attachments = data.invoiceBuffer
+    ? [
+        {
+          filename: `factuur-${data.orderId}.pdf`,
+          content: data.invoiceBuffer,
+          contentType: 'application/pdf',
+        },
+      ]
+    : undefined;
+
   return labfixTransporter.sendMail({
     from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to: data.to,
     subject: `LabFix - Orderbevestiging ${data.orderId} 🎉`,
     html: fullHtml,
+    attachments,
   });
 }
 

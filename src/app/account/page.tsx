@@ -292,8 +292,24 @@ export default function AccountPage() {
                           )}
                         </div>
                       </div>
-                      <div className="border-t mt-4 pt-4 flex justify-between items-center">
+                      <div className="border-t mt-4 pt-4 flex justify-between items-center gap-3 flex-wrap">
                         <p className="font-bold text-lg">€{order.total.toFixed(2)}</p>
+                        <div className="flex gap-2">
+                          <a
+                            href={`/api/orders/${order.id}/invoice`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-primary-500 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                          >
+                            <FileText size={16} /> Bekijk factuur
+                          </a>
+                          <a
+                            href={`/api/orders/${order.id}/invoice?download=1`}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                          >
+                            <FileText size={16} /> Download PDF
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}

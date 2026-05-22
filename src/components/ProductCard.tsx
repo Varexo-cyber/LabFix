@@ -11,6 +11,26 @@ interface ProductCardProps {
   product: Product;
 }
 
+// Highlight important model keywords for better distinction
+function highlightModelKeywords(name: string) {
+  const keywords = [
+    { pattern: /\bPro Max\b/gi, className: 'text-primary-600 font-bold' },
+    { pattern: /\bPro\b(?! Max)/gi, className: 'text-primary-600 font-semibold' },
+    { pattern: /\bPlus\b/gi, className: 'text-blue-600 font-semibold' },
+    { pattern: /\bMini\b/gi, className: 'text-green-600 font-semibold' },
+    { pattern: /\bUltra\b/gi, className: 'text-purple-600 font-semibold' },
+    { pattern: /\bMax\b(?! Pro)/gi, className: 'text-orange-600 font-semibold' },
+    { pattern: /\bSE\b/gi, className: 'text-gray-600 font-semibold' },
+  ];
+
+  let highlighted = name;
+  keywords.forEach(({ pattern, className }) => {
+    highlighted = highlighted.replace(pattern, `<span class="${className}">$&</span>`);
+  });
+
+  return <span dangerouslySetInnerHTML={{ __html: highlighted }} />;
+}
+
 export default function ProductCard({ product }: ProductCardProps) {
   const { t, locale, addToCart } = useApp();
 
@@ -55,11 +75,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       </Link>
       <div className="p-4">
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors line-clamp-2 text-sm min-h-[2.5rem]">
-            {name}
+          <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors text-sm leading-tight">
+            {highlightModelKeywords(name)}
           </h3>
         </Link>
-        <p className="text-gray-500 text-xs mt-1 line-clamp-1">{product.sku}</p>
+        <p className="text-gray-600 text-xs mt-1 font-medium">{product.sku}</p>
         <div className="flex items-center justify-between mt-3">
           <div>
             <span className="text-lg font-bold text-primary-500">€{product.price.toFixed(2)}</span>

@@ -6,6 +6,26 @@ import { useApp } from '@/context/AppContext';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowLeft, Truck } from 'lucide-react';
 import { NL_SHIPPING, FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
 
+// Highlight important model keywords for better distinction
+function highlightModelKeywords(name: string) {
+  const keywords = [
+    { pattern: /\bPro Max\b/gi, className: 'text-primary-600 font-bold' },
+    { pattern: /\bPro\b(?! Max)/gi, className: 'text-primary-600 font-semibold' },
+    { pattern: /\bPlus\b/gi, className: 'text-blue-600 font-semibold' },
+    { pattern: /\bMini\b/gi, className: 'text-green-600 font-semibold' },
+    { pattern: /\bUltra\b/gi, className: 'text-purple-600 font-semibold' },
+    { pattern: /\bMax\b(?! Pro)/gi, className: 'text-orange-600 font-semibold' },
+    { pattern: /\bSE\b/gi, className: 'text-gray-600 font-semibold' },
+  ];
+
+  let highlighted = name;
+  keywords.forEach(({ pattern, className }) => {
+    highlighted = highlighted.replace(pattern, `<span class="${className}">$&</span>`);
+  });
+
+  return <span dangerouslySetInnerHTML={{ __html: highlighted }} />;
+}
+
 export default function CartPage() {
   const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
 
@@ -44,8 +64,8 @@ export default function CartPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <Link href={`/products/${item.product.id}`} className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors text-sm md:text-base line-clamp-2">
-                            {name}
+                          <h3 className="font-semibold text-gray-800 hover:text-primary-500 transition-colors text-sm md:text-base leading-tight">
+                            {highlightModelKeywords(name)}
                           </h3>
                         </Link>
                         <button
