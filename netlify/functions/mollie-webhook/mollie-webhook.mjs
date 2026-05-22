@@ -1,18 +1,14 @@
-const { createMollieClient } = require('@mollie/api-client');
+import { createMollieClient } from '@mollie/api-client';
+import { neon } from '@neondatabase/serverless';
 
-// Database connection (Neon PostgreSQL)
-const { neon } = require('@neondatabase/serverless');
-
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   console.log('🔔 Mollie webhook received:', { timestamp: new Date().toISOString() });
   
-  // Only accept POST requests
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method not allowed' };
   }
 
   try {
-    // Parse form data
     const params = new URLSearchParams(event.body);
     const molliePaymentId = params.get('id');
 
@@ -23,7 +19,6 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, body: 'No payment ID' };
     }
 
-    // Get Mollie payment details
     const mollieApiKey = process.env.MOLLIE_API_KEY;
     if (!mollieApiKey) {
       console.error('❌ Mollie API key not configured');
@@ -35,13 +30,10 @@ exports.handler = async (event, context) => {
     
     console.log('💰 Payment status:', payment.status, 'Order ID:', payment.metadata?.orderId);
 
-    // Connect to database
     const sql = neon(process.env.DATABASE_URL);
 
-    // Update payment status
     await sql`UPDATE payments SET status = ${payment.status}, updated_at = NOW() WHERE mollie_payment_id = ${molliePaymentId}`;
 
-    // If paid, create order
     if (payment.status === 'paid') {
       const orderId = payment.metadata?.orderId;
       
@@ -50,7 +42,6 @@ exports.handler = async (event, context) => {
         return { statusCode: 400, body: 'Missing orderId' };
       }
 
-      // Get order data from payments table
       const paymentRows = await sql`SELECT order_data FROM payments WHERE mollie_payment_id = ${molliePaymentId} LIMIT 1`;
       const orderData = paymentRows[0]?.order_data;
 
@@ -61,29 +52,26 @@ exports.handler = async (event, context) => {
 
       console.log('📦 Creating order:', orderId);
 
-      // Check if order already exists
       const existing = await sql`SELECT id FROM orders WHERE id = ${orderId}`;
       if (existing.length > 0) {
         console.log('✅ Order already exists:', orderId);
         return { statusCode: 200, body: JSON.stringify({ received: true, orderId, alreadyExists: true }) };
       }
 
-      // Create order in database
+      // Create order (only use columns that exist in database)
       await sql`
         INSERT INTO orders (
-          id, user_id, user_email, company_name, kvk_number, vat_number,
+          id, user_id, user_email, company_name, kvk_number,
           contact_person, phone,
           shipping_address, shipping_city, shipping_postal_code, shipping_country,
           billing_address, billing_city, billing_postal_code, billing_country,
-          items, subtotal, shipping_cost, total, status, notes,
-          ms_order_id, ms_increment_id
+          items, subtotal, shipping_cost, total, status, notes
         ) VALUES (
           ${orderId},
           ${orderData.userId || null},
           ${orderData.userEmail},
           ${orderData.companyName || ''},
           ${orderData.kvkNumber || ''},
-          ${orderData.vatNumber || ''},
           ${orderData.contactPerson || ''},
           ${orderData.phone || ''},
           ${orderData.shippingAddress || ''},
@@ -99,25 +87,19 @@ exports.handler = async (event, context) => {
           ${orderData.shippingCost},
           ${orderData.total},
           'paid',
-          ${orderData.notes || ''},
-          ${''},
-          ${''}
+          ${orderData.notes || ''}
         )
       `;
 
       console.log('✅ Order created:', orderId);
 
-      // Update payment with orderId
       await sql`UPDATE payments SET status = 'paid', order_id = ${orderId} WHERE mollie_payment_id = ${molliePaymentId}`;
-
-      // Note: MobileSentrix sync and email sending would require additional setup
-      // For now, the order is at least saved to the database
     }
 
     return { statusCode: 200, body: JSON.stringify({ received: true }) };
     
   } catch (error) {
-    console.error('❌ Webhook error:', error);
+    console.error('❌ Webhook error:', error.message, error.stack);
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };

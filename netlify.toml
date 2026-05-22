@@ -12,5 +12,5 @@
 # Redirect Mollie webhook to Netlify Function
 [[redirects]]
   from = "/api/payments/mollie/webhook"
-  to = "/.netlify/functions/mollie-webhook"
+  to = "/.netlify/functions/mollie-webhook/mollie-webhook.mjs"
   status = 200
