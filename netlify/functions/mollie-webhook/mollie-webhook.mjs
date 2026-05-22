@@ -17,35 +17,54 @@ const SHIPPING_METHODS = {
   'pickup': 'flatrate1'               // In Store Pick Up
 };
 
-// MobileSentrix API helper (OAuth)
+// MobileSentrix API helper (OAuth 1.0a)
 async function msApiCall(endpoint, method = 'GET', data = null) {
   const url = `${MS_API_URL}${endpoint}`;
   
-  // Build OAuth authorization header
+  // OAuth 1.0a parameters
+  const timestamp = Math.floor(Date.now() / 1000);
+  const nonce = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  
   const oauthParams = {
     oauth_consumer_key: MS_CONSUMER_KEY,
     oauth_token: MS_ACCESS_TOKEN,
     oauth_signature_method: 'HMAC-SHA1',
-    oauth_timestamp: Math.floor(Date.now() / 1000),
-    oauth_nonce: Math.random().toString(36).substring(2),
+    oauth_timestamp: timestamp,
+    oauth_nonce: nonce,
     oauth_version: '1.0'
   };
   
-  // Create signature base string
-  const params = new URLSearchParams(oauthParams);
-  const sortedParams = Array.from(params.entries()).sort().map(([k, v]) => `${k}=${v}`).join('&');
-  const signatureBase = `${method}&${encodeURIComponent(url)}&${encodeURIComponent(sortedParams)}`;
-  const signingKey = `${MS_CONSUMER_SECRET}&${MS_ACCESS_TOKEN_SECRET}`;
+  // Parse URL to extract query params
+  const urlObj = new URL(url);
+  const queryParams = {};
+  urlObj.searchParams.forEach((value, key) => {
+    queryParams[key] = value;
+  });
   
-  // Generate signature (simplified - in production use crypto)
+  // Combine OAuth params with query params for signature
+  const allParams = { ...oauthParams, ...queryParams };
+  
+  // Create signature base string (properly encoded)
+  const sortedParams = Object.keys(allParams).sort().map(key => {
+    return `${encodeURIComponent(key)}=${encodeURIComponent(allParams[key])}`;
+  }).join('&');
+  
+  const signatureBase = `${method}&${encodeURIComponent(urlObj.origin + urlObj.pathname)}&${encodeURIComponent(sortedParams)}`;
+  const signingKey = `${encodeURIComponent(MS_CONSUMER_SECRET)}&${encodeURIComponent(MS_ACCESS_TOKEN_SECRET)}`;
+  
+  // Generate signature
   const crypto = await import('crypto');
   const signature = crypto.createHmac('sha1', signingKey).update(signatureBase).digest('base64');
-  oauthParams.oauth_signature = signature;
   
-  // Build Authorization header
-  const authHeader = 'OAuth ' + Object.entries(oauthParams)
-    .map(([k, v]) => `${k}="${v}"`)
-    .join(', ');
+  // Build Authorization header with encoded values
+  const authParams = {
+    ...oauthParams,
+    oauth_signature: signature
+  };
+  
+  const authHeader = 'OAuth ' + Object.keys(authParams).sort().map(key => {
+    return `${key}="${encodeURIComponent(authParams[key])}"`;
+  }).join(', ');
   
   const options = {
     method,
@@ -54,11 +73,32 @@ async function msApiCall(endpoint, method = 'GET', data = null) {
       'Authorization': authHeader
     }
   };
-  if (data) options.body = JSON.stringify(data);
+  
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+  
+  console.log('🔧 MS API Call:', method, endpoint);
+  console.log('🔧 Auth Header:', authHeader.substring(0, 100) + '...');
   
   const res = await fetch(url, options);
-  if (!res.ok) throw new Error(`MS API ${endpoint} failed: ${res.status}`);
-  return res.json();
+  
+  console.log('🔧 Response status:', res.status);
+  
+  const responseText = await res.text();
+  let responseData;
+  try {
+    responseData = JSON.parse(responseText);
+  } catch {
+    responseData = responseText;
+  }
+  
+  if (!res.ok) {
+    console.error('🔧 MS API Error:', res.status, responseData);
+    throw new Error(`MS API ${endpoint} failed: ${res.status} - ${JSON.stringify(responseData)}`);
+  }
+  
+  return responseData;
 }
 
 // Find or create MS customer
