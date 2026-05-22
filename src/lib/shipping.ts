@@ -1,10 +1,9 @@
 // Central shipping cost logic
-// NL: €6.95, free above €150
-// EU (non-NL): €18.95, always paid
+// TEMPORARY: ALL shipping is FREE - was €6.95 (NL) and €18.95 (EU)
 
-export const NL_SHIPPING = 6.95;
-export const EU_SHIPPING = 18.95;
-export const FREE_SHIPPING_THRESHOLD = 150;
+export const NL_SHIPPING = 0;  // TEMPORARY: Free shipping
+export const EU_SHIPPING = 0;  // TEMPORARY: Free shipping
+export const FREE_SHIPPING_THRESHOLD = 0;  // TEMPORARY: All orders get free shipping
 
 export function isNL(country: string): boolean {
   const c = country?.toLowerCase().trim();
