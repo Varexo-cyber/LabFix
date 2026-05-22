@@ -2,14 +2,14 @@ import { createMollieClient } from '@mollie/api-client';
 import { neon } from '@neondatabase/serverless';
 import nodemailer from 'nodemailer';
 
-// Email transporter
+// Email transporter (using same config as Geheim Admin)
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.zoho.eu',
-  port: parseInt(process.env.SMTP_PORT || '587'),
+  host: process.env.SMTP_HOST_LABFIX || 'smtp.zoho.eu',
+  port: parseInt(process.env.SMTP_PORT_LABFIX || '587'),
   secure: false,
   auth: {
-    user: process.env.SMTP_USER || 'info@labfix.nl',
-    pass: process.env.SMTP_PASS,
+    user: process.env.SMTP_USER_LABFIX || 'info@labfix.nl',
+    pass: process.env.SMTP_PASS_LABFIX,
   },
 });
 

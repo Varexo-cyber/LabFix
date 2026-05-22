@@ -14,8 +14,21 @@ const statusIcon = (status: string) => {
     case 'shipped': return <Truck size={16} className="text-purple-500" />;
     case 'delivered': return <CheckCircle size={16} className="text-green-500" />;
     case 'cancelled': return <XCircle size={16} className="text-red-500" />;
+    case 'paid': return <CheckCircle size={16} className="text-green-500" />;
     default: return null;
   }
+};
+
+const statusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'pending': 'In afwachting',
+    'processing': 'In behandeling',
+    'shipped': 'Verzonden',
+    'delivered': 'Afgeleverd',
+    'cancelled': 'Geannuleerd',
+    'paid': 'Betaald',
+  };
+  return labels[status] || status;
 };
 
 export default function AccountPage() {
@@ -242,7 +255,7 @@ export default function AccountPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           {statusIcon(order.status)}
-                          <span className="text-sm font-medium">{t(`order.${order.status}`)}</span>
+                          <span className="text-sm font-medium">{statusLabel(order.status)}</span>
                         </div>
                       </div>
                       <div className="border-t pt-4">
