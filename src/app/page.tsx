@@ -214,14 +214,14 @@ export default function HomePage() {
               : 'Find the parts you need for all major brands of smartphones, tablets and laptops.'}
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {homeBrands.map((brand, i) => {
             const logoPath = brandLogos[brand.slug];
             return (
               <Link
                 key={brand.slug}
                 href={`/products?brand=${brand.slug}`}
-                className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 md:p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1"
+                className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 md:p-6 text-center border border-gray-100 hover:border-primary-200 hover:-translate-y-1 w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] md:w-[calc(25%-0.75rem)] lg:w-[calc(16.666%-0.833rem)] xl:w-44"
                 style={{ animationDelay: `${(i + 1) * 0.05}s` }}
               >
                 <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 bg-primary-50 rounded-2xl flex items-center justify-center p-2.5 md:p-3 group-hover:scale-110 group-hover:bg-primary-100 transition-all duration-300">

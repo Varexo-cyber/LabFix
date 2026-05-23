@@ -603,8 +603,8 @@ export default function AdminPage() {
           <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
             <ShoppingCart className="text-purple-500" size={24} />
             <div>
-              <p className="text-2xl font-bold">€{orders.reduce((sum, o) => sum + o.total, 0).toFixed(0)}</p>
-              <p className="text-sm text-gray-500">Omzet</p>
+              <p className="text-2xl font-bold">€{orders.reduce((sum, o) => sum + (o.total || 0), 0).toFixed(2)}</p>
+              <p className="text-sm text-gray-500">Omzet ({orders.length} best.)</p>
             </div>
           </div>
         </div>

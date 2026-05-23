@@ -215,15 +215,16 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       });
 
       // ---------- TOTALS ----------
+      // Prices are already incl. BTW — do NOT add BTW on top
       const vatRate = data.vatRate ?? 0.21;
-      const subtotalExcl = data.subtotal;
-      const vatAmount = (subtotalExcl + data.shippingCost) * vatRate;
-      const grandTotal = subtotalExcl + data.shippingCost + vatAmount;
+      const grandTotal = data.subtotal + data.shippingCost;
+      // BTW is informational only: back-calculate from incl. price
+      const vatAmount = grandTotal - (grandTotal / (1 + vatRate));
 
       const totalsX = pageWidth - 230;
       let totalsY = rowY + 20;
 
-      const totalRow = (label: string, value: string, opts: { bold?: boolean; big?: boolean; color?: string } = {}) => {
+      const totalRow = (label: string, value: string, opts: { bold?: boolean; big?: boolean; color?: string; italic?: boolean } = {}) => {
         doc.fillColor(opts.color || COLORS.muted).font(opts.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(opts.big ? 12 : 10);
         doc.text(label, totalsX, totalsY, { width: 110, lineBreak: false });
         doc.fillColor(opts.color || COLORS.text).font(opts.bold ? 'Helvetica-Bold' : 'Helvetica');
@@ -231,9 +232,8 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
         totalsY += opts.big ? 20 : 16;
       };
 
-      totalRow('Subtotaal', `€ ${subtotalExcl.toFixed(2)}`);
+      totalRow('Subtotaal (incl. BTW)', `€ ${data.subtotal.toFixed(2)}`);
       totalRow('Verzending', data.shippingCost === 0 ? 'Gratis' : `€ ${data.shippingCost.toFixed(2)}`);
-      totalRow(`BTW (${(vatRate * 100).toFixed(0)}%)`, `€ ${vatAmount.toFixed(2)}`);
 
       // Divider
       doc.moveTo(totalsX, totalsY + 2).lineTo(pageWidth - 50, totalsY + 2)
@@ -241,6 +241,11 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
       totalsY += 8;
 
       totalRow('Totaal', `€ ${grandTotal.toFixed(2)}`, { bold: true, big: true, color: COLORS.primary });
+
+      // Informational BTW breakdown (not added, just shown)
+      totalsY += 4;
+      doc.fillColor(COLORS.muted).font('Helvetica').fontSize(8)
+        .text(`Waarvan BTW (${(vatRate * 100).toFixed(0)}%): € ${vatAmount.toFixed(2)}`, totalsX, totalsY, { width: 180, lineBreak: false });
 
       // ---------- FOOTER ----------
       const footerY = doc.page.height - 70;
