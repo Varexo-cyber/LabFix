@@ -619,3 +619,157 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Order Status Update Email (processing / shipped / delivered)
+// ─────────────────────────────────────────────────────────────────────────────
+interface OrderStatusEmailData {
+  to: string;
+  orderId: string;
+  contactPerson: string;
+  status: 'processing' | 'shipped' | 'delivered';
+  trackingNumber?: string;
+  shippingCarrier?: string; // e.g. "PostNL", "DHL"
+}
+
+const STATUS_CONFIG = {
+  processing: {
+    emoji: '⚙️',
+    title: 'Uw bestelling wordt verwerkt!',
+    subject: 'Uw bestelling wordt verwerkt',
+    headline: 'Uw bestelling wordt nu verwerkt 📦',
+    message: 'Goed nieuws! Uw bestelling is in behandeling genomen en wordt zorgvuldig voor verzending klaargemaakt. U ontvangt een nieuwe e-mail zodra uw pakket onderweg is.',
+    color: '#3b82f6',
+    bgColor: '#dbeafe',
+  },
+  shipped: {
+    emoji: '🚚',
+    title: 'Uw bestelling is onderweg!',
+    subject: 'Uw bestelling is verzonden',
+    headline: 'Uw pakket is onderweg! 🚚',
+    message: 'Goed nieuws! Uw bestelling is verzonden en is nu onderweg naar u toe. U kunt het pakket volgen met onderstaande track & trace code.',
+    color: '#8b5cf6',
+    bgColor: '#ede9fe',
+  },
+  delivered: {
+    emoji: '✅',
+    title: 'Uw bestelling is geleverd!',
+    subject: 'Uw bestelling is geleverd',
+    headline: 'Uw pakket is bezorgd! ✅',
+    message: 'Uw pakket is succesvol afgeleverd. We hopen dat u tevreden bent met uw bestelling. Heeft u vragen of opmerkingen? Laat het ons gerust weten.',
+    color: '#10b981',
+    bgColor: '#d1fae5',
+  },
+} as const;
+
+function buildTrackingButtonHtml(trackingNumber: string, carrier: string): string {
+  const carrierLower = carrier.toLowerCase();
+  let trackUrl = '';
+  if (carrierLower.includes('postnl')) {
+    trackUrl = `https://jouw.postnl.nl/track-and-trace/${encodeURIComponent(trackingNumber)}-NL-NL`;
+  } else if (carrierLower.includes('dhl')) {
+    trackUrl = `https://www.dhl.com/nl-nl/home/tracking/tracking-parcel.html?submit=1&tracking-id=${encodeURIComponent(trackingNumber)}`;
+  } else if (carrierLower.includes('dpd')) {
+    trackUrl = `https://www.dpd.com/tracking/?parcelNumber=${encodeURIComponent(trackingNumber)}`;
+  } else if (carrierLower.includes('ups')) {
+    trackUrl = `https://www.ups.com/track?tracknum=${encodeURIComponent(trackingNumber)}`;
+  } else {
+    trackUrl = `https://www.google.com/search?q=${encodeURIComponent(trackingNumber + ' track and trace')}`;
+  }
+  return `<a href="${trackUrl}" style="background:linear-gradient(135deg,#8b5cf6 0%,#a78bfa 100%);color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;box-shadow:0 4px 6px rgba(139,92,246,0.3)">📍 Volg uw pakket</a>`;
+}
+
+export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
+  const cfg = STATUS_CONFIG[data.status];
+  const carrier = data.shippingCarrier || 'PostNL';
+
+  const headerHtml = `
+    <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:40px 24px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+              <tr>
+                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                </td>
+              </tr>
+            </table>
+            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+          </td>
+        </tr>
+      </table>
+  `;
+
+  const trackingBlock = data.trackingNumber
+    ? `
+      <div style="background:${cfg.bgColor};border:2px solid ${cfg.color};border-radius:8px;padding:24px;margin:24px 0;text-align:center">
+        <p style="margin:0 0 8px;color:#475569;font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Track &amp; Trace</p>
+        <p style="margin:0 0 4px;color:#64748b;font-size:13px">Vervoerder: <strong style="color:#1e293b">${carrier}</strong></p>
+        <p style="margin:8px 0 16px;color:${cfg.color};font-size:22px;font-weight:bold;letter-spacing:1px;font-family:'Courier New',monospace">${data.trackingNumber}</p>
+        ${buildTrackingButtonHtml(data.trackingNumber, carrier)}
+      </div>
+    `
+    : '';
+
+  const bodyHtml = `
+    <div style="padding:32px 24px">
+      <h2 style="color:#1e293b;font-size:24px;margin:0 0 8px">${cfg.headline}</h2>
+      <p style="color:#64748b;font-size:14px;margin:0 0 24px">${cfg.title}</p>
+
+      <p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px">
+        Beste ${data.contactPerson},<br><br>
+        ${cfg.message}
+      </p>
+
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:20px;margin:24px 0">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+          <tr>
+            <td align="left" valign="middle" style="padding:0">
+              <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Bestelnummer</p>
+              <p style="margin:4px 0 0;color:#1e40af;font-size:20px;font-weight:bold">${data.orderId}</p>
+            </td>
+            <td align="right" valign="middle" style="padding:0;white-space:nowrap">
+              <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Status</p>
+              <p style="margin:4px 0 0;color:${cfg.color};font-size:14px;font-weight:bold;text-transform:uppercase">${cfg.emoji} ${data.status}</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      ${trackingBlock}
+
+      <div style="text-align:center;margin:32px 0">
+        <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://labfix.nl'}/account" style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%);color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;box-shadow:0 4px 6px rgba(220,38,38,0.3)">
+          Bekijk Mijn Bestellingen →
+        </a>
+      </div>
+
+      <p style="color:#64748b;font-size:14px;margin:24px 0 0">
+        Met vriendelijke groet,<br>
+        <strong>Het LabFix Team</strong>
+      </p>
+    </div>
+  `;
+
+  const footerHtml = `
+      <div style="background:#1e293b;padding:24px;text-align:center;color:#94a3b8;font-size:12px">
+        <p style="margin:0 0 8px"><strong style="color:#fff">LabFix Repair Center</strong></p>
+        <p style="margin:4px 0">KvK: 42035906 | BTW: NL005445900B06</p>
+        <p style="margin:4px 0">Bank: NL36INGB0115171061</p>
+        <p style="margin:8px 0">
+          <span style="color:#60a5fa">📞 +31 6 5113 1133</span> |
+          <span style="color:#60a5fa">✉️ info@labfix.nl</span>
+        </p>
+        <p style="margin:16px 0 0;font-size:11px;color:#64748b">© ${new Date().getFullYear()} LabFix - Alle rechten voorbehouden</p>
+      </div>
+      <p style="text-align:center;color:#94a3b8;font-size:11px;padding:8px 24px;margin:0">Dit is een automatisch gegenereerde e-mail. U hoeft hier niet op te reageren.</p>
+    </div>
+  `;
+
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    to: data.to,
+    subject: `LabFix - ${cfg.subject} (${data.orderId})`,
+    html: headerHtml + bodyHtml + footerHtml,
+  });
+}
