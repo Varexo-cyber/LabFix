@@ -692,6 +692,13 @@ export async function getCustomerAddresses(customerId: string): Promise<MSCustom
   return apiRequest<MSCustomerAddress[]>(`/customers/${customerId}/addresses`, 'GET');
 }
 
+// Strip leading zero and limit to 9 digits (MS API max length)
+function normalizePhone(phone: string): string {
+  const digitsOnly = (phone || '').replace(/\D/g, '');
+  const stripped = digitsOnly.startsWith('0') ? digitsOnly.slice(1) : digitsOnly;
+  return stripped.slice(0, 9) || '600000000';
+}
+
 // Add customer address
 export async function addCustomerAddress(
   customerId: string,
@@ -707,10 +714,10 @@ export async function addCustomerAddress(
     street: address.street,
     city: address.city,
     country_id: address.country_id,
-    region: address.region || '',
+    region: address.region || '0',
     postcode: address.postcode,
-    telephone: address.telephone,
-    company: address.company || '',
+    telephone: normalizePhone(address.telephone),
+    company: address.company || 'LabFix',
     vat_id: address.vat_id || '',
   });
 }
@@ -725,16 +732,27 @@ export async function updateCustomerAddress(
   });
 }
 
-// Helper: get existing default address ID or create a new one
+// Helper: get existing matching address ID or create a new one
+// Matches on FULL address (street + postcode + name) to avoid sending packages
+// to the wrong customer who happens to live in the same city/postcode area.
 export async function getOrCreateMsAddress(
   customerId: string,
   addressInput: MSAddCustomerAddressInput
 ): Promise<string> {
   try {
     const addresses = await getCustomerAddresses(customerId);
-    const existing = addresses.find(
-      (a) => a.postcode === addressInput.postcode && a.city === addressInput.city
-    );
+    const inputStreet = (addressInput.street?.[0] || '').trim().toLowerCase();
+    const inputName = `${addressInput.firstname} ${addressInput.lastname}`.trim().toLowerCase();
+    const existing = addresses.find((a) => {
+      const aStreet = (a.street?.[0] || '').trim().toLowerCase();
+      const aName = `${a.firstname || ''} ${a.lastname || ''}`.trim().toLowerCase();
+      return (
+        aStreet === inputStreet &&
+        a.postcode === addressInput.postcode &&
+        a.city?.toLowerCase() === addressInput.city?.toLowerCase() &&
+        aName === inputName
+      );
+    });
     if (existing?.entity_id) return existing.entity_id;
   } catch {
     // ignore, create new

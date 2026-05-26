@@ -34,6 +34,7 @@ export default {
         oauthHeader,        // The full OAuth Authorization header
         method = 'GET',
         queryParams = {},
+        body: requestBody,  // Body for POST/PUT requests (JSON object)
         apiBaseUrl = 'https://www.mobilesentrix.eu'  // Default to .eu
       } = body;
 
@@ -55,8 +56,8 @@ export default {
         targetUrl += (targetUrl.includes('?') ? '&' : '?') + qs;
       }
 
-      // Forward the request to Mobile Sentrix
-      const msResponse = await fetch(targetUrl, {
+      // Build fetch options
+      const fetchOptions = {
         method,
         headers: {
           'Authorization': oauthHeader,
@@ -64,7 +65,16 @@ export default {
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
-      });
+      };
+
+      // Include body for POST/PUT/PATCH requests
+      if (requestBody && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        fetchOptions.headers['Content-Type'] = 'application/json';
+        fetchOptions.body = JSON.stringify(requestBody);
+      }
+
+      // Forward the request to Mobile Sentrix
+      const msResponse = await fetch(targetUrl, fetchOptions);
 
       // Get the response body
       const responseBody = await msResponse.text();
