@@ -52,18 +52,24 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
-      <!-- Header with Logo -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+      <!-- Header: top red accent bar -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
         <tr>
-          <td align="center" style="padding:40px 24px">
+          <td style="height:5px;background:linear-gradient(90deg,#dc2626 0%,#ef4444 50%,#dc2626 100%);font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+      </table>
+      <!-- Header: logo on clean charcoal background -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0f172a;border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:48px 24px 40px">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
               <tr>
-                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
-                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                <td align="center" style="background:#fff;padding:20px 40px;border-radius:14px">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="170" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
                 </td>
               </tr>
             </table>
-            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+            <p style="color:#94a3b8;margin:24px 0 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600">Professionele Reparatieservice</p>
           </td>
         </tr>
       </table>
@@ -254,18 +260,24 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
 
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
-      <!-- Header with Logo -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+      <!-- Header: top red accent bar -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
         <tr>
-          <td align="center" style="padding:40px 24px">
+          <td style="height:5px;background:linear-gradient(90deg,#dc2626 0%,#ef4444 50%,#dc2626 100%);font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+      </table>
+      <!-- Header: logo on clean charcoal background -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0f172a;border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:48px 24px 40px">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
               <tr>
-                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
-                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                <td align="center" style="background:#fff;padding:20px 40px;border-radius:14px">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="170" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
                 </td>
               </tr>
             </table>
-            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+            <p style="color:#94a3b8;margin:24px 0 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600">Professionele Reparatieservice</p>
           </td>
         </tr>
       </table>
@@ -453,18 +465,24 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
 
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
-      <!-- Header with Logo -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+      <!-- Header: top red accent bar -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
         <tr>
-          <td align="center" style="padding:40px 24px">
+          <td style="height:5px;background:linear-gradient(90deg,#dc2626 0%,#ef4444 50%,#dc2626 100%);font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+      </table>
+      <!-- Header: logo on clean charcoal background -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0f172a;border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:48px 24px 40px">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
               <tr>
-                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
-                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                <td align="center" style="background:#fff;padding:20px 40px;border-radius:14px">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="170" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
                 </td>
               </tr>
             </table>
-            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+            <p style="color:#94a3b8;margin:24px 0 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600">Professionele Reparatieservice</p>
           </td>
         </tr>
       </table>
@@ -675,7 +693,7 @@ function buildTrackingButtonHtml(trackingNumber: string, carrier: string): strin
   } else {
     trackUrl = `https://www.google.com/search?q=${encodeURIComponent(trackingNumber + ' track and trace')}`;
   }
-  return `<a href="${trackUrl}" style="background:linear-gradient(135deg,#8b5cf6 0%,#a78bfa 100%);color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;box-shadow:0 4px 6px rgba(139,92,246,0.3)">📍 Volg uw pakket</a>`;
+  return `<a href="${trackUrl}" style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%);color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;box-shadow:0 4px 6px rgba(220,38,38,0.3)">Volg uw pakket</a>`;
 }
 
 export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
@@ -684,17 +702,24 @@ export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
 
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+      <!-- Header: top red accent bar -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
         <tr>
-          <td align="center" style="padding:40px 24px">
+          <td style="height:5px;background:linear-gradient(90deg,#dc2626 0%,#ef4444 50%,#dc2626 100%);font-size:0;line-height:0">&nbsp;</td>
+        </tr>
+      </table>
+      <!-- Header: logo on clean charcoal background -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0f172a;border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:48px 24px 40px">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
               <tr>
-                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
-                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                <td align="center" style="background:#fff;padding:20px 40px;border-radius:14px">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="170" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
                 </td>
               </tr>
             </table>
-            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+            <p style="color:#94a3b8;margin:24px 0 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600">Professionele Reparatieservice</p>
           </td>
         </tr>
       </table>
@@ -705,7 +730,7 @@ export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
       <div style="background:${cfg.bgColor};border:2px solid ${cfg.color};border-radius:8px;padding:24px;margin:24px 0;text-align:center">
         <p style="margin:0 0 8px;color:#475569;font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Track &amp; Trace</p>
         <p style="margin:0 0 4px;color:#64748b;font-size:13px">Vervoerder: <strong style="color:#1e293b">${carrier}</strong></p>
-        <p style="margin:8px 0 16px;color:${cfg.color};font-size:22px;font-weight:bold;letter-spacing:1px;font-family:'Courier New',monospace">${data.trackingNumber}</p>
+        <p style="margin:8px 0 16px;color:${cfg.color};font-size:22px;font-weight:bold;letter-spacing:1px">${data.trackingNumber}</p>
         ${buildTrackingButtonHtml(data.trackingNumber, carrier)}
       </div>
     `
