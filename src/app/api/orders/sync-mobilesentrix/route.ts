@@ -317,7 +317,7 @@ async function syncToMobileSentrix(orderData: any, orderId: string) {
       billing_id: parseInt(billingId),
       shipping_id: parseInt(shippingId),
       shipping_method: SHIPPING_METHODS['postnl_standard'] || 'flatrate0p0',
-      payment_method: 'mygateway',
+      payment_method: 'ideal',
       po_number: orderId,
     });
     

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         billing_id: parseInt(shippingId),
         shipping_id: parseInt(shippingId),
         shipping_method: SHIPPING_METHODS['postnl_standard'],
-        payment_method: 'mygateway',
+        payment_method: 'ideal',
         po_number: orderId,
       });
       log('7. ✅ MS order created', msOrder);

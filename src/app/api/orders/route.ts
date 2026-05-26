@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
           billing_id: parseInt(msBillingAddressId),
           shipping_id: parseInt(msShippingAddressId),
           shipping_method: body.msShippingMethod || SHIPPING_METHODS['postnl_standard'],
-          payment_method: 'mygateway',
+          payment_method: 'ideal',
           po_number: id,
         });
         msOrderId = msOrder?.order_id || '';
