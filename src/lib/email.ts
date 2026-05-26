@@ -123,20 +123,26 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         </table>
 
         <!-- Order Summary -->
-        <div style="margin-top:20px;padding-top:16px;border-top:2px solid #e2e8f0">
-          <div style="display:flex;justify-content:space-between;margin:8px 0">
-            <span style="color:#64748b">Subtotaal</span>
-            <span style="color:#475569">€${data.subtotal.toFixed(2)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin:8px 0">
-            <span style="color:#64748b">Verzending</span>
-            <span style="color:#22c55e;font-weight:600">${data.shippingCost === 0 ? 'Gratis' : '€' + data.shippingCost.toFixed(2)}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin:16px 0 0;padding-top:16px;border-top:2px solid #e2e8f0">
-            <span style="color:#1e293b;font-weight:bold;font-size:16px">Totaal (excl. BTW)</span>
-            <span style="color:#1e40af;font-weight:bold;font-size:20px">€${data.total.toFixed(2)}</span>
-          </div>
-        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;padding-top:16px;border-top:2px solid #e2e8f0">
+          <tr>
+            <td style="padding:8px 0;color:#64748b">Subtotaal (incl. BTW)</td>
+            <td style="padding:8px 0;color:#475569;text-align:right">€ ${data.subtotal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:#64748b">Verzending</td>
+            <td style="padding:8px 0;color:#22c55e;font-weight:600;text-align:right">${data.shippingCost === 0 ? 'Gratis' : '€ ' + data.shippingCost.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding:0;border-top:2px solid #e2e8f0;height:1px;line-height:1px;font-size:1px">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding:16px 0 4px 0;color:#1e293b;font-weight:bold;font-size:16px">Totaal</td>
+            <td style="padding:16px 0 4px 0;color:#1e40af;font-weight:bold;font-size:20px;text-align:right">€ ${data.total.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding:0 0 8px 0;color:#94a3b8;font-size:11px;text-align:right;font-style:italic">Waarvan BTW (21%): € ${(data.total - data.total / 1.21).toFixed(2)}</td>
+          </tr>
+        </table>
       </div>
 
       <!-- Shipping Address -->

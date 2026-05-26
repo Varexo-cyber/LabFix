@@ -9,8 +9,4 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Redirect Mollie webhook to Netlify Function
-[[redirects]]
-  from = "/api/payments/mollie/webhook"
-  to = "/.netlify/functions/mollie-webhook/mollie-webhook.mjs"
-  status = 200
+# Mollie webhook is handled by Next.js route at src/app/api/payments/mollie/webhook/route.ts

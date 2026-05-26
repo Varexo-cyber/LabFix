@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createMollieClient } from '@mollie/api-client';
 import { getDb } from '@/lib/db';
-import { addToCart as msAddToCart, clearCart as msClearCart, createOrder as msCreateOrder, getOrCreateMsAddress, findMsCustomerByEmail, createCustomer as msCreateCustomer, SHIPPING_METHODS } from '@/lib/mobilesentrix-new';
+import { addToCart as msAddToCart, clearCart as msClearCart, createOrder as msCreateOrder, getOrCreateMsAddress, SHIPPING_METHODS } from '@/lib/mobilesentrix-new';
 import { sendOrderConfirmation } from '@/lib/email';
 
 export const runtime = 'nodejs';
@@ -76,38 +76,10 @@ export async function POST(request: NextRequest) {
         const firstname = nameParts[0] || orderData.companyName || 'LabFix';
         const lastname = nameParts.slice(1).join(' ') || 'Klant';
 
-        // Resolve MS customer ID — use stored one, else look up by email, else create new
-        let msCustomerId = orderData.msCustomerId || '';
-
-        if (!msCustomerId && orderData.userEmail) {
-          console.log('🔍 Looking up MS customer by email:', orderData.userEmail);
-          msCustomerId = (await findMsCustomerByEmail(orderData.userEmail)) || '';
-          console.log('👤 MS Customer found:', msCustomerId || 'NOT FOUND');
-        }
-
-        if (!msCustomerId && orderData.userEmail) {
-          // Create new MS customer for guest/new user
-          console.log('➕ Creating new MS customer for:', orderData.userEmail);
-          const company = orderData.companyName || `${firstname} ${lastname}`;
-          await msCreateCustomer({
-            firstname,
-            lastname,
-            username: orderData.userEmail,
-            email: orderData.userEmail,
-            mobile: orderData.phone || '0000000000',
-            password: Math.random().toString(36).slice(2, 12) + 'A1!',
-            company,
-            company_short: company.substring(0, 8),
-            street: [orderData.shippingAddress || ''],
-            city: orderData.shippingCity || '',
-            region: '',
-            postcode: orderData.shippingPostalCode || '',
-            country_id: orderData.shippingCountryCode || 'NL',
-            telephone: orderData.phone || '0000000000',
-          });
-          msCustomerId = (await findMsCustomerByEmail(orderData.userEmail)) || '';
-          console.log('✅ New MS customer created:', msCustomerId);
-        }
+        // LabFix consumer can't search/create MS customers — use fixed customer ID
+        // (Labfix MS account; addresses get added per order)
+        const msCustomerId = process.env.MOBILESENTRIX_CUSTOMER_ID || '60012677';
+        console.log('👤 Using fixed MS customer ID:', msCustomerId);
 
         if (msCustomerId) {
           const shippingAddrInput = {
