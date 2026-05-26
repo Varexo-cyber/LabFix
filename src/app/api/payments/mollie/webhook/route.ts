@@ -203,6 +203,22 @@ export async function POST(request: NextRequest) {
       await sql`UPDATE payments SET status = 'paid', order_id = ${orderId} WHERE mollie_payment_id = ${molliePaymentId}`;
       console.log('💾 Payment record updated');
 
+      // Fetch invoice PDF for email attachment
+      let invoiceBuffer: Buffer | undefined;
+      try {
+        const baseUrl = process.env.URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://labfix.nl';
+        const pdfRes = await fetch(`${baseUrl}/api/orders/${encodeURIComponent(orderId)}/invoice?download=1`);
+        if (pdfRes.ok) {
+          const arrayBuf = await pdfRes.arrayBuffer();
+          invoiceBuffer = Buffer.from(arrayBuf);
+          console.log('📎 Invoice PDF fetched:', invoiceBuffer.length, 'bytes');
+        } else {
+          console.warn('⚠️ Could not fetch invoice PDF, status:', pdfRes.status);
+        }
+      } catch (pdfErr: any) {
+        console.error('⚠️ Failed to fetch invoice PDF:', pdfErr.message);
+      }
+
       // Send confirmation email
       console.log('📧 Sending order confirmation email to:', orderData.userEmail);
       try {
@@ -223,6 +239,7 @@ export async function POST(request: NextRequest) {
           shippingCity: orderData.shippingCity,
           shippingPostalCode: orderData.shippingPostalCode,
           shippingCountry: orderData.shippingCountry,
+          invoiceBuffer,
         });
         console.log('✅ Order confirmation email sent');
       } catch (emailErr: any) {

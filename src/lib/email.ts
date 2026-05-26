@@ -154,27 +154,12 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
         <p style="margin:4px 0;color:#64748b;font-size:14px">${data.shippingCountry}</p>
       </div>
 
-      <!-- What happens next -->
-      <div style="background:#ecfdf5;border-radius:8px;padding:20px;margin:24px 0;border-left:4px solid #10b981">
-        <h4 style="color:#065f46;font-size:14px;margin:0 0 12px">📋 Wat gebeurt er nu?</h4>
-        <ol style="color:#065f46;font-size:13px;line-height:1.8;margin:0;padding-left:20px">
-          <li>We verwerken uw bestelling (1-2 werkdagen)</li>
-          <li>We verzenden uw pakket met track & trace</li>
-          <li>U ontvangt een verzendbevestiging per e-mail</li>
-          <li>U kunt uw bestelling volgen via de track & trace link</li>
-        </ol>
-      </div>
-
       <!-- Track Order Button -->
       <div style="text-align:center;margin:32px 0">
         <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'https://labfix.nl'}/account" style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%);color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;box-shadow:0 4px 6px rgba(220,38,38,0.3)">
           Bekijk Mijn Bestellingen →
         </a>
       </div>
-
-      <p style="color:#475569;font-size:14px;line-height:1.6;margin:24px 0">
-        Heeft u vragen? Bel ons ger op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
-      </p>
 
       <p style="color:#64748b;font-size:14px;margin:24px 0 0">
         Met vriendelijke groet,<br>
