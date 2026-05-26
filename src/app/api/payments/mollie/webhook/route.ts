@@ -59,13 +59,21 @@ export async function POST(request: NextRequest) {
       }
 
       // Check if order already exists (idempotency)
-      const existing = await sql`SELECT id FROM orders WHERE id = ${orderId}`;
-      if (existing.length > 0) {
-        console.log('✅ Order already exists:', orderId);
+      // BUT: if MS sync failed previously (ms_order_id empty), allow retry
+      const existing = await sql`SELECT id, ms_order_id FROM orders WHERE id = ${orderId}`;
+      const orderAlreadyExists = existing.length > 0;
+      const needsMsRetry = orderAlreadyExists && !existing[0].ms_order_id;
+
+      if (orderAlreadyExists && !needsMsRetry) {
+        console.log('✅ Order already exists with MS sync:', orderId, 'ms_order_id:', existing[0].ms_order_id);
         return NextResponse.json({ received: true, orderId, alreadyExists: true });
       }
 
-      console.log('🚀 Starting order creation for:', orderId);
+      if (needsMsRetry) {
+        console.log('🔁 Order exists but MS sync missing, retrying MS sync only:', orderId);
+      } else {
+        console.log('🚀 Starting order creation for:', orderId);
+      }
 
       // ── MobileSentrix order sync ──────────────────────────────────────────
       let msOrderId = '';
@@ -155,53 +163,68 @@ export async function POST(request: NextRequest) {
       }
       // ─────────────────────────────────────────────────────────────────────
 
-      // Create order in LabFix DB (ALWAYS do this, even if MS failed)
-      console.log('💾 Creating LabFix order in database...');
+      // Create or UPDATE order in LabFix DB
+      console.log('💾 Saving LabFix order in database (insert or update)...');
       try {
-        await sql`
-          INSERT INTO orders (
-            id, user_id, user_email, company_name, kvk_number, vat_number,
-            contact_person, phone,
-            shipping_address, shipping_city, shipping_postal_code, shipping_country,
-            billing_address, billing_city, billing_postal_code, billing_country,
-            items, subtotal, shipping_cost, total, status, notes,
-            ms_order_id, ms_increment_id
-          ) VALUES (
-            ${orderId},
-            ${orderData.userId},
-            ${orderData.userEmail},
-            ${orderData.companyName || ''},
-            ${orderData.kvkNumber || ''},
-            ${orderData.vatNumber || ''},
-            ${orderData.contactPerson || ''},
-            ${orderData.phone || ''},
-            ${orderData.shippingAddress || ''},
-            ${orderData.shippingCity || ''},
-            ${orderData.shippingPostalCode || ''},
-            ${orderData.shippingCountry || ''},
-            ${orderData.billingAddress || orderData.shippingAddress || ''},
-            ${orderData.billingCity || orderData.shippingCity || ''},
-            ${orderData.billingPostalCode || orderData.shippingPostalCode || ''},
-            ${orderData.billingCountry || orderData.shippingCountry || ''},
-            ${JSON.stringify(orderData.items)},
-            ${orderData.subtotal},
-            ${orderData.shippingCost},
-            ${orderData.total},
-            'paid',
-            ${orderData.notes || ''},
-            ${msOrderId},
-            ${msIncrementId}
-          )
-        `;
-        console.log('✅ LabFix order created in database:', orderId);
+        if (needsMsRetry) {
+          // Order exists, just update MS fields
+          await sql`
+            UPDATE orders SET ms_order_id = ${msOrderId}, ms_increment_id = ${msIncrementId}
+            WHERE id = ${orderId}
+          `;
+          console.log('✅ LabFix order MS fields updated:', orderId);
+        } else {
+          await sql`
+            INSERT INTO orders (
+              id, user_id, user_email, company_name, kvk_number, vat_number,
+              contact_person, phone,
+              shipping_address, shipping_city, shipping_postal_code, shipping_country,
+              billing_address, billing_city, billing_postal_code, billing_country,
+              items, subtotal, shipping_cost, total, status, notes,
+              ms_order_id, ms_increment_id
+            ) VALUES (
+              ${orderId},
+              ${orderData.userId},
+              ${orderData.userEmail},
+              ${orderData.companyName || ''},
+              ${orderData.kvkNumber || ''},
+              ${orderData.vatNumber || ''},
+              ${orderData.contactPerson || ''},
+              ${orderData.phone || ''},
+              ${orderData.shippingAddress || ''},
+              ${orderData.shippingCity || ''},
+              ${orderData.shippingPostalCode || ''},
+              ${orderData.shippingCountry || ''},
+              ${orderData.billingAddress || orderData.shippingAddress || ''},
+              ${orderData.billingCity || orderData.shippingCity || ''},
+              ${orderData.billingPostalCode || orderData.shippingPostalCode || ''},
+              ${orderData.billingCountry || orderData.shippingCountry || ''},
+              ${JSON.stringify(orderData.items)},
+              ${orderData.subtotal},
+              ${orderData.shippingCost},
+              ${orderData.total},
+              'paid',
+              ${orderData.notes || ''},
+              ${msOrderId},
+              ${msIncrementId}
+            )
+          `;
+          console.log('✅ LabFix order created in database:', orderId);
+        }
       } catch (dbErr: any) {
-        console.error('❌ Database error creating order:', dbErr.message, dbErr.stack);
+        console.error('❌ Database error saving order:', dbErr.message, dbErr.stack);
         throw dbErr; // Re-throw so Mollie will retry
       }
 
       // Update payment with orderId link
       await sql`UPDATE payments SET status = 'paid', order_id = ${orderId} WHERE mollie_payment_id = ${molliePaymentId}`;
       console.log('💾 Payment record updated');
+
+      // Skip email if this was just an MS sync retry (email was already sent before)
+      if (needsMsRetry) {
+        console.log('⏩ Skipping email send (this was MS-only retry)');
+        return NextResponse.json({ received: true, orderId, msRetry: true, msOrderId, msIncrementId });
+      }
 
       // Fetch invoice PDF for email attachment
       let invoiceBuffer: Buffer | undefined;
