@@ -94,6 +94,15 @@ export async function GET(request: NextRequest) {
         po_number: orderId,
       });
       log('7. ✅ MS order created', msOrder);
+
+      // Save MS order_id to LabFix DB so cron can sync status updates
+      try {
+        await sql`UPDATE orders SET ms_order_id = ${msOrder.order_id || ''}, ms_increment_id = ${msOrder.increment_id || ''} WHERE id = ${orderId}`;
+        log('8. ✅ DB updated with MS order_id', { ms_order_id: msOrder.order_id });
+      } catch (e: any) {
+        log('8. ⚠️ DB update failed', { error: e.message });
+      }
+
       return NextResponse.json({ ok: true, msOrder, steps });
     } catch (err: any) {
       log('7. ❌ createOrder FAILED', { error: err.message, stack: err.stack });
