@@ -53,12 +53,20 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
       <!-- Header with Logo -->
-      <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
-        <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
-        </div>
-        <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
-      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:40px 24px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+              <tr>
+                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                </td>
+              </tr>
+            </table>
+            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+          </td>
+        </tr>
+      </table>
   `;
 
   const footerHtml = `
@@ -94,16 +102,18 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 
       <!-- Order Info Badge -->
       <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:20px;margin:24px 0">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-          <div>
-            <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Bestelnummer</p>
-            <p style="margin:4px 0 0;color:#1e40af;font-size:20px;font-weight:bold">${data.orderId}</p>
-          </div>
-          <div style="text-align:right">
-            <p style="margin:0;color:#64748b;font-size:12px">Datum</p>
-            <p style="margin:4px 0 0;color:#475569;font-size:14px">${new Date().toLocaleDateString('nl-NL')}</p>
-          </div>
-        </div>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+          <tr>
+            <td align="left" valign="middle" style="padding:0">
+              <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Bestelnummer</p>
+              <p style="margin:4px 0 0;color:#1e40af;font-size:20px;font-weight:bold">${data.orderId}</p>
+            </td>
+            <td align="right" valign="middle" style="padding:0;white-space:nowrap">
+              <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Datum</p>
+              <p style="margin:4px 0 0;color:#475569;font-size:14px;font-weight:600">${new Date().toLocaleDateString('nl-NL', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+            </td>
+          </tr>
+        </table>
       </div>
 
       <!-- Order Items -->
@@ -245,12 +255,20 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
       <!-- Header with Logo -->
-      <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
-        <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
-        </div>
-        <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
-      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:40px 24px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+              <tr>
+                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                </td>
+              </tr>
+            </table>
+            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+          </td>
+        </tr>
+      </table>
   `;
 
   const footerHtml = `
@@ -436,12 +454,20 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
   const headerHtml = `
     <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
       <!-- Header with Logo -->
-      <div style="background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%);padding:32px 24px;text-align:center">
-        <div style="display:inline-block;background:#fff;padding:12px 24px;border-radius:8px;margin-bottom:16px">
-          <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height:60px;width:auto;display:block;" />
-        </div>
-        <p style="color:#bfdbfe;margin:8px 0 0;font-size:14px">Professionele Reparatieservice</p>
-      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:40px 24px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+              <tr>
+                <td align="center" style="background:#fff;padding:18px 36px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)">
+                  <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+                </td>
+              </tr>
+            </table>
+            <p style="color:#dbeafe;margin:20px 0 0;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:500">Professionele Reparatieservice</p>
+          </td>
+        </tr>
+      </table>
   `;
 
   const footerHtml = `
