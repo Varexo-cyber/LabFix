@@ -83,15 +83,36 @@ export default function AdminPage() {
   const ADMIN_PRODUCTS_PER_PAGE = 200;
 
   // Custom confirmation modal state
+  type ConfirmVariant = 'danger' | 'primary' | 'success';
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
     message: string;
     onConfirm: () => void;
-  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+    variant: ConfirmVariant;
+    confirmLabel: string;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, variant: 'danger', confirmLabel: 'Verwijderen' });
 
-  const showConfirm = (title: string, message: string, onConfirm: () => void) => {
-    setConfirmModal({ isOpen: true, title, message, onConfirm });
+  const showConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    options?: { variant?: ConfirmVariant; confirmLabel?: string }
+  ) => {
+    const variant = options?.variant || 'danger';
+    const defaultLabels: Record<ConfirmVariant, string> = {
+      danger: 'Verwijderen',
+      primary: 'Bevestigen',
+      success: 'Doorgaan',
+    };
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm,
+      variant,
+      confirmLabel: options?.confirmLabel || defaultLabels[variant],
+    });
   };
 
   const closeConfirm = () => {
@@ -282,6 +303,7 @@ export default function AdminPage() {
       async () => {
         closeConfirm();
         setApplyingVat(true);
+        // Persist VAT-applied flag handled by API; this block is the user-confirmed action.
         try {
           const result = await applyVatToAllProducts();
           if (result.ok) {
@@ -296,7 +318,8 @@ export default function AdminPage() {
         } finally {
           setApplyingVat(false);
         }
-      }
+      },
+      { variant: 'success', confirmLabel: 'Toepassen' }
     );
   };
 
@@ -2167,29 +2190,42 @@ export default function AdminPage() {
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeConfirm}
           />
-          <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 animate-scale-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 size={20} className="text-red-600" />
+          {(() => {
+            const variant = confirmModal.variant;
+            const iconBg = variant === 'danger' ? 'bg-red-100' : variant === 'success' ? 'bg-emerald-100' : 'bg-blue-100';
+            const iconColor = variant === 'danger' ? 'text-red-600' : variant === 'success' ? 'text-emerald-600' : 'text-blue-600';
+            const btnBg = variant === 'danger'
+              ? 'bg-red-600 hover:bg-red-700'
+              : variant === 'success'
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-blue-600 hover:bg-blue-700';
+            const Icon = variant === 'danger' ? Trash2 : variant === 'success' ? Percent : CheckCircle;
+            return (
+              <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4 animate-scale-in">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center`}>
+                    <Icon size={20} className={iconColor} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">{confirmModal.title}</h3>
+                </div>
+                <p className="text-gray-600 mb-6">{confirmModal.message}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={closeConfirm}
+                    className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Annuleren
+                  </button>
+                  <button
+                    onClick={() => confirmModal.onConfirm()}
+                    className={`flex-1 px-4 py-2.5 ${btnBg} text-white rounded-xl font-medium transition-colors`}
+                  >
+                    {confirmModal.confirmLabel}
+                  </button>
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">{confirmModal.title}</h3>
-            </div>
-            <p className="text-gray-600 mb-6">{confirmModal.message}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={closeConfirm}
-                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-              >
-                Annuleren
-              </button>
-              <button
-                onClick={() => confirmModal.onConfirm()}
-                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
-              >
-                Verwijderen
-              </button>
-            </div>
-          </div>
+            );
+          })()}
         </div>
       )}
     </div>
