@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
-  const { t, locale } = useApp();
+  const { t, locale, vatMode } = useApp();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -575,7 +575,9 @@ function ProductsPageContent() {
             <div className="mt-6 pt-4 border-t">
               <h4 className="font-semibold text-sm mb-2">{t('products.price')}</h4>
               <p className="text-xs text-gray-500">
-                {locale === 'nl' ? 'Alle prijzen zijn incl. btw' : 'All prices are incl. VAT'}
+                {vatMode === 'incl'
+                  ? (locale === 'nl' ? 'Alle prijzen zijn incl. BTW' : 'All prices are incl. VAT')
+                  : (locale === 'nl' ? 'Alle prijzen zijn excl. BTW' : 'All prices are excl. VAT')}
               </p>
             </div>
           </div>

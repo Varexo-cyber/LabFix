@@ -28,7 +28,8 @@ function highlightModelKeywords(name: string) {
 }
 
 export default function CheckoutPage() {
-  const { t, locale, formatPrice, user, cart, cartTotal, clearCart } = useApp();
+  const { t, locale, formatPrice, user, cart, cartTotal, clearCart, vatMode } = useApp();
+  const VAT_RATE = 0.21;
   const router = useRouter();
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
@@ -410,26 +411,39 @@ export default function CheckoutPage() {
                       <p className="text-sm font-medium leading-tight">{highlightModelKeywords(item.product.name)}</p>
                       <p className="text-xs text-gray-500">x{item.quantity}</p>
                     </div>
-                    <p className="text-sm font-semibold">{`€${(item.product.price * item.quantity).toFixed(2)}`}</p>
+                    <p className="text-sm font-semibold">{formatPrice(item.product.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">{t('cart.subtotal')}</span>
-                  <span>{`€${cartTotal.toFixed(2)}`}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">{t('cart.shipping')}</span>
-                  <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">{locale === 'nl' ? 'Gratis' : 'Free'}</span> : `€${shippingCost.toFixed(2)}`}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
-                  <span>{t('cart.total')}</span>
-                  <span className="text-primary-500">{`€${total.toFixed(2)}`}</span>
-                </div>
-                <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
-              </div>
+              {(() => {
+                const subtotalDisplay = vatMode === 'incl' ? cartTotal : cartTotal / (1 + VAT_RATE);
+                const shippingDisplay = vatMode === 'incl' ? shippingCost : shippingCost / (1 + VAT_RATE);
+                const vatAmount = total - total / (1 + VAT_RATE);
+                return (
+                  <div className="border-t pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">{t('cart.subtotal')} <span className="text-xs text-gray-400">({vatMode === 'incl' ? 'incl.' : 'excl.'} BTW)</span></span>
+                      <span>€{subtotalDisplay.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">{t('cart.shipping')}</span>
+                      <span>{shippingCost === 0 ? <span className="text-green-600 font-medium">{locale === 'nl' ? 'Gratis' : 'Free'}</span> : `€${shippingDisplay.toFixed(2)}`}</span>
+                    </div>
+                    {vatMode === 'excl' && (
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>{locale === 'nl' ? 'BTW (21%)' : 'VAT (21%)'}</span>
+                        <span>€{vatAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+                      <span>{t('cart.total')}</span>
+                      <span className="text-primary-500">€{total.toFixed(2)}</span>
+                    </div>
+                    <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
+                  </div>
+                );
+              })()}
 
               {paymentError && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">

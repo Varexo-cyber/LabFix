@@ -31,7 +31,7 @@ function highlightModelKeywords(name: string) {
 }
 
 export default function ProductDetailPage() {
-  const { t, locale, formatPrice, addToCart } = useApp();
+  const { t, locale, formatPrice, addToCart, vatMode } = useApp();
   const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -127,7 +127,7 @@ export default function ProductDetailPage() {
                 <span className="text-lg text-gray-400 line-through">{formatPrice(product.comparePrice)}</span>
               )}
             </div>
-            <p className="text-sm text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
+            <p className="text-sm text-gray-400">{vatMode === 'incl' ? (locale === 'nl' ? 'incl. BTW' : 'incl. VAT') : (locale === 'nl' ? 'excl. BTW' : 'excl. VAT')}</p>
           </div>
 
           {/* Stock */}
@@ -145,7 +145,9 @@ export default function ProductDetailPage() {
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-semibold text-sm mb-2">{t('products.price')}</h4>
             <p className="text-xs text-gray-500">
-              {locale === 'nl' ? 'Alle prijzen zijn incl. BTW' : 'All prices are incl. VAT'}
+              {vatMode === 'incl'
+                ? (locale === 'nl' ? 'Alle prijzen zijn incl. BTW' : 'All prices are incl. VAT')
+                : (locale === 'nl' ? 'Alle prijzen zijn excl. BTW' : 'All prices are excl. VAT')}
             </p>
           </div>
 

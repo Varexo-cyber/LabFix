@@ -5,6 +5,8 @@ import { Locale, translations } from '@/lib/translations';
 import { CartItem, Product, User, getCart, addToCart as storeAddToCart, removeFromCart as storeRemoveFromCart, updateCartQuantity as storeUpdateCartQuantity, getCartCount, getCartTotal, getCurrentUser, logoutUser as storeLogoutUser, saveCart } from '@/lib/store';
 
 type Currency = 'EUR' | 'USD' | 'GBP';
+export type VatMode = 'excl' | 'incl';
+export const VAT_RATE = 0.21;
 
 interface AppContextType {
   locale: Locale;
@@ -12,10 +14,15 @@ interface AppContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   formatPrice: (price: number) => string;
+  // Returns the numeric price for display based on current vat mode.
+  // Input price is ALWAYS the gross (incl. BTW) price as stored in the DB.
+  displayPrice: (inclPrice: number) => number;
+  vatMode: VatMode;
+  setVatMode: (mode: VatMode) => void;
   t: (key: string) => string;
   cart: CartItem[];
   cartCount: number;
-  cartTotal: number;
+  cartTotal: number; // sum of incl-BTW prices (what customer pays)
   addToCart: (product: Product, quantity?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -31,6 +38,7 @@ const AppContext = createContext<AppContextType | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('nl');
   const [currency, setCurrencyState] = useState<Currency>('EUR');
+  const [vatMode, setVatModeState] = useState<VatMode>('excl'); // default: show prices EXCL BTW
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUserState] = useState<User | null>(null);
 
@@ -54,6 +62,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (savedCurrency && ['EUR', 'USD', 'GBP'].includes(savedCurrency)) {
       setCurrencyState(savedCurrency);
     }
+    const savedVatMode = localStorage.getItem('labfix_vat_mode') as VatMode;
+    if (savedVatMode === 'excl' || savedVatMode === 'incl') {
+      setVatModeState(savedVatMode);
+    }
     setCart(getCart());
     setUserState(getCurrentUser());
   }, []);
@@ -68,8 +80,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('labfix_currency', newCurrency);
   };
 
+  const setVatMode = (mode: VatMode) => {
+    setVatModeState(mode);
+    localStorage.setItem('labfix_vat_mode', mode);
+  };
+
+  // DB stores incl-BTW (gross) prices. Excl mode = gross / 1.21.
+  const displayPrice = useCallback((inclPrice: number): number => {
+    if (vatMode === 'incl') return inclPrice;
+    return inclPrice / (1 + VAT_RATE);
+  }, [vatMode]);
+
   const formatPrice = useCallback((price: number): string => {
-    // Prices are stored in EUR - convert to other currencies if needed
+    // Input prices are stored as incl-BTW (gross) in EUR.
+    // Adjust for current VAT mode first, then convert currency.
     const rates: Record<Currency, number> = {
       EUR: 1,      // EUR base
       USD: 1.09,   // EUR to USD
@@ -80,10 +104,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       USD: '$',
       GBP: '£'
     };
-    const converted = price * rates[currency];
+    const vatAdjusted = vatMode === 'incl' ? price : price / (1 + VAT_RATE);
+    const converted = vatAdjusted * rates[currency];
     const symbol = symbols[currency];
     return `${symbol}${converted.toFixed(2)}`;
-  }, [currency]);
+  }, [currency, vatMode]);
 
   const t = useCallback((key: string): string => {
     return translations[locale][key] || key;
@@ -130,6 +155,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         currency,
         setCurrency,
         formatPrice,
+        displayPrice,
+        vatMode,
+        setVatMode,
         t,
         cart,
         cartCount: getCartCount(cart),

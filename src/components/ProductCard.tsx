@@ -32,7 +32,7 @@ function highlightModelKeywords(name: string) {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { t, locale, addToCart } = useApp();
+  const { t, locale, addToCart, formatPrice, vatMode } = useApp();
 
   const name = locale === 'nl'
     ? (product.name || product.nameEn || '')
@@ -82,11 +82,15 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="text-gray-600 text-xs mt-1 font-medium">{product.sku}</p>
         <div className="flex items-center justify-between mt-3">
           <div>
-            <span className="text-lg font-bold text-primary-500">€{product.price.toFixed(2)}</span>
+            <span className="text-lg font-bold text-primary-500">{formatPrice(product.price)}</span>
             {product.comparePrice && (
-              <span className="text-sm text-gray-400 line-through ml-2">€{product.comparePrice.toFixed(2)}</span>
+              <span className="text-sm text-gray-400 line-through ml-2">{formatPrice(product.comparePrice)}</span>
             )}
-            <p className="text-xs text-gray-400">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
+            <p className="text-xs text-gray-400">
+              {vatMode === 'incl'
+                ? (locale === 'nl' ? 'incl. BTW' : 'incl. VAT')
+                : (locale === 'nl' ? 'excl. BTW' : 'excl. VAT')}
+            </p>
           </div>
           <button
             onClick={(e) => {

@@ -27,7 +27,14 @@ function highlightModelKeywords(name: string) {
 }
 
 export default function CartPage() {
-  const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user } = useApp();
+  const { t, locale, formatPrice, cart, cartTotal, removeFromCart, updateQuantity, user, vatMode } = useApp();
+  // cartTotal = gross (incl BTW). Derive helpers for cart summary.
+  const VAT_RATE = 0.21;
+  const shippingIncl = cartTotal >= FREE_SHIPPING_THRESHOLD ? 0 : NL_SHIPPING;
+  const totalIncl = cartTotal + shippingIncl; // what customer actually pays
+  const subtotalDisplay = vatMode === 'incl' ? cartTotal : cartTotal / (1 + VAT_RATE);
+  const shippingDisplay = vatMode === 'incl' ? shippingIncl : shippingIncl / (1 + VAT_RATE);
+  const vatAmount = totalIncl - totalIncl / (1 + VAT_RATE); // BTW portion of the full bill
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
@@ -76,7 +83,7 @@ export default function CartPage() {
                         </button>
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">{item.product.sku}</p>
-                      <p className="text-primary-500 font-bold mt-1 text-sm md:text-base">€{item.product.price.toFixed(2)}</p>
+                      <p className="text-primary-500 font-bold mt-1 text-sm md:text-base">{formatPrice(item.product.price)}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
@@ -95,7 +102,7 @@ export default function CartPage() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    <p className="font-bold text-gray-800">€{(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold text-gray-800">{formatPrice(item.product.price * item.quantity)}</p>
                   </div>
                 </div>
               );
@@ -109,17 +116,23 @@ export default function CartPage() {
 
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span>{t('cart.subtotal')}</span>
-                  <span className="font-semibold">€{cartTotal.toFixed(2)}</span>
+                  <span>{t('cart.subtotal')} <span className="text-xs text-gray-400">({vatMode === 'incl' ? (locale === 'nl' ? 'incl.' : 'incl.') : (locale === 'nl' ? 'excl.' : 'excl.')} BTW)</span></span>
+                  <span className="font-semibold">€{subtotalDisplay.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>{t('cart.shipping')}</span>
                   <span className="font-semibold">
-                    {cartTotal >= FREE_SHIPPING_THRESHOLD
+                    {shippingIncl === 0
                       ? (locale === 'nl' ? 'Gratis' : 'Free')
-                      : `€${NL_SHIPPING.toFixed(2)}`}
+                      : `€${shippingDisplay.toFixed(2)}`}
                   </span>
                 </div>
+                {vatMode === 'excl' && (
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>{locale === 'nl' ? 'BTW (21%)' : 'VAT (21%)'}</span>
+                    <span className="font-semibold">€{vatAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 {cartTotal < FREE_SHIPPING_THRESHOLD && (
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Truck size={14} />
@@ -131,9 +144,7 @@ export default function CartPage() {
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t('cart.total')}</span>
-                  <span className="text-primary-500">
-                    {cartTotal >= FREE_SHIPPING_THRESHOLD ? formatPrice(cartTotal) : `€${(cartTotal + NL_SHIPPING).toFixed(2)}`}
-                  </span>
+                  <span className="text-primary-500">€{totalIncl.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">{locale === 'nl' ? 'incl. BTW' : 'incl. VAT'}</p>
               </div>

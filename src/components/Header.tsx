@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid, Smartphone, Package, Monitor, Laptop } from 'lucide-react';
 import { brandCategories, accessoryCategories, pcPartsCategories, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import VatToggle from '@/components/VatToggle';
 
 interface Brand {
   id: number;
@@ -227,6 +228,8 @@ export default function Header() {
               <Phone size={14} />
               +31 6 5113 1133
             </a>
+            {/* VAT display toggle */}
+            <VatToggle compact />
             <div className="relative">
               <button onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)} className="flex items-center gap-1 hover:text-gray-200">
                 <Coins size={14} />
