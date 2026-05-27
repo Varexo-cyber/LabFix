@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench, Truck } from 'lucide-react';
+import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment, applyVatToAllProducts } from '@/lib/store';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench, Truck, Percent } from 'lucide-react';
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
@@ -264,6 +264,38 @@ export default function AdminPage() {
             closeConfirm();
           }
         );
+      }
+    );
+  };
+
+  // Apply +21% BTW to every product that doesn't yet have it (idempotent — backend safeguards).
+  const [applyingVat, setApplyingVat] = useState(false);
+  const handleApplyVat = () => {
+    const pending = products.filter(p => !p.vatApplied).length;
+    if (pending === 0) {
+      showToast('Alle producten hebben al 21% BTW toegepast', 'success');
+      return;
+    }
+    showConfirm(
+      '21% BTW toevoegen',
+      `Je staat op het punt om aan ${pending} producten 21% BTW toe te voegen. Producten waar BTW al is toegepast worden overgeslagen. Doorgaan?`,
+      async () => {
+        closeConfirm();
+        setApplyingVat(true);
+        try {
+          const result = await applyVatToAllProducts();
+          if (result.ok) {
+            showToast(result.message || `BTW toegepast op ${result.updated} producten`, 'success');
+            const prods = await fetchProducts();
+            setProducts(prods);
+          } else {
+            showToast(result.error || 'BTW toepassen mislukt', 'error');
+          }
+        } catch (err: any) {
+          showToast(err.message || 'BTW toepassen mislukt', 'error');
+        } finally {
+          setApplyingVat(false);
+        }
       }
     );
   };
@@ -892,17 +924,37 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Pagination info + delete all */}
-        <div className="flex items-center justify-between mb-2">
+        {/* Pagination info + bulk actions */}
+        <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
           <p className="text-sm text-gray-500">
             {filteredProducts.length} producten gevonden — pagina {adminProductPage} van {adminTotalPages}
+            {products.length > 0 && (
+              <span className="ml-2 text-gray-400">
+                · BTW toegepast: <span className="font-semibold text-green-600">{products.filter(p => p.vatApplied).length}</span>
+                {' / '}
+                <span className="font-semibold text-orange-600">{products.filter(p => !p.vatApplied).length}</span> nog niet
+              </span>
+            )}
           </p>
-          <button
-            onClick={handleDeleteAllProducts}
-            className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 font-semibold"
-          >
-            <Trash2 size={13} /> Alle {products.length} producten verwijderen
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleApplyVat}
+              disabled={applyingVat || products.filter(p => !p.vatApplied).length === 0}
+              className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1.5 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Voegt eenmalig 21% BTW toe aan alle producten die nog geen BTW hebben"
+            >
+              <Percent size={13} />
+              {applyingVat
+                ? 'Bezig...'
+                : `+21% BTW (${products.filter(p => !p.vatApplied).length})`}
+            </button>
+            <button
+              onClick={handleDeleteAllProducts}
+              className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 font-semibold"
+            >
+              <Trash2 size={13} /> Alle {products.length} producten verwijderen
+            </button>
+          </div>
         </div>
 
         {/* Bulk action bar */}
@@ -979,7 +1031,26 @@ export default function AdminPage() {
                     <td className="px-4 py-3">
                       <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{product.category}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm font-semibold">€{product.price.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm font-semibold">
+                      <div className="flex items-center gap-1.5">
+                        <span>€{product.price.toFixed(2)}</span>
+                        {product.vatApplied ? (
+                          <span
+                            className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold"
+                            title="21% BTW is al toegepast op dit product"
+                          >
+                            BTW ✓
+                          </span>
+                        ) : (
+                          <span
+                            className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-medium"
+                            title="21% BTW is nog niet toegepast op dit product"
+                          >
+                            excl. BTW
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {product.inStock ? (

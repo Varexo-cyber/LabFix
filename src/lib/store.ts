@@ -15,6 +15,7 @@ export interface Product {
   inStock: boolean;
   featured: boolean;
   isNew: boolean;
+  vatApplied?: boolean; // true once the +21% BTW bulk action has been applied to this product
   createdAt: string;
 }
 
@@ -199,6 +200,13 @@ export async function updateProduct(product: Product): Promise<{ success: boolea
 
 export async function deleteProduct(id: string): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/api/products?id=${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
+// Adds 21% BTW to every product that does not yet have vat_applied = true.
+// Idempotent — repeated calls do nothing extra.
+export async function applyVatToAllProducts(): Promise<{ ok: boolean; updated?: number; skipped?: number; total?: number; message?: string; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/products/apply-vat`, { method: 'POST' });
   return res.json();
 }
 

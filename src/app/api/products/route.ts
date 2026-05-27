@@ -97,6 +97,8 @@ async function ensureTable(sql: any) {
   `;
   try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 100`; } catch {}
   try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`; } catch {}
+  // VAT-applied flag: marks whether 21% BTW has already been added to the stored price (idempotent bulk action)
+  try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS vat_applied BOOLEAN DEFAULT false`; } catch {}
   // Indexes for fast filtering
   try { await sql`CREATE INDEX IF NOT EXISTS idx_products_category ON products (category)`; } catch {}
   try { await sql`CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products (subcategory)`; } catch {}
@@ -123,7 +125,7 @@ export async function GET(request: NextRequest) {
         price: parseFloat(p.price), comparePrice: p.compare_price ? parseFloat(p.compare_price) : undefined,
         category: p.category, subcategory: p.subcategory || '', model: p.model || '',
         sku: p.sku, image: p.image, images: p.images || [], inStock: p.in_stock,
-        featured: p.featured, isNew: p.is_new, createdAt: p.created_at,
+        featured: p.featured, isNew: p.is_new, vatApplied: !!p.vat_applied, createdAt: p.created_at,
       });
     }
 
@@ -278,6 +280,7 @@ export async function GET(request: NextRequest) {
       inStock: p.in_stock,
       featured: p.featured,
       isNew: p.is_new,
+      vatApplied: !!p.vat_applied,
       createdAt: p.created_at,
     }));
 
