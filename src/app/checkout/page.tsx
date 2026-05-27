@@ -418,7 +418,7 @@ export default function CheckoutPage() {
 
               {(() => {
                 const subtotalDisplay = vatMode === 'incl' ? cartTotal : cartTotal / (1 + VAT_RATE);
-                const shippingDisplay = vatMode === 'incl' ? shippingCost : shippingCost / (1 + VAT_RATE);
+                const shippingDisplay = shippingCost; // always fixed flat rate, never VAT-adjusted
                 const vatAmount = total - total / (1 + VAT_RATE);
                 return (
                   <div className="border-t pt-4 space-y-2">

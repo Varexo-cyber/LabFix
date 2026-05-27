@@ -33,7 +33,8 @@ export default function CartPage() {
   const shippingIncl = cartTotal >= FREE_SHIPPING_THRESHOLD ? 0 : NL_SHIPPING;
   const totalIncl = cartTotal + shippingIncl; // what customer actually pays
   const subtotalDisplay = vatMode === 'incl' ? cartTotal : cartTotal / (1 + VAT_RATE);
-  const shippingDisplay = vatMode === 'incl' ? shippingIncl : shippingIncl / (1 + VAT_RATE);
+  // Shipping is a fixed flat rate (€6.95 / €18.95) — always shown as-is, never divided
+  const shippingDisplay = shippingIncl;
   const vatAmount = totalIncl - totalIncl / (1 + VAT_RATE); // BTW portion of the full bill
 
   return (
