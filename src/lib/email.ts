@@ -647,6 +647,7 @@ interface OrderStatusEmailData {
   status: 'processing' | 'shipped' | 'delivered';
   trackingNumber?: string;
   shippingCarrier?: string; // e.g. "PostNL", "DHL"
+  shippingPostcode?: string; // needed for PostNL deep-link
 }
 
 const STATUS_CONFIG = {
@@ -679,11 +680,20 @@ const STATUS_CONFIG = {
   },
 } as const;
 
-function buildTrackingButtonHtml(trackingNumber: string, carrier: string): string {
+function buildTrackingButtonHtml(trackingNumber: string, carrier: string, postcode?: string): string {
   const carrierLower = carrier.toLowerCase();
   let trackUrl = '';
   if (carrierLower.includes('postnl')) {
-    trackUrl = `https://jouw.postnl.nl/track-and-trace/${encodeURIComponent(trackingNumber)}-NL-NL`;
+    // PostNL URL format: /track-and-trace/{barcode}-{country}-{postcode}
+    // Without a valid postcode PostNL treats whatever is in that slot as the postcode → "niet gevonden".
+    // If we have a postcode use it; otherwise fall back to the simpler tracktrace URL that does not require postcode.
+    const pc = (postcode || '').replace(/\s+/g, '').toUpperCase();
+    if (pc && /^[0-9]{4}[A-Z]{2}$/.test(pc)) {
+      trackUrl = `https://jouw.postnl.nl/track-and-trace/${encodeURIComponent(trackingNumber)}-NL-${pc}`;
+    } else {
+      // Generic PostNL track-and-trace search (no postcode required)
+      trackUrl = `https://postnl.nl/tracktrace/?B=${encodeURIComponent(trackingNumber)}&P=&D=NL&T=C&L=NL`;
+    }
   } else if (carrierLower.includes('dhl')) {
     trackUrl = `https://www.dhl.com/nl-nl/home/tracking/tracking-parcel.html?submit=1&tracking-id=${encodeURIComponent(trackingNumber)}`;
   } else if (carrierLower.includes('dpd')) {
@@ -731,7 +741,7 @@ export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
         <p style="margin:0 0 8px;color:#475569;font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:600">Track &amp; Trace</p>
         <p style="margin:0 0 4px;color:#64748b;font-size:13px">Vervoerder: <strong style="color:#1e293b">${carrier}</strong></p>
         <p style="margin:8px 0 16px;color:${cfg.color};font-size:22px;font-weight:bold;letter-spacing:1px">${data.trackingNumber}</p>
-        ${buildTrackingButtonHtml(data.trackingNumber, carrier)}
+        ${buildTrackingButtonHtml(data.trackingNumber, carrier, data.shippingPostcode)}
       </div>
     `
     : '';

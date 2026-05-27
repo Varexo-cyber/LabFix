@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   const orderId = request.nextUrl.searchParams.get('orderId') || 'ORD-MPMTQMFG-7Y9Z';
   const tracking = request.nextUrl.searchParams.get('tracking') || '3SMUKZ279492886';
   const carrier = request.nextUrl.searchParams.get('carrier') || 'PostNL';
+  const postcode = request.nextUrl.searchParams.get('postcode') || undefined;
 
   try {
     const info = await sendOrderStatusUpdate({
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       status,
       trackingNumber: tracking,
       shippingCarrier: carrier,
+      shippingPostcode: postcode,
     });
     return NextResponse.json({ ok: true, to, status, orderId, info: { messageId: (info as any).messageId, accepted: (info as any).accepted } });
   } catch (err: any) {
