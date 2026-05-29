@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { orderId, amount, description, redirectUrl, orderData } = body;
+    const { orderId, amount, description, redirectUrl, orderData, method } = body;
 
     if (!orderId || !amount) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       )
     `;
 
-    const payment = await mollie.payments.create({
+    const paymentData: any = {
       amount: {
         currency: 'EUR',
         value: parseFloat(amount).toFixed(2),
@@ -61,7 +61,14 @@ export async function POST(request: NextRequest) {
       redirectUrl: `${baseUrl}/checkout/betaling-voltooid?orderId=${orderId}`,
       webhookUrl: `${baseUrl}/api/payments/mollie/webhook`,
       metadata: { orderId },
-    });
+    };
+
+    // If specific method selected, use it for direct redirect (skips Mollie method selection page)
+    if (method) {
+      paymentData.method = method;
+    }
+
+    const payment = await mollie.payments.create(paymentData);
 
     // Update with real Mollie payment ID
     await sql`

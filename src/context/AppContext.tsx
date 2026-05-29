@@ -38,7 +38,7 @@ const AppContext = createContext<AppContextType | null>(null);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('nl');
   const [currency, setCurrencyState] = useState<Currency>('EUR');
-  const [vatMode, setVatModeState] = useState<VatMode>('excl'); // default: show prices EXCL BTW
+  const [vatMode, setVatModeState] = useState<VatMode>('incl'); // default: show prices INCL BTW
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUserState] = useState<User | null>(null);
 
@@ -65,6 +65,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const savedVatMode = localStorage.getItem('labfix_vat_mode') as VatMode;
     if (savedVatMode === 'excl' || savedVatMode === 'incl') {
       setVatModeState(savedVatMode);
+    } else {
+      // No saved preference - default to 'incl'
+      setVatModeState('incl');
     }
     setCart(getCart());
     setUserState(getCurrentUser());

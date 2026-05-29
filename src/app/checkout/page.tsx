@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, Lock, ShoppingBag, Loader2, CreditCard } from 'lucide-react';
+import { CheckCircle, Lock, ShoppingBag, Loader2 } from 'lucide-react';
 import { getShippingCost } from '@/lib/shipping';
 
 // Highlight important model keywords for better distinction
@@ -86,6 +86,14 @@ export default function CheckoutPage() {
 
   const [loading, setLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState<string>('');
+
+  // Available payment methods (no creditcard as requested)
+  const paymentMethods = [
+    { id: 'ideal', name: 'iDEAL', logo: '/payment/ideal.svg', color: 'bg-[#CC0066] hover:bg-[#A30055]' },
+    { id: 'bancontact', name: 'Bancontact', logo: '/payment/bancontact.svg', color: 'bg-[#004E9C] hover:bg-[#003B75]' },
+    { id: 'kbc', name: 'KBC', logo: '/payment/kbc.svg', color: 'bg-[#008A4C] hover:bg-[#006B3B]' },
+  ];
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +141,7 @@ export default function CheckoutPage() {
           amount: total.toFixed(2),
           description: `LabFix bestelling ${orderId}`,
           orderData,
+          method: selectedMethod || undefined, // direct method if selected
         }),
       });
 
@@ -451,21 +460,46 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {/* Payment Method Selection */}
+              <div className="mt-6 space-y-3">
+                <p className="text-sm font-medium text-gray-700">Kies betaalmethode:</p>
+                <div className="grid grid-cols-3 gap-3">
+                  {paymentMethods.map((method) => (
+                    <button
+                      key={method.id}
+                      type="button"
+                      onClick={() => setSelectedMethod(method.id)}
+                      className={`p-3 rounded-lg border-2 transition-all text-center ${
+                        selectedMethod === method.id
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="text-sm font-semibold">{method.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full mt-6 bg-accent-500 text-white py-3 rounded-lg font-semibold hover:bg-accent-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={loading || !selectedMethod}
+                className={`w-full mt-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed ${
+                  selectedMethod
+                    ? paymentMethods.find(m => m.id === selectedMethod)?.color || 'bg-accent-500 hover:bg-accent-600'
+                    : 'bg-gray-400 cursor-not-allowed'
+                } text-white`}
               >
                 {loading ? (
                   <><Loader2 size={16} className="animate-spin" /> Bezig met verwerken...</>
                 ) : (
-                  <><CreditCard size={16} /> Betalen via Mollie</>
+                  <span>Betaal {selectedMethod ? `met ${paymentMethods.find(m => m.id === selectedMethod)?.name}` : '— kies methode'}</span>
                 )}
               </button>
 
               <div className="flex items-center justify-center gap-2 mt-3">
                 <Lock size={12} className="text-gray-400" />
-                <p className="text-xs text-gray-400">Veilig betalen via iDEAL, creditcard, Bancontact en meer</p>
+                <p className="text-xs text-gray-400">Veilig betalen via iDEAL, Bancontact en meer</p>
               </div>
             </div>
           </div>
