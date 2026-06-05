@@ -145,6 +145,10 @@ export async function POST(request: NextRequest) {
           phone: order.phone || '',
           reason,
           description: description || '',
+          shippingAddress: order.shipping_address || '',
+          shippingCity: order.shipping_city || '',
+          shippingPostalCode: order.shipping_postal_code || '',
+          shippingCountry: order.shipping_country || '',
           items: itemList,
         }),
         sendReturnConfirmation({

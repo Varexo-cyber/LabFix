@@ -215,6 +215,16 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
   });
 }
 
+// Customer-facing emails sent from LabFix (info@labfix.nl) — e.g. password reset
+export async function sendCustomerEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    to,
+    subject,
+    html,
+  });
+}
+
 export async function sendAdminEmail(to: string, subject: string, message: string) {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
@@ -869,6 +879,10 @@ interface ReturnAdminData {
   phone: string;
   reason: string;
   description: string;
+  shippingAddress: string;
+  shippingCity: string;
+  shippingPostalCode: string;
+  shippingCountry: string;
   items: { name: string; quantity: number }[];
 }
 
@@ -902,9 +916,6 @@ export async function sendReturnRequestAdmin(data: ReturnAdminData) {
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin:0 0 24px">
         <tr><td style="padding:6px 0;color:#64748b;font-size:14px">MobileSentrix order #</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.msIncrementId || '—'}</td></tr>
-        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Klant</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.contactPerson}</td></tr>
-        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">E-mail</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.userEmail}</td></tr>
-        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Telefoon</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.phone || '—'}</td></tr>
         <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Reden</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${returnReasonLabel(data.reason)}</td></tr>
       </table>
 
@@ -913,6 +924,16 @@ export async function sendReturnRequestAdmin(data: ReturnAdminData) {
         <p style="margin:8px 0 0;color:#334155;font-size:14px;line-height:1.5">${data.description}</p>
       </div>` : ''}
 
+      <h3 style="color:#1e293b;font-size:16px;margin:24px 0 8px">Klantgegevens</h3>
+      <div style="background:#f8fafc;border-radius:8px;padding:16px 20px;margin:0 0 24px">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+          <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Naam</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.contactPerson || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;font-size:14px">E-mail</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.userEmail}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Telefoon</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.phone || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#64748b;font-size:14px;vertical-align:top">Adres</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.shippingAddress || '—'}<br>${data.shippingPostalCode || ''} ${data.shippingCity || ''}<br>${data.shippingCountry || ''}</td></tr>
+        </table>
+      </div>
+
       <h3 style="color:#1e293b;font-size:16px;margin:24px 0 8px">Producten</h3>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
         ${itemRows}
@@ -920,8 +941,9 @@ export async function sendReturnRequestAdmin(data: ReturnAdminData) {
     </div>
   `;
 
-  return labfixTransporter.sendMail({
-    from: `"LabFix Retouren" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+  // Admin notification sent from Varexo (info@varexo.nl) to LabFix admin (info@labfix.nl)
+  return varexoTransporter.sendMail({
+    from: `"Varexo/LabFix" <${process.env.SMTP_USER_VAREXO || 'info@varexo.nl'}>`,
     to: process.env.RETURN_ADMIN_EMAIL || 'info@labfix.nl',
     replyTo: data.userEmail,
     subject: `🔄 Retouraanvraag ${data.returnId} - bestelling ${data.orderId}`,

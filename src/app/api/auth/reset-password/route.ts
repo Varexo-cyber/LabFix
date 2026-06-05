@@ -1,7 +1,7 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { sendEmail } from '@/lib/email';
+import { sendCustomerEmail } from '@/lib/email';
 import { randomUUID } from 'crypto';
 
 export const runtime = 'nodejs';
@@ -58,14 +58,19 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
 
     // Find user
-    const users = await sql`SELECT id, email, company_name, contact_person FROM users WHERE LOWER(email) = ${email.toLowerCase()}`;
+    const users = await sql`SELECT id, email, company_name, contact_person, first_name, last_name FROM users WHERE LOWER(email) = ${email.toLowerCase()}`;
     if (users.length === 0) {
       // Don't reveal if email exists
       return NextResponse.json({ success: true, message: 'If this email exists, a reset link has been sent' });
     }
 
     const user = users[0];
-    
+    // Build a proper greeting name: contact person, else full name, else company
+    const greetingName = (user.contact_person && user.contact_person.trim())
+      || `${user.first_name || ''} ${user.last_name || ''}`.trim()
+      || (user.company_name && user.company_name.trim())
+      || 'klant';
+
     // Generate token
     const token = randomUUID();
     const expiresAt = new Date();
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
     // Send email
     const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://stellar-brioche-27fb7f.netlify.app'}/account/reset-password?token=${token}`;
     
-    await sendEmail({
+    await sendCustomerEmail({
       to: user.email,
       subject: 'LabFix - Wachtwoord reset aanvraag',
       html: `
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
             <img src="https://stellar-brioche-27fb7f.netlify.app/logo.png" alt="LabFix" style="height: 50px;" />
           </div>
           <h2 style="color: #1e40af;">Wachtwoord reset</h2>
-          <p>Beste ${user.contact_person},</p>
+          <p>Beste ${greetingName},</p>
           <p>Er is een verzoek ingediend om uw wachtwoord te resetten. Klik op de onderstaande link om een nieuw wachtwoord in te stellen:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}" style="background: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block;">Wachtwoord resetten</a>
