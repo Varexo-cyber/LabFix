@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment, applyVatToAllProducts } from '@/lib/store';
-import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench, Truck, Percent } from 'lucide-react';
+import { Product, Category, fetchProducts, fetchCategories, createProduct, updateProduct, deleteProduct, isAdminAuthenticated, adminLogin, adminLogout, fetchOrders, Order, updateOrderStatusApi, OrderStatus, fetchUsers, User, sendEmailApi, initDatabase, NewsArticle, fetchNews, createNews, updateNews, deleteNews, ContactMessage, fetchContactMessages, updateContactMessage, deleteContactMessage, RepairAppointment, RepairStatus, fetchRepairAppointments, updateRepairAppointment, deleteRepairAppointment, applyVatToAllProducts, ReturnRequest, ReturnStatus, fetchReturns, updateReturnApi } from '@/lib/store';
+import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock, ClipboardList, Users, Mail, Send, ChevronDown, Database, Upload, Newspaper, MessageCircle, CheckCircle, Archive, Wrench, Truck, Percent, RotateCcw } from 'lucide-react';
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
@@ -27,6 +27,29 @@ const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   isNew: false,
 };
 
+const RETURN_REASON_LABELS: Record<string, string> = {
+  defect: 'Defect / kapot',
+  wrong: 'Verkeerd product',
+  damaged: 'Beschadigd aangekomen',
+  not_needed: 'Niet meer nodig',
+  other: 'Anders',
+};
+
+function returnReasonLabel(reason: string): string {
+  return RETURN_REASON_LABELS[reason] || reason;
+}
+
+function returnStatusLabelAdmin(status: string): string {
+  const labels: Record<string, string> = {
+    pending: 'In afwachting',
+    label_sent: 'Label verstuurd',
+    received: 'Ontvangen',
+    refunded: 'Terugbetaald',
+    rejected: 'Afgewezen',
+  };
+  return labels[status] || status;
+}
+
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -43,7 +66,10 @@ export default function AdminPage() {
   const [filterSubCategory, setFilterSubCategory] = useState('');
   const [filterModel, setFilterModel] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'customers' | 'email-test' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'repairs' | 'orders' | 'returns' | 'customers' | 'email-test' | 'news' | 'contact' | 'ai-builder' | 'import'>('products');
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
+  const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(null);
+  const [returnAdminNotes, setReturnAdminNotes] = useState('');
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
   const [creatingNews, setCreatingNews] = useState(false);
@@ -160,7 +186,25 @@ export default function AdminPage() {
     if (activeTab === 'repairs') {
       loadRepairAppointments();
     }
+    if (activeTab === 'returns') {
+      fetchReturns().then(setReturns);
+    }
   }, [activeTab]);
+
+  const handleReturnStatusChange = async (id: string, status: ReturnStatus) => {
+    await updateReturnApi(id, { status });
+    const updated = await fetchReturns();
+    setReturns(updated);
+    if (selectedReturn && selectedReturn.id === id) {
+      setSelectedReturn({ ...selectedReturn, status });
+    }
+  };
+
+  const handleReturnNotesSave = async (id: string) => {
+    await updateReturnApi(id, { adminNotes: returnAdminNotes });
+    const updated = await fetchReturns();
+    setReturns(updated);
+  };
 
   const loadContactMessages = async () => {
     const result = await fetchContactMessages(contactFilter === 'all' ? undefined : contactFilter);
@@ -611,6 +655,9 @@ export default function AdminPage() {
             </button>
             <button onClick={() => setActiveTab('orders')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'orders' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <ClipboardList size={16} /> Bestellingen ({orders.length})
+            </button>
+            <button onClick={() => setActiveTab('returns')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'returns' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
+              <RotateCcw size={16} /> Retouren ({returns.filter(r => r.status === 'pending').length})
             </button>
             <button onClick={() => setActiveTab('customers')} className={`px-5 py-3 text-sm font-medium rounded-t-lg flex items-center gap-2 transition-colors ${activeTab === 'customers' ? 'bg-gray-100 text-gray-800' : 'text-blue-200 hover:text-white'}`}>
               <Users size={16} /> Klanten ({users.length})
@@ -1382,6 +1429,134 @@ export default function AdminPage() {
                     <div className="p-8 text-center text-gray-400">Nog geen bestellingen ontvangen</div>
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============= RETURNS TAB ============= */}
+        {activeTab === 'returns' && (
+          <div className="max-w-7xl mx-auto px-4 pb-8 animate-fade-in-up">
+            {selectedReturn ? (
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <button onClick={() => setSelectedReturn(null)} className="text-sm text-primary-600 hover:underline mb-4 flex items-center gap-1">
+                  <X size={14} /> Terug naar overzicht
+                </button>
+                <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <RotateCcw size={20} className="text-amber-500" /> {selectedReturn.id}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Bestelling: <strong>{selectedReturn.orderId}</strong></p>
+                    {selectedReturn.msIncrementId && (
+                      <p className="text-sm text-gray-500">MobileSentrix #: <strong>{selectedReturn.msIncrementId}</strong></p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Status</label>
+                    <select
+                      value={selectedReturn.status}
+                      onChange={(e) => handleReturnStatusChange(selectedReturn.id, e.target.value as ReturnStatus)}
+                      className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
+                    >
+                      <option value="pending">In afwachting</option>
+                      <option value="label_sent">Retourlabel verstuurd</option>
+                      <option value="received">Retour ontvangen</option>
+                      <option value="refunded">Terugbetaald</option>
+                      <option value="rejected">Afgewezen</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-700 mb-2 text-sm">Klantgegevens</h3>
+                    <p className="text-sm"><span className="text-gray-500">Naam:</span> <strong>{selectedReturn.contactPerson || '-'}</strong></p>
+                    <p className="text-sm"><span className="text-gray-500">E-mail:</span> <strong>{selectedReturn.userEmail}</strong></p>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-700 mb-2 text-sm">Retourreden</h3>
+                    <p className="text-sm font-medium text-gray-800">{returnReasonLabel(selectedReturn.reason)}</p>
+                    {selectedReturn.description && (
+                      <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{selectedReturn.description}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800">
+                  <strong>Actie:</strong> Vraag een retourlabel aan bij MobileSentrix (order #{selectedReturn.msIncrementId || '—'}) en stuur deze naar {selectedReturn.userEmail}. Zet daarna de status op "Retourlabel verstuurd".
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Interne notities</label>
+                  <textarea
+                    value={returnAdminNotes}
+                    onChange={(e) => setReturnAdminNotes(e.target.value)}
+                    onFocus={() => { if (!returnAdminNotes) setReturnAdminNotes(selectedReturn.adminNotes || ''); }}
+                    rows={3}
+                    placeholder="Notities (bijv. retourlabel verstuurd op...)"
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 text-sm"
+                  />
+                  <button
+                    onClick={() => handleReturnNotesSave(selectedReturn.id)}
+                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  >
+                    <Save size={16} /> Notities opslaan
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <h2 className="text-xl font-bold text-gray-800 p-6 pb-0">Retouren</h2>
+                {returns.length === 0 ? (
+                  <p className="text-gray-500 p-6">Nog geen retouraanvragen.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-gray-500 uppercase">
+                          <th className="px-4 py-3">Retour-ID</th>
+                          <th className="px-4 py-3">Bestelling</th>
+                          <th className="px-4 py-3">Klant</th>
+                          <th className="px-4 py-3">Reden</th>
+                          <th className="px-4 py-3">Datum</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {returns.map((r) => (
+                          <tr key={r.id} className="border-b hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm font-mono font-semibold">{r.id}</td>
+                            <td className="px-4 py-3 text-sm">{r.orderId}</td>
+                            <td className="px-4 py-3 text-sm">{r.contactPerson || r.userEmail}</td>
+                            <td className="px-4 py-3 text-sm">{returnReasonLabel(r.reason)}</td>
+                            <td className="px-4 py-3 text-sm text-gray-500">{new Date(r.createdAt).toLocaleDateString('nl-NL')}</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                r.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                r.status === 'label_sent' ? 'bg-blue-100 text-blue-700' :
+                                r.status === 'received' ? 'bg-purple-100 text-purple-700' :
+                                r.status === 'refunded' ? 'bg-green-100 text-green-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {returnStatusLabelAdmin(r.status)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <button
+                                onClick={() => { setSelectedReturn(r); setReturnAdminNotes(r.adminNotes || ''); }}
+                                className="text-sm text-primary-600 hover:underline"
+                              >
+                                Bekijken
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>

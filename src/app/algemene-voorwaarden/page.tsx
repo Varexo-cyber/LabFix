@@ -67,7 +67,6 @@ export default function AlgemeneVoorwaardenPage() {
             </h2>
             <div className="space-y-2 text-gray-700">
               <p><strong>LabFix</strong></p>
-              <p><span className="font-semibold">Adres:</span> Leyweg 303, 2545 CK, Den Haag</p>
               <p><span className="font-semibold">Telefoon klantenservice:</span> <a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 651131133</a></p>
               <p><span className="font-semibold">Telefoon zakelijk contact:</span> <a href="tel:0657646467" className="text-primary-600 hover:underline">0657646467</a></p>
               <p><span className="font-semibold">E-mail:</span> <a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></p>
@@ -113,7 +112,7 @@ export default function AlgemeneVoorwaardenPage() {
               <p>Bij elektronische aanvaarding bevestigt LabFix direct de ontvangst van de aanvaarding. Zolang deze bevestiging niet is ontvangen, kan de consument de overeenkomst ontbinden.</p>
               <p>LabFix treft passende technische en organisatorische maatregelen ter beveiliging van elektronische gegevensoverdracht en betalingen.</p>
               <p>LabFix behoudt zich het recht voor een bestelling of aanvraag te weigeren of aan bijzondere voorwaarden te verbinden, indien er gegronde redenen zijn (bijv. kredietwaardigheid).</p>
-              <p>LabFix verstrekt de consument de nodige informatie, waaronder het adres voor klachten, de voorwaarden van het herroepingsrecht, garantie-informatie en contactgegevens.</p>
+              <p>LabFix verstrekt de consument de nodige informatie, waaronder de voorwaarden van het herroepingsrecht, garantie-informatie en contactgegevens.</p>
             </div>
           </section>
 
@@ -262,7 +261,6 @@ export default function AlgemeneVoorwaardenPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Contact</h2>
             <div className="space-y-2 text-gray-700">
               <p><strong>LabFix</strong></p>
-              <p><span className="font-semibold">Adres:</span> Leyweg 303, 2545 CK, Den Haag</p>
               <p><span className="font-semibold">KvK-nummer:</span> 42035906</p>
               <p><span className="font-semibold">BTW-nummer:</span> NL005445900B06</p>
               <p><span className="font-semibold">Telefoon:</span> <a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 651131133</a></p>

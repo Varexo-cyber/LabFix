@@ -808,3 +808,189 @@ export async function sendOrderStatusUpdate(data: OrderStatusEmailData) {
     html: headerHtml + bodyHtml + footerHtml,
   });
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Return / Retour emails
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RETURN_REASON_LABELS: Record<string, string> = {
+  defect: 'Product is defect / kapot',
+  wrong: 'Verkeerd product ontvangen',
+  not_needed: 'Niet meer nodig (herroepingsrecht)',
+  damaged: 'Beschadigd aangekomen',
+  other: 'Anders',
+};
+
+function returnReasonLabel(reason: string): string {
+  return RETURN_REASON_LABELS[reason] || reason;
+}
+
+// Shared LabFix email shell (header + footer)
+function labfixShell(innerHtml: string): string {
+  const header = `
+    <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+        <tr><td style="height:5px;background:linear-gradient(90deg,#dc2626 0%,#ef4444 50%,#dc2626 100%);font-size:0;line-height:0">&nbsp;</td></tr>
+      </table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0f172a;border-collapse:collapse">
+        <tr>
+          <td align="center" style="padding:40px 24px 32px">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
+              <tr><td align="center" style="background:#fff;padding:18px 36px;border-radius:14px">
+                <img src="https://labfix.nl/logo.png" alt="LabFix" width="160" style="height:auto;display:block;border:0;outline:none;text-decoration:none" />
+              </td></tr>
+            </table>
+            <p style="color:#94a3b8;margin:20px 0 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600">Professionele Reparatieservice</p>
+          </td>
+        </tr>
+      </table>
+  `;
+  const footer = `
+      <div style="background:#1e293b;padding:24px;text-align:center;color:#94a3b8;font-size:12px">
+        <p style="margin:0 0 8px"><strong style="color:#fff">LabFix Repair Center</strong></p>
+        <p style="margin:4px 0">KvK: 42035906 | BTW: NL005445900B06</p>
+        <p style="margin:8px 0">
+          <span style="color:#60a5fa">📞 +31 6 5113 1133</span> |
+          <span style="color:#60a5fa">✉️ info@labfix.nl</span>
+        </p>
+        <p style="margin:16px 0 0;font-size:11px;color:#64748b">© ${new Date().getFullYear()} LabFix - Alle rechten voorbehouden</p>
+      </div>
+    </div>
+  `;
+  return header + innerHtml + footer;
+}
+
+interface ReturnAdminData {
+  returnId: string;
+  orderId: string;
+  msIncrementId: string;
+  contactPerson: string;
+  userEmail: string;
+  phone: string;
+  reason: string;
+  description: string;
+  items: { name: string; quantity: number }[];
+}
+
+// Notification to LabFix admin (info@labfix.nl) when a customer requests a return
+export async function sendReturnRequestAdmin(data: ReturnAdminData) {
+  const itemRows = data.items
+    .map(
+      (it) =>
+        `<tr>
+          <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;font-size:14px">${it.name}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:center;font-size:14px;color:#64748b">${it.quantity}x</td>
+        </tr>`
+    )
+    .join('');
+
+  const body = `
+    <div style="padding:32px 24px;background:#fff">
+      <h2 style="color:#dc2626;font-size:22px;margin:0 0 8px">🔄 Nieuwe retouraanvraag</h2>
+      <p style="color:#64748b;font-size:14px;margin:0 0 24px">Een klant heeft een retour aangevraagd. Vraag een retourlabel aan bij MobileSentrix en stuur deze naar de klant.</p>
+
+      <div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:8px;padding:20px;margin:0 0 24px">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+          <tr>
+            <td style="padding:0"><p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Retour-ID</p>
+            <p style="margin:4px 0 0;color:#b91c1c;font-size:18px;font-weight:bold">${data.returnId}</p></td>
+            <td align="right" style="padding:0"><p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">LabFix bestelling</p>
+            <p style="margin:4px 0 0;color:#475569;font-size:16px;font-weight:600">${data.orderId}</p></td>
+          </tr>
+        </table>
+      </div>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin:0 0 24px">
+        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">MobileSentrix order #</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.msIncrementId || '—'}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Klant</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.contactPerson}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">E-mail</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.userEmail}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Telefoon</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${data.phone || '—'}</td></tr>
+        <tr><td style="padding:6px 0;color:#64748b;font-size:14px">Reden</td><td style="padding:6px 0;text-align:right;font-size:14px;font-weight:600">${returnReasonLabel(data.reason)}</td></tr>
+      </table>
+
+      ${data.description ? `<div style="background:#f8fafc;border-left:4px solid #dc2626;padding:14px 16px;margin:0 0 24px;border-radius:4px">
+        <p style="margin:0;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Toelichting klant</p>
+        <p style="margin:8px 0 0;color:#334155;font-size:14px;line-height:1.5">${data.description}</p>
+      </div>` : ''}
+
+      <h3 style="color:#1e293b;font-size:16px;margin:24px 0 8px">Producten</h3>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+        ${itemRows}
+      </table>
+    </div>
+  `;
+
+  return labfixTransporter.sendMail({
+    from: `"LabFix Retouren" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    to: process.env.RETURN_ADMIN_EMAIL || 'info@labfix.nl',
+    replyTo: data.userEmail,
+    subject: `🔄 Retouraanvraag ${data.returnId} - bestelling ${data.orderId}`,
+    html: labfixShell(body),
+  });
+}
+
+interface ReturnConfirmationData {
+  to: string;
+  returnId: string;
+  orderId: string;
+  contactPerson: string;
+  reason: string;
+  items: { name: string; quantity: number }[];
+}
+
+// Confirmation to the customer that their return request was received
+export async function sendReturnConfirmation(data: ReturnConfirmationData) {
+  const itemRows = data.items
+    .map(
+      (it) =>
+        `<tr>
+          <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;font-size:14px">${it.name}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #e2e8f0;text-align:center;font-size:14px;color:#64748b">${it.quantity}x</td>
+        </tr>`
+    )
+    .join('');
+
+  const body = `
+    <div style="padding:32px 24px;background:#fff">
+      <h2 style="color:#1e293b;font-size:24px;margin:0 0 8px">Uw retouraanvraag is ontvangen ✅</h2>
+      <p style="color:#64748b;font-size:14px;margin:0 0 24px">Retour-ID: <strong>${data.returnId}</strong></p>
+
+      <p style="color:#475569;font-size:16px;line-height:1.6;margin:0 0 24px">
+        Beste ${data.contactPerson},<br><br>
+        Bedankt voor uw retouraanvraag voor bestelling <strong>${data.orderId}</strong>. We hebben uw aanvraag in goede orde ontvangen en gaan ermee aan de slag.
+      </p>
+
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:20px;margin:0 0 24px">
+        <p style="margin:0 0 8px;color:#1e40af;font-size:16px;font-weight:bold">📦 Wat gebeurt er nu?</p>
+        <ol style="margin:0;padding-left:20px;color:#334155;font-size:14px;line-height:1.7">
+          <li>Uw retour staat nu <strong>in afwachting</strong>.</li>
+          <li>Binnen <strong>3 werkdagen</strong> ontvangt u per e-mail een <strong>retourlabel</strong>.</li>
+          <li>Verpak het product <strong>goed en stevig</strong> in de originele verpakking of een vergelijkbare doos, zodat het onbeschadigd retour kan.</li>
+          <li>Plak het retourlabel op het pakket en lever het in bij het aangegeven afgiftepunt.</li>
+        </ol>
+      </div>
+
+      <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:8px;padding:16px 20px;margin:0 0 24px">
+        <p style="margin:0;color:#92400e;font-size:14px;line-height:1.6">
+          <strong>⚠️ Let op — retourkosten:</strong> De kosten voor het terugsturen van uw bestelling zijn voor eigen rekening. Deze kosten worden niet vergoed.
+        </p>
+      </div>
+
+      <h3 style="color:#1e293b;font-size:16px;margin:24px 0 8px">Te retourneren producten</h3>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin:0 0 24px">
+        ${itemRows}
+      </table>
+
+      <p style="color:#64748b;font-size:13px;line-height:1.6;margin:24px 0 0">
+        Heeft u vragen over uw retour? Neem gerust contact met ons op via <a href="mailto:info@labfix.nl" style="color:#dc2626">info@labfix.nl</a> onder vermelding van uw retour-ID.
+      </p>
+    </div>
+  `;
+
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    to: data.to,
+    subject: `LabFix - Retouraanvraag ontvangen (${data.returnId})`,
+    html: labfixShell(body),
+  });
+}

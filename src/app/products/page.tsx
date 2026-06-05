@@ -15,7 +15,7 @@ function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedSub, setSelectedSub] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
@@ -658,7 +658,17 @@ function ProductsPageContent() {
 
           {/* Products Grid */}
           {loadingProducts ? (
-            <div className="col-span-4 py-20 text-center text-gray-400">Laden...</div>
+            <div className="bg-white rounded-xl shadow-md p-16 text-center animate-fade-in">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+                <p className="text-gray-600 font-medium">
+                  {locale === 'nl' ? 'Even geduld...' : 'Please wait...'}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {locale === 'nl' ? 'Producten worden geladen' : 'Loading products'}
+                </p>
+              </div>
+            </div>
           ) : paginatedProducts.length > 0 ? (
             <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
               {paginatedProducts.map((product, i) => (

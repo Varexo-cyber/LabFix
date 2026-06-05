@@ -71,15 +71,7 @@ export default function ReturnsPage() {
               </li>
               <li className="flex gap-3">
                 <span className="bg-primary-100 text-primary-700 font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm">3</span>
-                <div>
-                  <p>Stuur je pakket naar:</p>
-                  <address className="not-italic mt-2 bg-gray-50 rounded-lg p-3 text-sm">
-                    <strong>LabFix</strong><br />
-                    Leyweg 303<br />
-                    2545 CK, Den Haag<br />
-                    Nederland
-                  </address>
-                </div>
+                <span>Je ontvangt van ons per e-mail een <strong>retourlabel</strong>. Print het label en bevestig het op je pakket. Vervolgens kun je het pakket afgeven bij een servicepunt van PostNL, DHL of een andere vervoerder (afhankelijk van het label).</span>
               </li>
               <li className="flex gap-3">
                 <span className="bg-primary-100 text-primary-700 font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm">4</span>

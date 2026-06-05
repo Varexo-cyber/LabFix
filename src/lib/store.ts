@@ -112,6 +112,23 @@ export interface Order {
   updatedAt: string;
 }
 
+export type ReturnStatus = 'pending' | 'label_sent' | 'received' | 'refunded' | 'rejected';
+
+export interface ReturnRequest {
+  id: string;
+  orderId: string;
+  userId: string;
+  userEmail: string;
+  contactPerson: string;
+  reason: string;
+  description: string;
+  status: ReturnStatus;
+  msIncrementId: string;
+  adminNotes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface NewsArticle {
   id: string;
   title: string;
@@ -224,6 +241,26 @@ export async function createOrderApi(orderData: any): Promise<{ success: boolean
 
 export async function updateOrderStatusApi(id: string, status: OrderStatus): Promise<{ success: boolean }> {
   const res = await fetch(`${API_BASE}/api/orders`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) });
+  return res.json();
+}
+
+export async function fetchReturns(params?: { userId?: string; orderId?: string }): Promise<ReturnRequest[]> {
+  const qs = new URLSearchParams();
+  if (params?.userId) qs.set('userId', params.userId);
+  if (params?.orderId) qs.set('orderId', params.orderId);
+  const q = qs.toString();
+  const res = await fetch(`${API_BASE}/api/returns${q ? `?${q}` : ''}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function createReturnApi(data: { orderId: string; reason: string; description?: string }): Promise<{ success: boolean; id?: string; message?: string; error?: string }> {
+  const res = await fetch(`${API_BASE}/api/returns`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  return res.json();
+}
+
+export async function updateReturnApi(id: string, updates: { status?: ReturnStatus; adminNotes?: string }): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/api/returns`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...updates }) });
   return res.json();
 }
 

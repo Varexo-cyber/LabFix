@@ -89,14 +89,14 @@ export default function PrivacyPolicyPage() {
               <div className="bg-gray-50 rounded-lg p-4 mt-4">
                 <p className="font-semibold text-gray-800 mb-2">Onze contactgegevens:</p>
                 <ul className="space-y-1 text-sm">
-                  <li className="flex items-center gap-2"><Mail size={16} className="text-gray-400" /> <span className="text-gray-400">[TE VERVULLEN]</span></li>
-                  <li className="flex items-center gap-2"><Phone size={16} className="text-gray-400" /> <span className="text-gray-400">[TE VERVULLEN]</span></li>
-                  <li><span className="text-gray-400">[TE VERVULLEN]</span></li>
-                  <li>KVK: [TE VERVULLEN]</li>
+                  <li className="flex items-center gap-2"><Mail size={16} className="text-gray-500" /> <a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></li>
+                  <li className="flex items-center gap-2"><Phone size={16} className="text-gray-500" /> <a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 6 5113 1133</a></li>
+                  <li>KvK: 42035906</li>
+                  <li>BTW: NL005445900B06</li>
                 </ul>
               </div>
               
-              <p>Onze Functionaris Gegevensbescherming (FG) is te bereiken voor alle vragen over privacy en gegevensbescherming.</p>
+              <p>Voor alle vragen over privacy en gegevensbescherming kun je contact met ons opnemen via bovenstaande contactgegevens.</p>
             </div>
           </section>
 
@@ -477,20 +477,15 @@ export default function PrivacyPolicyPage() {
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <h3 className="font-semibold text-gray-800 mb-2">Functionaris Gegevensbescherming</h3>
-                    <p className="text-sm text-gray-400">[TE VERVULLEN]</p>
-                    <p className="text-sm">Voor alle privacy-gerelateerde vragen</p>
+                    <h3 className="font-semibold text-gray-800 mb-2">Privacy-gerelateerde vragen</h3>
+                    <p className="text-sm"><a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></p>
+                    <p className="text-sm text-gray-600 mt-1">Voor alle vragen over je gegevens en je rechten</p>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-2">Algemene vragen</h3>
-                    <p className="text-sm text-gray-400">[TE VERVULLEN]</p>
-                    <p className="text-sm text-gray-400">[TE VERVULLEN]</p>
+                    <p className="text-sm"><a href="mailto:info@labfix.nl" className="text-primary-600 hover:underline">info@labfix.nl</a></p>
+                    <p className="text-sm"><a href="tel:+31651131133" className="text-primary-600 hover:underline">+31 6 5113 1133</a></p>
                   </div>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="font-semibold text-gray-800 mb-2">Adres:</p>
-                  <p className="text-sm text-gray-400">[TE VERVULLEN]</p>
                 </div>
               </div>
               

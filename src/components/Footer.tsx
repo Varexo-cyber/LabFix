@@ -72,13 +72,11 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">{locale === 'nl' ? 'Over Ons' : 'About'}</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/about" className="hover:text-white transition-colors">{t('nav.about')}</Link></li>
-              <li><Link href="/quality" className="hover:text-white transition-colors">{locale === 'nl' ? 'Kwaliteitsstandaarden' : 'Quality Standards'}</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">{t('footer.returns')}</Link></li>
               <li><Link href="/nieuws" className="hover:text-white transition-colors">{locale === 'nl' ? 'Nieuws' : 'News'}</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-white transition-colors">{locale === 'nl' ? 'Privacy Policy' : 'Privacy Policy'}</Link></li>
               <li><Link href="/algemene-voorwaarden" className="hover:text-white transition-colors">{locale === 'nl' ? 'Algemene Voorwaarden' : 'Terms & Conditions'}</Link></li>
               <li><Link href="/shipping" className="hover:text-white transition-colors">{t('footer.shipping')}</Link></li>
-              <li><Link href="/payment-methods" className="hover:text-white transition-colors">{locale === 'nl' ? 'Betaalmethoden' : 'Payment Methods'}</Link></li>
             </ul>
           </div>
 

@@ -2,10 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
-import { fetchOrders, Order } from '@/lib/store';
+import { fetchOrders, Order, fetchReturns, createReturnApi, ReturnRequest } from '@/lib/store';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, Building2, LogOut, User, Clock, CheckCircle, Truck, XCircle, AlertCircle, Edit2, Save, X, MapPin, FileText, Check } from 'lucide-react';
+import { Package, Building2, LogOut, User, Clock, CheckCircle, Truck, XCircle, AlertCircle, Edit2, Save, X, MapPin, FileText, Check, RotateCcw } from 'lucide-react';
+
+const RETURN_WINDOW_DAYS = 14;
+
+// Days left within the 14-day return window (negative if expired)
+const returnDaysLeft = (createdAt: string): number => {
+  const orderDate = new Date(createdAt);
+  const now = new Date();
+  const diffDays = (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+  return Math.ceil(RETURN_WINDOW_DAYS - diffDays);
+};
+
+const returnStatusLabel = (status: string): string => {
+  const labels: Record<string, string> = {
+    'pending': 'In afwachting',
+    'label_sent': 'Retourlabel verstuurd',
+    'received': 'Retour ontvangen',
+    'refunded': 'Terugbetaald',
+    'rejected': 'Afgewezen',
+  };
+  return labels[status] || status;
+};
+
+const RETURN_REASONS = [
+  { value: 'defect', label: 'Product is defect / kapot' },
+  { value: 'wrong', label: 'Verkeerd product ontvangen' },
+  { value: 'damaged', label: 'Beschadigd aangekomen' },
+  { value: 'not_needed', label: 'Niet meer nodig (herroepingsrecht)' },
+  { value: 'other', label: 'Anders' },
+];
 
 const statusIcon = (status: string) => {
   switch (status) {
@@ -35,7 +64,15 @@ export default function AccountPage() {
   const { t, user, logout, setUser } = useApp();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [activeTab, setActiveTab] = useState<'orders' | 'details'>('orders');
+  // Return flow state
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [returnReason, setReturnReason] = useState('');
+  const [returnDescription, setReturnDescription] = useState('');
+  const [returnSubmitting, setReturnSubmitting] = useState(false);
+  const [returnError, setReturnError] = useState('');
+  const [returnSuccess, setReturnSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -71,6 +108,7 @@ export default function AccountPage() {
         router.push('/account/login');
       } else {
         fetchOrders(user.id).then(setOrders);
+        fetchReturns({ userId: user.id }).then(setReturns);
       }
     }, 100);
 
@@ -128,6 +166,51 @@ export default function AccountPage() {
   const handleLogout = () => {
     logout();
     router.push('/');
+  };
+
+  // Find an existing return request for a given order (active or completed)
+  const getReturnForOrder = (orderId: string): ReturnRequest | undefined =>
+    returns.find((r) => r.orderId === orderId);
+
+  const openReturnModal = (order: Order) => {
+    setSelectedOrder(order);
+    setReturnReason('');
+    setReturnDescription('');
+    setReturnError('');
+    setReturnSuccess(false);
+  };
+
+  const closeReturnModal = () => {
+    setSelectedOrder(null);
+    setReturnError('');
+    setReturnSuccess(false);
+  };
+
+  const handleSubmitReturn = async () => {
+    if (!selectedOrder) return;
+    if (!returnReason) {
+      setReturnError('Selecteer een reden voor de retour.');
+      return;
+    }
+    setReturnSubmitting(true);
+    setReturnError('');
+    try {
+      const result = await createReturnApi({
+        orderId: selectedOrder.id,
+        reason: returnReason,
+        description: returnDescription,
+      });
+      if (result.success) {
+        setReturnSuccess(true);
+        if (user) fetchReturns({ userId: user.id }).then(setReturns);
+      } else {
+        setReturnError(result.message || result.error || 'Er is een fout opgetreden. Probeer het opnieuw.');
+      }
+    } catch (err) {
+      setReturnError('Er is een fout opgetreden bij het indienen van de retour.');
+    } finally {
+      setReturnSubmitting(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,7 +377,7 @@ export default function AccountPage() {
                       </div>
                       <div className="border-t mt-4 pt-4 flex justify-between items-center gap-3 flex-wrap">
                         <p className="font-bold text-lg">€{order.total.toFixed(2)}</p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           <a
                             href={`/api/orders/${order.id}/invoice`}
                             target="_blank"
@@ -309,6 +392,32 @@ export default function AccountPage() {
                           >
                             <FileText size={16} /> Download PDF
                           </a>
+                          {(() => {
+                            const existingReturn = getReturnForOrder(order.id);
+                            if (existingReturn) {
+                              return (
+                                <span className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-lg">
+                                  <RotateCcw size={16} /> Retour: {returnStatusLabel(existingReturn.status)}
+                                </span>
+                              );
+                            }
+                            const daysLeft = returnDaysLeft(order.createdAt);
+                            if (daysLeft > 0) {
+                              return (
+                                <button
+                                  onClick={() => openReturnModal(order)}
+                                  className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50 transition-colors"
+                                >
+                                  <RotateCcw size={16} /> Retour aanvragen
+                                </button>
+                              );
+                            }
+                            return (
+                              <span className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-400">
+                                <RotateCcw size={16} /> Retourtermijn verstreken
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -662,6 +771,118 @@ export default function AccountPage() {
           )}
         </div>
       </div>
+
+      {/* Return request modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in" onClick={closeReturnModal}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            {returnSuccess ? (
+              // Success view
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle size={32} className="text-green-500" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Retouraanvraag ontvangen!</h2>
+                <p className="text-gray-600 text-sm mb-4">
+                  Uw retour staat nu <strong>in afwachting</strong>. Binnen 3 werkdagen ontvangt u per e-mail een retourlabel.
+                  Verpak het product goed en stevig zodat het onbeschadigd retour kan.
+                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700 mb-6">
+                  Let op: de retourkosten zijn voor eigen rekening.
+                </div>
+                <button
+                  onClick={closeReturnModal}
+                  className="w-full bg-primary-500 text-white py-2.5 rounded-lg font-semibold hover:bg-primary-600 transition-colors"
+                >
+                  Sluiten
+                </button>
+              </div>
+            ) : (
+              // Form view
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      <RotateCcw size={20} className="text-amber-500" /> Retour aanvragen
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Bestelling {selectedOrder.id}</p>
+                  </div>
+                  <button onClick={closeReturnModal} className="text-gray-400 hover:text-gray-600 p-1">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700 mb-5">
+                  U heeft nog <strong>{returnDaysLeft(selectedOrder.createdAt)} dag(en)</strong> om gebruik te maken van uw herroepingsrecht (14 dagen na bestelling).
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Waarom wilt u retourneren? *</label>
+                    <div className="space-y-2">
+                      {RETURN_REASONS.map((r) => (
+                        <label key={r.value} className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${returnReason === r.value ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                          <input
+                            type="radio"
+                            name="returnReason"
+                            value={r.value}
+                            checked={returnReason === r.value}
+                            onChange={(e) => setReturnReason(e.target.value)}
+                            className="w-4 h-4 text-primary-600"
+                          />
+                          <span className="text-sm text-gray-700">{r.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Toelichting (optioneel)</label>
+                    <textarea
+                      value={returnDescription}
+                      onChange={(e) => setReturnDescription(e.target.value)}
+                      rows={3}
+                      placeholder="Beschrijf het probleem, bijv. wat er kapot is..."
+                      className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 transition-colors text-sm"
+                    />
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
+                    <strong>Let op:</strong> de kosten voor het terugsturen zijn voor eigen rekening.
+                  </div>
+
+                  {returnError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
+                      <AlertCircle size={18} /> {returnError}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={handleSubmitReturn}
+                      disabled={returnSubmitting}
+                      className="flex-1 bg-primary-500 text-white py-2.5 rounded-lg font-semibold hover:bg-primary-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {returnSubmitting ? (
+                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Bezig...</>
+                      ) : (
+                        'Retour indienen'
+                      )}
+                    </button>
+                    <button
+                      onClick={closeReturnModal}
+                      disabled={returnSubmitting}
+                      className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+                    >
+                      Annuleren
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
