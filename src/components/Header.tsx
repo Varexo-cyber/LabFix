@@ -971,7 +971,7 @@ export default function Header() {
                     </div>
                     {/* Search button */}
                     <Link
-                      href={laptopWizardBrand ? `/products?laptop=${laptopWizardBrand}${laptopWizardModel ? `&sub=${laptopWizardModel}` : ''}${laptopWizardPart ? `&part=${laptopWizardPart}` : ''}` : '/products?category=laptop'}
+                      href={laptopWizardBrand ? `/products?laptopBrand=${laptopWizardBrand}${laptopWizardModel ? `&laptopModel=${laptopWizardModel}` : ''}${laptopWizardPart ? `&laptopPart=${laptopWizardPart}` : ''}` : '/products?category=laptop'}
                       onClick={() => { setOpenDropdown(null); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
                       className="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-2 rounded-lg text-sm font-semibold transition-colors"
                     >

@@ -807,7 +807,11 @@ export default function AdminPage() {
                       {(() => {
                         const brand = productCategories.find(b => b.slug === (formData.category.split('/')[0] || formData.category));
                         const sub = brand?.subcategories.find((s: any) => s.slug === formData.subcategory);
-                        return (sub?.models || []).map((model: any) => (
+                        const models = sub?.models || [];
+                        if (models.length === 0) {
+                          return <option value="" disabled>(Geen modellen voor deze categorie)</option>;
+                        }
+                        return models.map((model: any) => (
                           <option key={model.slug} value={model.slug}>{model.name}</option>
                         ));
                       })()}

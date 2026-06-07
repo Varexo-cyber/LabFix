@@ -154,7 +154,7 @@ export default function RepairPage() {
       formDataToSend.append('appointment_date', selectedDate);
       formDataToSend.append('appointment_time', selectedTime);
       formDataToSend.append('service_type', formData.serviceType);
-      formDataToSend.append('shipping_address', formData.shippingAddress);
+      formDataToSend.append('shipping_address', formData.serviceType === 'pickup' ? pickupLocation : formData.shippingAddress);
       
       // Add attachments
       attachments.forEach(file => {
@@ -470,7 +470,7 @@ export default function RepairPage() {
 
             {formData.serviceType === 'pickup' && (
               <div className="mb-8">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Postcode / Plaats *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Plaats *</label>
                 <input
                   type="text"
                   value={pickupLocation}
@@ -479,7 +479,7 @@ export default function RepairPage() {
                     checkPickupLocation(e.target.value);
                   }}
                   className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
-                  placeholder="Bijv. 2288 AA of Den Haag"
+                  placeholder="Bijv. Den Haag"
                 />
                 {pickupLocation && !pickupValid && (
                   <p className="text-red-500 text-sm mt-2">

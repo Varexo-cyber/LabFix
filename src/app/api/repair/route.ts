@@ -62,11 +62,10 @@ export async function POST(request: NextRequest) {
     const shipping_address = formData.get('shipping_address') as string;
 
     // Validation
-    const isPickup = service_type === 'pickup';
+    // Note: appointment_date/time are not collected in the form for either
+    // pickup or shipping — LabFix contacts the customer afterwards to schedule.
     if (!name || !email || !phone || !device_type || 
-        !device_model || !problem_description ||
-        (isPickup && !appointment_date) ||
-        (isPickup && !appointment_time)) {
+        !device_model || !problem_description) {
       return NextResponse.json(
         { success: false, message: 'Alle verplichte velden moeten worden ingevuld' },
         { status: 400 }
