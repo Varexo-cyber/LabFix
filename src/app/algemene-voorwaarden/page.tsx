@@ -184,12 +184,11 @@ export default function AlgemeneVoorwaardenPage() {
               Conformiteit, garantie en reparaties
             </h2>
             <div className="space-y-3 text-gray-700">
-              <p>LabFix garandeert dat de geleverde producten en uitgevoerde reparaties voldoen aan de overeenkomst en aan de redelijke eisen van deugdelijkheid. Naast de wettelijke garantie (recht op een deugdelijk product) biedt LabFix de volgende commerciële garantie (bovenop uw wettelijke rechten):</p>
+              <p>LabFix garandeert dat de uitgevoerde reparaties voldoen aan de overeenkomst en aan de redelijke eisen van deugdelijkheid. Voor reparaties biedt LabFix een commerciële garantie van 3 maanden, bovenop uw wettelijke rechten. Na 3 maanden vervalt deze garantie.</p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>3 maanden op LCD-schermen en correct verwerkte onderdelen</li>
-                <li>3 maanden op accu's, accessoires en reparatiesets</li>
+                <li>3 maanden garantie op reparaties</li>
               </ul>
-              <p>De garantie vervalt bij onzorgvuldig gebruik, schade door vallen/water, opening door derden, of onjuiste montage. LabFix is niet aansprakelijk voor verlies van data; maak altijd zelf een back-up voor een reparatie. Bij reparaties geldt een inspanningsverplichting.</p>
+              <p>De garantie vervalt bij onzorgvuldig gebruik, schade door vallen/water, opening door derden, of onjuiste montage. LabFix is niet aansprakelijk voor verlies van data; maak altijd zelf een back-up voor een reparatie.</p>
               <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded mt-2">
                 <p className="text-red-800 text-sm font-medium">Er is geen garantie op waterschade reparaties en moederbord storingen.</p>
               </div>

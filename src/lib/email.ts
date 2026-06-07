@@ -369,7 +369,7 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
         </div>
 
         <p style="color:#475569;font-size:14px;line-height:1.6;margin:24px 0">
-          Heeft u vragen? Bel ons ger op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
+          Heeft u vragen? Bel ons gerust op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
         </p>
 
         <p style="color:#64748b;font-size:14px;margin:24px 0 0">
@@ -430,7 +430,7 @@ export async function sendAccountConfirmation(data: AccountEmailData) {
         </div>
 
         <p style="color:#475569;font-size:14px;line-height:1.6;margin:24px 0">
-          Heeft u vragen? Bel ons ger op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
+          Heeft u vragen? Bel ons gerust op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
         </p>
 
         <p style="color:#64748b;font-size:14px;margin:24px 0 0">
@@ -567,7 +567,7 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
         </div>
 
         <p style="color:#475569;font-size:14px;line-height:1.6;margin:24px 0">
-          Heeft u vragen? Bel ons ger op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
+          Heeft u vragen? Bel ons gerust op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
         </p>
       </div>
     `;
@@ -630,7 +630,7 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
         </div>
 
         <p style="color:#475569;font-size:14px;line-height:1.6;margin:24px 0">
-          Heeft u vragen? Bel ons ger op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
+          Heeft u vragen? Bel ons gerust op <strong style="color:#1e40af">+31 6 5113 1133</strong> of mail naar <strong style="color:#1e40af">info@labfix.nl</strong>.
         </p>
       </div>
     `;

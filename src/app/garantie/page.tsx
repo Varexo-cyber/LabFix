@@ -35,15 +35,7 @@ export default function GarantiePage() {
             <div className="grid gap-4">
               <div className="flex items-start gap-4 bg-primary-50 border border-primary-100 rounded-xl p-4">
                 <div className="bg-primary-500 text-white text-sm font-bold rounded-lg px-3 py-1 flex-shrink-0">3 mnd</div>
-                <p className="text-gray-800 font-medium">Op alle <strong>iPhone LCD-schermen</strong></p>
-              </div>
-              <div className="flex items-start gap-4 bg-primary-50 border border-primary-100 rounded-xl p-4">
-                <div className="bg-primary-500 text-white text-sm font-bold rounded-lg px-3 py-1 flex-shrink-0">3 mnd</div>
-                <p className="text-gray-800 font-medium">Op alle <strong>accu's en accessoires</strong> (zoals tempered glass, opladers, kabels en soortgelijke producten)</p>
-              </div>
-              <div className="flex items-start gap-4 bg-primary-50 border border-primary-100 rounded-xl p-4">
-                <div className="bg-primary-500 text-white text-sm font-bold rounded-lg px-3 py-1 flex-shrink-0">3 mnd</div>
-                <p className="text-gray-800 font-medium"><strong>Reparatiesets en tools</strong>, tenzij anders vermeld</p>
+                <p className="text-gray-800 font-medium">Op alle <strong>reparaties</strong>. Na 3 maanden vervalt de garantie.</p>
               </div>
             </div>
           </section>

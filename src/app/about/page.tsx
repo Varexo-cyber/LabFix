@@ -16,8 +16,8 @@ export default function AboutPage() {
           <p className="text-gray-600 leading-relaxed text-lg mb-6">{t('about.text')}</p>
           <p className="text-gray-600 leading-relaxed">
             {locale === 'nl'
-              ? 'Wij selecteren onze onderdelen met zorg en leveren aan reparatiebedrijven door heel Europa. Ons doel is om u de onderdelen te bieden die u nodig heeft, wanneer u ze nodig heeft.'
-              : 'We select our parts with care and supply repair businesses across Europe. Our goal is to provide you with the parts you need, when you need them.'}
+              ? 'Wij selecteren onze onderdelen met zorg en leveren aan reparatiebedrijven en overige klanten door heel Europa. Ons doel is om u de onderdelen te bieden die u nodig heeft, wanneer u ze nodig heeft.'
+              : 'We select our parts with care and supply repair businesses and other customers across Europe. Our goal is to provide you with the parts you need, when you need them.'}
           </p>
         </div>
         <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8 text-white animate-fade-in-right delay-300">

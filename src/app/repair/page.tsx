@@ -669,7 +669,7 @@ export default function RepairPage() {
           <div className="bg-white rounded-xl p-6 shadow">
             <CheckCircle className="text-primary-500 mb-3" size={24} />
             <h3 className="font-semibold mb-1">Garantie</h3>
-            <p className="text-sm text-gray-600">3 maanden garantie op alle reparaties</p>
+            <p className="text-sm text-gray-600">3 maanden garantie op alle reparaties. Na 3 maanden vervalt de garantie.</p>
           </div>
         </div>
       </div>
