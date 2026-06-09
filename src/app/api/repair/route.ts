@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         repairId: id,
       });
 
-      // 2. Send admin notification to LabFix (from info@varexo.nl)
+      // 2. Send admin notification to LabFix (from info@labfix.nl)
       const adminHtml = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
           <div style="background:#1e40af;padding:24px;text-align:center">
@@ -148,15 +148,9 @@ export async function POST(request: NextRequest) {
         </div>
       `;
 
-      // Send to both admin addresses
+      // Send admin notification to LabFix
       await sendEmail({
         to: 'info@labfix.nl',
-        subject: `Nieuwe Reparatie Aanvraag #${id.slice(0,8).toUpperCase()} - ${name}`,
-        html: adminHtml,
-      });
-
-      await sendEmail({
-        to: 'info@varexo.nl',
         subject: `Nieuwe Reparatie Aanvraag #${id.slice(0,8).toUpperCase()} - ${name}`,
         html: adminHtml,
       });

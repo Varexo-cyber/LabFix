@@ -1191,6 +1191,20 @@ export function getAllProductCategories(): BrandCategory[] {
       })),
     }));
 
+  // Laptop brands -> BrandCategory with models as subcategories (matches store: category=laptop-{brand}, subcategory={model})
+  const convertLaptopBrands = (): BrandCategory[] =>
+    laptopBrands.map(b => ({
+      slug: `laptop-${b.slug}`,
+      name: b.name,
+      nameEn: b.nameEn,
+      subcategories: b.subcategories.map(s => ({
+        slug: s.slug,
+        name: s.name,
+        nameEn: s.nameEn,
+        models: [] as ModelItem[],
+      })),
+    }));
+
   return [
     ...brandCategories,
     // Accessoires section header
@@ -1202,6 +1216,9 @@ export function getAllProductCategories(): BrandCategory[] {
     // PC Accessoires section header
     { slug: '_section_pca', name: '── 🖱️ PC ACCESSOIRES ──', nameEn: '── 🖱️ PC ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(pcAccessoryCategories, 'pca-'),
+    // Laptop Merken section header (merk -> model)
+    { slug: '_section_lb', name: '── 💻 LAPTOP MERKEN ──', nameEn: '── 💻 LAPTOP BRANDS ──', subcategories: [] },
+    ...convertLaptopBrands(),
     // Laptop Onderdelen section header
     { slug: '_section_lp', name: '── 💻 LAPTOP ONDERDELEN ──', nameEn: '── 💻 LAPTOP PARTS ──', subcategories: [] },
     ...convertAccessory(laptopPartsCategories, 'lp-'),

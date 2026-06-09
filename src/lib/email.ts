@@ -11,16 +11,6 @@ const labfixTransporter = nodemailer.createTransport({
   },
 });
 
-// Transporter voor Varexo (Gmail) - gebruikt voor repair notificaties
-const varexoTransporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST_VAREXO || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT_VAREXO || '587'),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER_VAREXO || 'info@varexo.nl',
-    pass: process.env.SMTP_PASS_VAREXO,
-  },
-});
 
 interface OrderEmailData {
   to: string;
@@ -206,9 +196,9 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 }
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  // Repair notifications sent from Varexo (info@varexo.nl) to LabFix admin
-  return varexoTransporter.sendMail({
-    from: `"Varexo/LabFix" <${process.env.SMTP_USER_VAREXO || 'info@varexo.nl'}>`,
+  // Notifications sent from LabFix (info@labfix.nl)
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to,
     subject,
     html,
@@ -241,9 +231,9 @@ export async function sendAdminEmail(to: string, subject: string, message: strin
     </div>
   `;
 
-  // Admin emails sent from Varexo (info@varexo.nl)
-  return varexoTransporter.sendMail({
-    from: `"Varexo/LabFix" <${process.env.SMTP_USER_VAREXO || 'info@varexo.nl'}>`,
+  // Admin emails sent from LabFix (info@labfix.nl)
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to,
     subject,
     html,
@@ -941,9 +931,9 @@ export async function sendReturnRequestAdmin(data: ReturnAdminData) {
     </div>
   `;
 
-  // Admin notification sent from Varexo (info@varexo.nl) to LabFix admin (info@labfix.nl)
-  return varexoTransporter.sendMail({
-    from: `"Varexo/LabFix" <${process.env.SMTP_USER_VAREXO || 'info@varexo.nl'}>`,
+  // Admin notification sent from LabFix (info@labfix.nl) to LabFix admin (info@labfix.nl)
+  return labfixTransporter.sendMail({
+    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to: process.env.RETURN_ADMIN_EMAIL || 'info@labfix.nl',
     replyTo: data.userEmail,
     subject: `🔄 Retouraanvraag ${data.returnId} - bestelling ${data.orderId}`,

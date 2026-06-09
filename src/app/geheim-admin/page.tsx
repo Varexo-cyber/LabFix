@@ -255,14 +255,24 @@ export default function AdminPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.sku) {
+    const baseCat = formData.category.split('/')[0] || formData.category;
+    const isLaptop = baseCat.startsWith('laptop-') || baseCat.startsWith('lp-');
+
+    // SKU is optional for laptop products/parts; required for everything else
+    if (!formData.name || !formData.price || (!isLaptop && !formData.sku)) {
       showToast('Vul naam, prijs en SKU in', 'error');
       return;
     }
 
+    // Auto-generate a SKU for laptop products when left empty
+    const finalSku = formData.sku || (isLaptop
+      ? `LF-${baseCat.toUpperCase()}-${(formData.subcategory || 'GEN').toUpperCase()}-${Date.now().toString().slice(-5)}`.replace(/[^A-Z0-9-]/g, '')
+      : formData.sku);
+
     // Auto-set main image from images array if not set
     const saveData = {
       ...formData,
+      sku: finalSku,
       image: formData.image || (formData.images && formData.images.length > 0 ? formData.images[0] : ''),
       price: Number(formData.price),
       comparePrice: formData.comparePrice ? Number(formData.comparePrice) : undefined,
@@ -817,11 +827,17 @@ export default function AdminPage() {
                       })()}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold mb-1">SKU *</label>
-                    <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="LF-IP15P-OLED-001" />
-                  </div>
+                  {(() => {
+                    const baseCat = formData.category.split('/')[0] || formData.category;
+                    const isLaptop = baseCat.startsWith('laptop-') || baseCat.startsWith('lp-');
+                    return (
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">SKU {isLaptop ? '(optioneel)' : '*'}</label>
+                        <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder={isLaptop ? 'Automatisch indien leeg' : 'LF-IP15P-OLED-001'} />
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Product Foto's</label>
