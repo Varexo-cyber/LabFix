@@ -1153,7 +1153,13 @@ export function getSubcategoryName(brandSlug: string, subSlug: string, locale: s
   return subSlug;
 }
 
-export function getModelName(brandSlug: string, subSlug: string, modelSlug: string): string {
+export function getModelName(brandSlug: string, subSlug: string, modelSlug: string, locale: string = 'nl'): string {
+  // Laptop flow: brand=laptop-{brand}, sub={model}, model={part} -> part name from laptopPartsCategories
+  if (brandSlug.startsWith('laptop-')) {
+    const part = laptopPartsCategories.find(c => c.slug === modelSlug);
+    if (part) return locale === 'en' ? part.nameEn : part.name;
+    return modelSlug;
+  }
   const brand = brandCategories.find(b => b.slug === brandSlug);
   if (!brand) return modelSlug;
   const sub = brand.subcategories.find(s => s.slug === subSlug);
@@ -1216,12 +1222,9 @@ export function getAllProductCategories(): BrandCategory[] {
     // PC Accessoires section header
     { slug: '_section_pca', name: '── 🖱️ PC ACCESSOIRES ──', nameEn: '── 🖱️ PC ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(pcAccessoryCategories, 'pca-'),
-    // Laptop Merken section header (merk -> model)
-    { slug: '_section_lb', name: '── 💻 LAPTOP MERKEN ──', nameEn: '── 💻 LAPTOP BRANDS ──', subcategories: [] },
+    // Laptop section header (merk -> model -> onderdeel)
+    { slug: '_section_lb', name: '── 💻 LAPTOPS ──', nameEn: '── 💻 LAPTOPS ──', subcategories: [] },
     ...convertLaptopBrands(),
-    // Laptop Onderdelen section header
-    { slug: '_section_lp', name: '── 💻 LAPTOP ONDERDELEN ──', nameEn: '── 💻 LAPTOP PARTS ──', subcategories: [] },
-    ...convertAccessory(laptopPartsCategories, 'lp-'),
   ];
 }
 

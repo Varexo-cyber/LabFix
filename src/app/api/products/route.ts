@@ -166,12 +166,22 @@ export async function GET(request: NextRequest) {
       const catFilter = category || '';
       // Full category path: e.g. "apple/iphone/iphone-17-pro-max"
       const fullPath = catFilter && subFilter ? `${catFilter}/${subFilter}/${model}` : model;
-      // STRICT matching: only exact matches on category path OR exact model match
-      // No LIKE patterns to avoid matching "s26" with "s26-plus" or "s26-ultra"
-      [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
-        sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR model = ${model}`,
-      ]);
+      // Laptops use the flat fields category=laptop-{brand}, subcategory={model}, model={part}.
+      // Part slugs (e.g. "laptop-screens") are NOT unique per brand, so we must match
+      // brand+model+part together — never a bare `model = ...` which would span all brands.
+      if (catFilter.startsWith('laptop-')) {
+        [rows, totalRows] = await Promise.all([
+          sql`SELECT * FROM products WHERE category = ${fullPath} OR (category = ${catFilter} AND subcategory = ${subFilter} AND model = ${model}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR (category = ${catFilter} AND subcategory = ${subFilter} AND model = ${model})`,
+        ]);
+      } else {
+        // STRICT matching: only exact matches on category path OR exact model match
+        // No LIKE patterns to avoid matching "s26" with "s26-plus" or "s26-ultra"
+        [rows, totalRows] = await Promise.all([
+          sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR model = ${model}`,
+        ]);
+      }
     } else if (subcategory) {
       // Match on full path "apple/iphone" OR "apple/iphone/..." OR subcategory field
       const subPath = category ? `${category}/${subcategory}` : subcategory;
