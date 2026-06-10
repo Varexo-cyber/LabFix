@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid, Smartphone, Package, Monitor, Laptop } from 'lucide-react';
-import { brandCategories, accessoryCategories, pcPartsCategories, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, accessoryCategories, screenProtectorBrands, pcPartsCategories, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 import VatToggle from '@/components/VatToggle';
 
 interface Brand {
@@ -61,6 +61,7 @@ export default function Header() {
   const [hoveredMoreSub, setHoveredMoreSub] = useState<string | null>(null);
   const [hoveredAccessoryCat, setHoveredAccessoryCat] = useState<string | null>(null);
   const [hoveredAccessorySub, setHoveredAccessorySub] = useState<string | null>(null);
+  const [hoveredScreenProtectorBrand, setHoveredScreenProtectorBrand] = useState<string | null>(null);
   const [hoveredPcPartsCat, setHoveredPcPartsCat] = useState<string | null>(null);
   const [hoveredPcPartsSub, setHoveredPcPartsSub] = useState<string | null>(null);
   const [hoveredPcAccessoryCat, setHoveredPcAccessoryCat] = useState<string | null>(null);
@@ -74,11 +75,26 @@ export default function Header() {
   const [laptopWizardBrand, setLaptopWizardBrand] = useState<string | null>(null);
   const [laptopWizardModel, setLaptopWizardModel] = useState<string | null>(null);
   const [laptopWizardPart, setLaptopWizardPart] = useState<string | null>(null);
+  const [laptopModalOpen, setLaptopModalOpen] = useState(false);
+  const [laptopModalClosing, setLaptopModalClosing] = useState(false);
   const [moreSearch, setMoreSearch] = useState('');
   const [accessorySearch, setAccessorySearch] = useState('');
   const [dbCategories, setDbCategories] = useState<Brand[] | null>(null);
   const [allProductsSection, setAllProductsSection] = useState<'phones' | 'accessories' | 'pc' | 'laptop'>('phones');
   const dropdownTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const laptopModalTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const closeLaptopModal = () => {
+    setLaptopModalClosing(true);
+    if (laptopModalTimeout.current) clearTimeout(laptopModalTimeout.current);
+    laptopModalTimeout.current = setTimeout(() => {
+      setLaptopModalOpen(false);
+      setLaptopModalClosing(false);
+      setLaptopWizardBrand(null);
+      setLaptopWizardModel(null);
+      setLaptopWizardPart(null);
+    }, 250);
+  };
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -117,7 +133,10 @@ export default function Header() {
   };
 
   useEffect(() => {
-    return () => { if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current); };
+    return () => {
+      if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+      if (laptopModalTimeout.current) clearTimeout(laptopModalTimeout.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -439,8 +458,8 @@ export default function Header() {
                       {locale === 'nl' ? 'PC & Onderdelen' : 'PC & Parts'}
                     </button>
                     <button 
-                      onMouseEnter={() => { setAllProductsSection('laptop'); setHoveredLaptopBrand(null); setHoveredLaptopSub(null); }}
-                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'laptop' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
+                      onClick={() => { setOpenDropdown(null); setLaptopModalOpen(true); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
+                      className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${allProductsSection === 'laptop' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
                     >
                       <Laptop size={16} />
                       {locale === 'nl' ? 'Laptops' : 'Laptops'}
@@ -611,67 +630,6 @@ export default function Header() {
                     </div>
                   )}
 
-                  {/* Content - Laptop */}
-                  {allProductsSection === 'laptop' && (
-                    <div className="h-[500px] flex">
-                      <div className="w-[240px] border-r border-gray-100 overflow-y-auto">
-                        <Link href="/products?laptopBrand=refurbished" className="block p-3 bg-green-500 text-white text-center text-sm font-medium hover:bg-green-600" onClick={() => setOpenDropdown(null)}>
-                          {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
-                        </Link>
-                        <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Laptop Merken' : 'Laptop Brands'}</div>
-                        {laptopBrands.map((brand) => (
-                          <div key={brand.slug} onMouseEnter={() => { setHoveredLaptopBrand(brand.slug); setHoveredLaptopSub(null); }}>
-                            <Link href={`/products?laptopBrand=${brand.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredLaptopBrand === brand.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
-                              {brand.name}
-                            </Link>
-                          </div>
-                        ))}
-                        <div className="p-3 bg-gray-50 border-b border-t text-xs font-bold text-gray-500 uppercase mt-2">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
-                        {laptopPartsCategories.map((cat) => (
-                          <div key={cat.slug} onMouseEnter={() => setHoveredLaptopPartsCat(cat.slug)}>
-                            <Link href={`/products?laptopPart=${cat.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredLaptopPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
-                              {locale === 'nl' ? cat.name : cat.nameEn}
-                            </Link>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex-1 bg-gray-50 overflow-y-auto p-4">
-                        {hoveredLaptopBrand ? (() => {
-                          const brand = laptopBrands.find(b => b.slug === hoveredLaptopBrand);
-                          if (!brand) return null;
-                          return (
-                            <>
-                              <div className="text-sm font-bold text-gray-800 mb-3">{brand.name} {locale === 'nl' ? 'Series' : 'Series'}</div>
-                              <div className="grid grid-cols-2 gap-2">
-                                {brand.subcategories?.map((sub) => (
-                                  <Link key={sub.slug} href={`/products?laptopBrand=${brand.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-white hover:bg-primary-50 hover:text-primary-600 rounded border border-gray-200" onClick={() => setOpenDropdown(null)}>
-                                    {sub.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </>
-                          );
-                        })() : hoveredLaptopPartsCat ? (() => {
-                          const cat = laptopPartsCategories.find(c => c.slug === hoveredLaptopPartsCat);
-                          if (!cat) return null;
-                          return (
-                            <>
-                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'nl' ? cat.name : cat.nameEn}</div>
-                              <div className="grid grid-cols-2 gap-2">
-                                {cat.subcategories?.map((sub) => (
-                                  <Link key={sub.slug} href={`/products?laptopPart=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-white hover:bg-primary-50 hover:text-primary-600 rounded border border-gray-200" onClick={() => setOpenDropdown(null)}>
-                                    {locale === 'nl' ? sub.name : sub.nameEn}
-                                  </Link>
-                                ))}
-                              </div>
-                            </>
-                          );
-                        })() : (
-                          <div className="flex items-center justify-center h-full text-gray-400 text-sm">{locale === 'nl' ? 'Hover over een merk of onderdeel' : 'Hover over a brand or part'}</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -787,31 +745,82 @@ export default function Header() {
                 <ChevronDown size={12} />
               </button>
               {openDropdown === 'accessories' && (
-                <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl w-[560px] z-50 border-t-2 border-accent-500 flex h-[500px]">
-                  <div className="w-[200px] border-r border-gray-100 overflow-y-auto">
+                <div className={`absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl z-50 border-t-2 border-accent-500 flex h-[500px] ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[720px]' : 'w-[560px]'}`}>
+                  <div className={`border-r border-gray-100 overflow-y-auto ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[180px]' : 'w-[200px]'}`}>
                     <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Categorieën' : 'Categories'}</div>
                     {accessoryCategories.map((cat) => (
-                      <div key={cat.slug} onMouseEnter={() => setHoveredAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                      <div key={cat.slug} onMouseEnter={() => { setHoveredAccessoryCat(cat.slug); setHoveredScreenProtectorBrand(null); }} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
                         {locale === 'nl' ? cat.name : cat.nameEn}
                       </div>
                     ))}
                   </div>
-                  <div className="flex-1 overflow-y-auto p-3">
+                  {/* Kolom 2: Subcategorieën (normaal) of Merken (voor screen protectors) */}
+                  <div className={`border-r border-gray-100 overflow-y-auto ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[180px]' : 'flex-1'}`}>
                     {hoveredAccessoryCat && (() => {
                       const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
                       if (!cat) return null;
+                      if (cat.slug === 'screen-protectors') {
+                        return (
+                          <>
+                            <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Type' : 'Type'}</div>
+                            {cat.subcategories?.map((sub) => (
+                              <div key={sub.slug} onMouseEnter={() => setHoveredAccessorySub(sub.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessorySub === sub.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                                {locale === 'nl' ? sub.name : sub.nameEn}
+                              </div>
+                            ))}
+                          </>
+                        );
+                      }
                       return (
-                        <>
+                        <div className="p-3">
                           <div className="text-sm font-bold text-primary-600 mb-2">{locale === 'nl' ? cat.name : cat.nameEn}</div>
                           {cat.subcategories?.map((sub) => (
                             <Link key={sub.slug} href={`/products?accessory=${cat.slug}&sub=${sub.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
                               {locale === 'nl' ? sub.name : sub.nameEn}
                             </Link>
                           ))}
-                        </>
+                        </div>
                       );
                     })()}
                   </div>
+                  {/* Kolom 3: Alleen voor screen protectors — Merken */}
+                  {hoveredAccessoryCat === 'screen-protectors' && (
+                    <div className="w-[180px] border-r border-gray-100 overflow-y-auto">
+                      {hoveredAccessorySub && (() => {
+                        const sub = accessoryCategories.find(c => c.slug === 'screen-protectors')?.subcategories.find(s => s.slug === hoveredAccessorySub);
+                        if (!sub) return null;
+                        return (
+                          <>
+                            <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Merk' : 'Brand'}</div>
+                            {screenProtectorBrands.map((brand) => (
+                              <div key={brand.slug} onMouseEnter={() => setHoveredScreenProtectorBrand(brand.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredScreenProtectorBrand === brand.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                                {brand.name}
+                              </div>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                  {/* Kolom 4: Alleen voor screen protectors — Modellen */}
+                  {hoveredAccessoryCat === 'screen-protectors' && (
+                    <div className="flex-1 overflow-y-auto p-3">
+                      {hoveredAccessorySub && hoveredScreenProtectorBrand && (() => {
+                        const brand = screenProtectorBrands.find(b => b.slug === hoveredScreenProtectorBrand);
+                        if (!brand) return null;
+                        return (
+                          <>
+                            <div className="text-sm font-bold text-primary-600 mb-2">{brand.name} — {locale === 'nl' ? 'Kies model' : 'Choose model'}</div>
+                            {brand.models.map((model) => (
+                              <Link key={model.slug} href={`/products?accessory=screen-protectors&sub=${hoveredAccessorySub}&accBrand=${brand.slug}&model=${model.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
+                                {model.name}
+                              </Link>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -909,33 +918,54 @@ export default function Header() {
               )}
             </div>
 
-            {/* Laptop Dropdown */}
-            <div className="relative" onMouseEnter={() => { handleDropdownEnter('laptop'); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }} onMouseLeave={handleDropdownLeave}>
-              <button className="px-3 py-3 hover:bg-primary-600 text-sm font-medium flex items-center gap-1">
-                Laptop
-                <ChevronDown size={12} />
-              </button>
-              {openDropdown === 'laptop' && (() => {
-                const wizardBrand = laptopBrands.find(b => b.slug === laptopWizardBrand);
-                const wizardModels = wizardBrand?.subcategories || [];
-                const wizardParts = laptopPartsCategories;
-                return (
-                  <div className="absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl z-50 border-t-2 border-accent-500 p-4" style={{width: '340px'}}>
+            {/* Laptop Modal Trigger */}
+            <button
+              onClick={() => { setLaptopModalOpen(true); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
+              className="px-3 py-3 hover:bg-primary-600 text-sm font-medium cursor-pointer"
+            >
+              Laptop
+            </button>
+
+            {/* Laptop Modal Popup */}
+            {laptopModalOpen && (() => {
+              const wizardBrand = laptopBrands.find(b => b.slug === laptopWizardBrand);
+              const wizardModels = wizardBrand?.subcategories || [];
+              const wizardParts = laptopPartsCategories;
+              return (
+                <div
+                  className={`fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 ${laptopModalClosing ? 'animate-modal-backdrop-out' : 'animate-modal-backdrop'}`}
+                  onClick={(e) => { if (e.target === e.currentTarget) closeLaptopModal(); }}
+                >
+                  <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative text-gray-900 ${laptopModalClosing ? 'animate-modal-content-out' : 'animate-modal-content'}`}>
+                    {/* Close button */}
+                    <button
+                      onClick={closeLaptopModal}
+                      className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X size={20} className="text-gray-500" />
+                    </button>
+
+                    {/* Title */}
+                    <h2 className="text-lg font-bold text-gray-800 mb-1">{locale === 'nl' ? 'Kies je laptop' : 'Choose your laptop'}</h2>
+                    <p className="text-sm text-gray-400 mb-4">{locale === 'nl' ? 'Selecteer merk, model en onderdeel' : 'Select brand, model and part'}</p>
+
                     {/* Refurbished Section */}
-                    <Link 
-                      href="/products?laptopBrand=refurbished" 
-                      className="block w-full mb-4 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg text-sm font-semibold transition-colors"
-                      onClick={() => setOpenDropdown(null)}
+                    <Link
+                      href="/products?laptopBrand=refurbished"
+                      className="block w-full mb-4 bg-green-500 hover:bg-green-600 text-white text-center py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                      onClick={closeLaptopModal}
                     >
                       {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
                     </Link>
+
                     <div className="border-t border-gray-200 mb-4"></div>
                     <div className="text-xs font-bold text-gray-400 uppercase mb-3">{locale === 'nl' ? 'Zoek laptop onderdeel' : 'Find laptop part'}</div>
+
                     {/* Step 1: Kies Merk */}
                     <div className="mb-3">
                       <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '1. Kies Merk' : '1. Choose Brand'}</label>
                       <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white"
                         value={laptopWizardBrand || ''}
                         onChange={e => { setLaptopWizardBrand(e.target.value || null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
                       >
@@ -943,11 +973,12 @@ export default function Header() {
                         {laptopBrands.map(b => <option key={b.slug} value={b.slug}>{b.name}</option>)}
                       </select>
                     </div>
+
                     {/* Step 2: Kies Model */}
                     <div className="mb-3">
                       <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '2. Kies Model' : '2. Choose Model'}</label>
                       <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500 disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                         value={laptopWizardModel || ''}
                         onChange={e => { setLaptopWizardModel(e.target.value || null); setLaptopWizardPart(null); }}
                         disabled={!laptopWizardBrand}
@@ -956,11 +987,12 @@ export default function Header() {
                         {wizardModels.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
                       </select>
                     </div>
+
                     {/* Step 3: Kies Onderdeel */}
-                    <div className="mb-4">
+                    <div className="mb-5">
                       <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '3. Kies Onderdeel' : '3. Choose Part'}</label>
                       <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500 disabled:bg-gray-50 disabled:text-gray-400"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
                         value={laptopWizardPart || ''}
                         onChange={e => setLaptopWizardPart(e.target.value || null)}
                         disabled={!laptopWizardModel}
@@ -969,18 +1001,19 @@ export default function Header() {
                         {wizardParts.map(p => <option key={p.slug} value={p.slug}>{locale === 'nl' ? p.name : p.nameEn}</option>)}
                       </select>
                     </div>
+
                     {/* Search button */}
                     <Link
                       href={laptopWizardBrand ? `/products?laptopBrand=${laptopWizardBrand}${laptopWizardModel ? `&laptopModel=${laptopWizardModel}` : ''}${laptopWizardPart ? `&laptopPart=${laptopWizardPart}` : ''}` : '/products?category=laptop'}
-                      onClick={() => { setOpenDropdown(null); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
-                      className="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-2 rounded-lg text-sm font-semibold transition-colors"
+                      onClick={closeLaptopModal}
+                      className="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-3 rounded-lg text-sm font-semibold transition-colors"
                     >
                       {locale === 'nl' ? 'Zoeken' : 'Search'}
                     </Link>
                   </div>
-                );
-              })()}
-            </div>
+                </div>
+              );
+            })()}
 
             <div className="flex-1" />
 

@@ -39,6 +39,38 @@ body {
   to { opacity: 1; }
 }
 
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalBackdropOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes modalContentOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+}
+
 @keyframes fadeInLeft {
   from {
     opacity: 0;
@@ -138,6 +170,24 @@ body {
 .animate-scale-in {
   animation: scaleIn 0.5s ease-out forwards;
   opacity: 0;
+}
+
+.animate-modal-backdrop {
+  animation: modalBackdropIn 0.25s ease-out forwards;
+}
+
+.animate-modal-backdrop-out {
+  animation: modalBackdropOut 0.25s ease-in forwards;
+}
+
+.animate-modal-content {
+  animation: modalContentIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+.animate-modal-content-out {
+  animation: modalContentOut 0.25s ease-in forwards;
 }
 
 .animate-slide-down {

@@ -1256,10 +1256,7 @@ export const accessoryCategories: AccessoryCategory[] = [
     subcategories: [
       { slug: 'tempered-glass', name: 'Gehard Glas', nameEn: 'Tempered Glass', description: '9H gehard glas bescherming' },
       { slug: 'privacy-glass', name: 'Privacy Glass', nameEn: 'Privacy Glass', description: 'Privacy filter, kijkhoek bescherming' },
-      { slug: 'matte-glass', name: 'Mat Glas', nameEn: 'Matte Glass', description: 'Anti-glans, anti-vingerafdruk' },
-      { slug: 'uv-glass', name: 'UV Liquid Glass', nameEn: 'UV Liquid Glass', description: 'UV licht geharde vloeibare glas' },
-      { slug: 'tpu-film', name: 'TPU Flexibele Film', nameEn: 'TPU Flexible Film', description: 'Krasbestendige TPU folie' },
-      { slug: 'ceramic-shield', name: 'Ceramic Shield', nameEn: 'Ceramic Shield', description: 'Keramische beschermlaag' },
+      { slug: 'magic-glass', name: 'Magic Glass', nameEn: 'Magic Glass', description: 'Magic glass bescherming' },
     ]
   },
   {
@@ -1374,267 +1371,31 @@ export const accessoryCategories: AccessoryCategory[] = [
       { slug: 'stylus-pens', name: 'Stylus Pennen', nameEn: 'Stylus Pens', description: 'Actieve en passieve pennen' },
     ]
   },
+];
+
+// ==================== SCREEN PROTECTOR BRANDS (Type -> Merk -> Model) ====================
+export interface ScreenProtectorBrand {
+  slug: string;
+  name: string;
+  models: ModelItem[];
+}
+
+// Reuse existing models from brandCategories
+const appleIphoneModels = brandCategories.find(b => b.slug === 'apple')?.subcategories.find(s => s.slug === 'iphone')?.models || [];
+const samsungSModels = brandCategories.find(b => b.slug === 'samsung')?.subcategories.find(s => s.slug === 'galaxy-s')?.models || [];
+const samsungAModels = brandCategories.find(b => b.slug === 'samsung')?.subcategories.find(s => s.slug === 'galaxy-a')?.models || [];
+const samsungZModels = brandCategories.find(b => b.slug === 'samsung')?.subcategories.find(s => s.slug === 'galaxy-z')?.models || [];
+
+export const screenProtectorBrands: ScreenProtectorBrand[] = [
   {
-    slug: 'repair-tools-essentials',
-    name: 'Tools - Essentials',
-    nameEn: 'Tools - Essentials',
-    description: 'Essentiële gereedschappen voor reparatie',
-    subcategories: [
-      { slug: 'screwdrivers', name: 'Schroevendraaiers', nameEn: 'Screwdrivers', description: 'Precisie schroevendraaiers' },
-      { slug: 'tweezers', name: 'Pincetten', nameEn: 'Tweezers', description: 'ESD pincetten' },
-      { slug: 'tool-kits', name: 'Gereedschapssets', nameEn: 'Tool Kits', description: 'Complete tool sets' },
-      { slug: 'adhesive-tapes', name: 'Adhesive Tapes', nameEn: 'Adhesive Tapes', description: 'Tape voor montage' },
-      { slug: 'pry-tools', name: 'Pry Tools', nameEn: 'Pry Tools', description: 'Openingsgereedschap' },
-      { slug: 'work-mats', name: 'Werkmatten', nameEn: 'Work Mats', description: 'Antistatische matten' },
-      { slug: 'clamps-holders', name: 'Klemmen & Houders', nameEn: 'Clamps & Holders', description: 'Bevestigingsgereedschap' },
-      { slug: 'pliers-cutters', name: 'Tangen & Knippers', nameEn: 'Pliers & Cutters', description: 'Knip en grijptangen' },
-      { slug: 'repair-fixtures', name: 'Repair Fixtures', nameEn: 'Repair Fixtures', description: 'Reparatiehouders' },
-      { slug: 'display-comparison', name: 'Display Comparison', nameEn: 'Display Comparison Devices', description: 'Display testers' },
-      { slug: 'repair-guides', name: 'Repair Guides', nameEn: 'Repair Guides', description: 'Handleidingen' },
-      { slug: 'dremels-grinders', name: 'Dremels & Grinders', nameEn: 'Dremels & Grinders', description: 'Slijpmachines' },
-      { slug: 'heat-mats', name: 'Heat Mats', nameEn: 'Heat Mats', description: 'Verwarmingsmatten' },
-      { slug: 'disassembly-tools', name: 'Disassembly Tools', nameEn: 'Disassembly Tools', description: 'Demontage tools' },
-    ]
+    slug: 'apple',
+    name: 'Apple',
+    models: appleIphoneModels,
   },
   {
-    slug: 'repair-tools-oem',
-    name: 'Tools - OEM Service',
-    nameEn: 'Tools - OEM Service',
-    description: 'Originele service tools',
-    subcategories: [
-      { slug: 'oem-disassembly', name: 'OEM Disassembly', nameEn: 'Disassembly Tools', description: 'Originele demontage' },
-      { slug: 'oem-fixtures', name: 'OEM Repair Fixtures', nameEn: 'Repair Fixtures', description: 'Originele houders' },
-      { slug: 'oem-clamps', name: 'OEM Clamps', nameEn: 'Clamps & Holders', description: 'Originele klemmen' },
-      { slug: 'oem-pliers', name: 'OEM Pliers', nameEn: 'Pliers & Cutters', description: 'Originele tangen' },
-      { slug: 'oem-cleaning', name: 'OEM Cleaning', nameEn: 'Cleaning Supplies', description: 'Originele schoonmaak' },
-      { slug: 'oem-pry', name: 'OEM Pry Tools', nameEn: 'Pry Tools', description: 'Originele pry tools' },
-      { slug: 'oem-screwdrivers', name: 'OEM Screwdrivers', nameEn: 'Screwdrivers', description: 'Originele schroevendraaiers' },
-      { slug: 'oem-heated-plates', name: 'Heated Display Plates', nameEn: 'Heated Display Plates', description: 'Verwarmde platen' },
-    ]
-  },
-  {
-    slug: 'repair-tools-supplies',
-    name: 'Tools - Supplies',
-    nameEn: 'Tools - Supplies',
-    description: 'Werkplaats benodigdheden',
-    subcategories: [
-      { slug: 'cleaning-supplies', name: 'Schoonmaakmiddelen', nameEn: 'Cleaning Supplies', description: 'Reinigingsmiddelen' },
-      { slug: 'safety-supplies', name: 'Veiligheidsmiddelen', nameEn: 'Safety Supplies', description: 'Beschermingsmiddelen' },
-      { slug: 'work-desk-supplies', name: 'Werkplek Supplies', nameEn: 'Work Desk Supplies', description: 'Bureaubenodigdheden' },
-      { slug: 'shop-supplies', name: 'Werkplaats Supplies', nameEn: 'Shop Supplies', description: 'Werkplaats artikelen' },
-      { slug: 'device-accessories', name: 'Device Accessories', nameEn: 'Device Accessories', description: 'Toestel accessoires' },
-      { slug: 'back-cover-repair', name: 'Back Cover Repair', nameEn: 'Back Cover Repair', description: 'Achterkant reparatie' },
-      { slug: 'glues', name: 'Lijmen', nameEn: 'Glues', description: 'Speciale lijmen' },
-      { slug: 'cosmetic-repair', name: 'Cosmetische Reparatie', nameEn: 'Cosmetic Repair', description: 'Oppervlakte reparatie' },
-      { slug: 'glue-removers', name: 'Lijmverwijderaars', nameEn: 'Glue Removers', description: 'Lijmoplossers' },
-    ]
-  },
-  {
-    slug: 'repair-tools-organization',
-    name: 'Tools - Organization',
-    nameEn: 'Tools - Organization',
-    description: 'Organisatie & opbergen',
-    subcategories: [
-      { slug: 'tool-holders', name: 'Tool Holders', nameEn: 'Tool Holders', description: 'Gereedschaphouders' },
-      { slug: 'screw-mats', name: 'Screw Mats', nameEn: 'Screw Mats', description: 'Schroef organizers' },
-      { slug: 'storage-boxes', name: 'Opbergdozen', nameEn: 'Storage Boxes', description: 'Bewaarboxen' },
-      { slug: 'parts-storage', name: 'Parts Storage', nameEn: 'Parts Storage', description: 'Onderdelen opslag' },
-      { slug: 'screen-holders', name: 'Screen Holders', nameEn: 'Screen Holders', description: 'Display houders' },
-      { slug: 'screwbox', name: 'ScrewBox', nameEn: 'ScrewBox', description: 'Schroef organizers' },
-      { slug: 'tape-dispensers', name: 'Tape Dispensers', nameEn: 'Tape Dispensers', description: 'Tape afrollers' },
-      { slug: 'workstations', name: 'Workstations', nameEn: 'Work Stations', description: 'Werkstations' },
-    ]
-  },
-  {
-    slug: 'repair-tools-programmers',
-    name: 'Tools - Programmers',
-    nameEn: 'Tools - Programmers',
-    description: 'Programmeer apparaten',
-    subcategories: [
-      { slug: 'screen-programmers', name: 'Screen Programmers', nameEn: 'Screen Programmers', description: 'Display programmeurs' },
-      { slug: 'battery-programmers', name: 'Battery Programmers', nameEn: 'Battery Programmers', description: 'Batterij programmeurs' },
-      { slug: 'calibrators', name: 'Calibrators', nameEn: 'Calibrators', description: 'Kalibratie apparaten' },
-      { slug: 'face-id-programmers', name: 'Face ID Programmers', nameEn: 'Face ID Programmers', description: 'Face ID reparatie' },
-      { slug: 'ic-programmers', name: 'IC Programmers', nameEn: 'IC Programmers', description: 'Chip programmeurs' },
-      { slug: 'watch-programmers', name: 'Watch Programmers', nameEn: 'Watch Programmers', description: 'Smartwatch programmeurs' },
-    ]
-  },
-  {
-    slug: 'repair-tools-testing',
-    name: 'Tools - Testing',
-    nameEn: 'Tools - Testing Devices',
-    description: 'Test apparatuur',
-    subcategories: [
-      { slug: 'screen-testers', name: 'Screen Testers', nameEn: 'Screen Tester', description: 'Display testers' },
-      { slug: 'battery-testers', name: 'Battery Testers', nameEn: 'Battery Tester', description: 'Batterij testers' },
-      { slug: 'tristar-testers', name: 'Tristar Testers', nameEn: 'Tristar Tester', description: 'Tristar/MFI testers' },
-      { slug: 'mfi-testers', name: 'MFI Testers', nameEn: 'MFI Tester', description: 'MFI testers' },
-      { slug: 'test-cables', name: 'Test Cables', nameEn: 'Test Cables', description: 'Test kabels' },
-      { slug: 'sim-testers', name: 'SIM Testers', nameEn: 'Sim Tester', description: 'SIM testers' },
-      { slug: 'external-chargers', name: 'External Chargers', nameEn: 'External Chargers', description: 'Externe opladers' },
-      { slug: 'cable-testers', name: 'Cable Testers', nameEn: 'Cable Testers', description: 'Kabel testers' },
-      { slug: 'power-testers', name: 'Power Testers', nameEn: 'Power Testers', description: 'Stroom testers' },
-      { slug: 'motherboard-testers', name: 'Motherboard Testers', nameEn: 'Motherboard Testers', description: 'Moederbord testers' },
-      { slug: 'port-testers', name: 'Port Testers', nameEn: 'Port Testers', description: 'Poort testers' },
-    ]
-  },
-  {
-    slug: 'repair-tools-microsoldering',
-    name: 'Tools - Microsoldering',
-    nameEn: 'Tools - Microsoldering',
-    description: 'Microsoldering apparatuur',
-    subcategories: [
-      { slug: 'hot-air-stations', name: 'Hot Air Stations', nameEn: 'Hot Air Stations', description: 'Hetelucht stations' },
-      { slug: 'soldering-stations', name: 'Soldering Stations', nameEn: 'Soldering Stations', description: 'Soldeer stations' },
-      { slug: 'board-holders', name: 'Board Holders', nameEn: 'Board Holders & Preheaters', description: 'Bord houders & voorverwarmers' },
-      { slug: 'power-supply-units', name: 'Power Supply Units', nameEn: 'Power Supply Units', description: 'Voedingen' },
-      { slug: 'thermal-cameras', name: 'Thermal Cameras', nameEn: 'Thermal Cameras', description: 'Warmtecamera\'s' },
-      { slug: 'microscopes', name: 'Microscopen', nameEn: 'Microscopes', description: 'Reparatie microscopen' },
-      { slug: 'laser-stations', name: 'Laser Stations', nameEn: 'Laser Stations', description: 'Laser stations' },
-      { slug: 'microsoldering-testers', name: 'Testing Devices', nameEn: 'Motherboard Testers', description: 'Test apparaten' },
-      { slug: 'microsoldering-power', name: 'Power Testers', nameEn: 'Power Testers', description: 'Stroom testers' },
-      { slug: 'multimeters', name: 'Multimeters', nameEn: 'Multimeters', description: 'Meetapparatuur' },
-      { slug: 'spot-welders', name: 'Spot Welders', nameEn: 'Spot Welders', description: 'Puntlassers' },
-      { slug: 'fume-extractors', name: 'Fume Extractors', nameEn: 'Fume Extractors', description: 'Dampafzuigers' },
-    ]
-  },
-  {
-    slug: 'repair-tools-soldering-supplies',
-    name: 'Tools - Soldering Supplies',
-    nameEn: 'Tools - Soldering Supplies',
-    description: 'Soldering benodigdheden',
-    subcategories: [
-      { slug: 'solder-wires', name: 'Solder Wires', nameEn: 'Solder Wires', description: 'Soldeerdraad' },
-      { slug: 'solder-paste', name: 'Solder Paste', nameEn: 'Solder Paste', description: 'Soldeerpasta' },
-      { slug: 'flux', name: 'Flux', nameEn: 'Flux', description: 'Flux middelen' },
-      { slug: 'solder-mask', name: 'Solder Mask', nameEn: 'Solder Mask', description: 'Solder masker' },
-      { slug: 'solder-wick', name: 'Solder Wick', nameEn: 'Solder Wick', description: 'Ontsoldeerlont' },
-      { slug: 'solder-balls', name: 'Solder Balls', nameEn: 'Solder balls', description: 'Soldeer ballen' },
-      { slug: 'replacement-tips', name: 'Replacement Tips', nameEn: 'Replacement Tips', description: 'Soldeerpunten' },
-      { slug: 'alcohol-dispensers', name: 'Alcohol Dispensers', nameEn: 'Alcohol Dispensers', description: 'Alcohol dispensers' },
-      { slug: 'stencils', name: 'Stencils', nameEn: 'Stencils', description: 'Reballing stencils' },
-      { slug: 'soldering-glue-removers', name: 'Glue Removers', nameEn: 'Glue Removers', description: 'Lijmverwijderaars' },
-      { slug: 'tip-cleaners', name: 'Tip Cleaners', nameEn: 'Tip Cleaners', description: 'Punt reinigers' },
-      { slug: 'other-supplies', name: 'Other Supplies', nameEn: 'Other Supplies', description: 'Overige benodigdheden' },
-      { slug: 'soldering-glues', name: 'Glues', nameEn: 'Glues', description: 'Lijmen' },
-      { slug: 'blades', name: 'Blades', nameEn: 'Blades', description: 'Mesjes' },
-    ]
-  },
-  {
-    slug: 'repair-tools-refurbishing',
-    name: 'Tools - Refurbishing',
-    nameEn: 'Tools - Refurbishing',
-    description: 'Display refurbishing tools',
-    subcategories: [
-      { slug: 'glass-separation', name: 'Glass Separation', nameEn: 'Glass Separation', description: 'Glass scheiding' },
-      { slug: 'cutting-wire', name: 'Cutting Wire', nameEn: 'Cutting Wire', description: 'Snijdraad' },
-      { slug: 'glue-removal', name: 'Glue Removal', nameEn: 'Glue Removal', description: 'Lijm verwijdering' },
-      { slug: 'alignment-moulds', name: 'Alignment Moulds', nameEn: 'Alignment Moulds', description: 'Uitlijning mallen' },
-      { slug: 'lamination-tools', name: 'Lamination Tools', nameEn: 'Lamination Tools', description: 'Laminatie tools' },
-      { slug: 'loca-oca-films', name: 'LOCA/OCA Films', nameEn: 'LOCA/OCA films', description: 'OCA/LOCA films' },
-      { slug: 'pre-cut-adhesives', name: 'Pre-Cut Adhesives', nameEn: 'Pre-Cut Adhesives', description: 'Pre-cut tapes' },
-      { slug: 'refurbishing-alcohol', name: 'Alcohol Dispensers', nameEn: 'Alcohol Dispensers', description: 'Alcohol dispensers' },
-      { slug: 'glass-frames', name: 'Glass & Frames', nameEn: 'Glass & Frames', description: 'Glass en frames' },
-      { slug: 'refurbishing-pliers', name: 'Pliers & Cutters', nameEn: 'Pliers & Cutters', description: 'Tangen' },
-      { slug: 'refurbishing-tweezers', name: 'Tweezers', nameEn: 'Tweezers', description: 'Pincetten' },
-      { slug: 'refurbishing-testers', name: 'Testers', nameEn: 'Testers', description: 'Testers' },
-      { slug: 'refurbishing-kits', name: 'Refurbishing Kits', nameEn: 'Refurbishing Kits', description: 'Refurbish kits' },
-      { slug: 'refurbishing-glues', name: 'Glues', nameEn: 'Glues', description: 'Lijmen' },
-      { slug: 'lcd-separator', name: 'LCD Separator', nameEn: 'LCD Separator', description: 'LCD separators' },
-      { slug: 'refurbishing-clamps', name: 'Refurbishing Clamps', nameEn: 'Refurbishing Clamps & Holders', description: 'Klemmen' },
-      { slug: 'refurbishing-blades', name: 'Refurbishing Blades', nameEn: 'Blades', description: 'Mesjes' },
-    ]
-  },
-  {
-    slug: 'repair-tools-back-glass',
-    name: 'Tools - Back Glass Repair',
-    nameEn: 'Tools - Back Glass Repair',
-    description: 'Back glass reparatie tools',
-    subcategories: [
-      { slug: 'laser-machines', name: 'Laser Machines', nameEn: 'Laser Machines', description: 'Laser machines' },
-      { slug: 'back-glass-fume', name: 'Fume Extractors', nameEn: 'Fume Extractors', description: 'Dampafzuigers' },
-      { slug: 'laser-moulds', name: 'Laser Moulds', nameEn: 'Laser Moulds', description: 'Laser mallen' },
-      { slug: 'back-glass-adhesives', name: 'Pre-Cut Adhesives', nameEn: 'Pre-Cut Adhesives', description: 'Pre-cut tapes' },
-      { slug: 'back-glass-glues', name: 'Back Glass Glues', nameEn: 'Glues', description: 'Speciale lijmen' },
-      { slug: 'glass-removal', name: 'Glass Removal', nameEn: 'Glass Removal', description: 'Glass verwijdering' },
-      { slug: 'glue-cleaning', name: 'Glue Cleaning', nameEn: 'Glue Cleaning', description: 'Lijm reiniging' },
-      { slug: 'back-glass-clamps', name: 'Back Glass Clamps', nameEn: 'Clamps and Holders', description: 'Klemmen en houders' },
-    ]
-  },
-  {
-    slug: 'universal-components',
-    name: 'Universal Components',
-    nameEn: 'Universal Components',
-    description: 'Universele onderdelen',
-    subcategories: [
-      { slug: 'clicker-switches', name: 'Clicker Switches', nameEn: 'Clicker Switches', description: 'Click switches' },
-      { slug: 'universal-board-components', name: 'Universal Board Components', nameEn: 'Universal Board Components', description: 'Universele bord componenten' },
-    ]
-  },
-  {
-    slug: 'tool-brands',
-    name: 'Tool Brands',
-    nameEn: 'Tool Brands',
-    description: 'Bekende tool merken',
-    subcategories: [
-      { slug: 'aixun', name: 'Aixun', nameEn: 'Aixun', description: 'Aixun tools' },
-      { slug: 'amaoe', name: 'Amaoe', nameEn: 'Amaoe', description: 'Amaoe tools' },
-      { slug: 'amtech', name: 'Amtech', nameEn: 'Amtech', description: 'Amtech tools' },
-      { slug: 'arctic', name: 'Arctic', nameEn: 'Arctic', description: 'Arctic products' },
-      { slug: 'ay', name: 'AY', nameEn: 'AY', description: 'AY tools' },
-      { slug: 'bnr', name: 'B&R', nameEn: 'B&R', description: 'B&R tools' },
-      { slug: 'baiyi', name: 'Baiyi', nameEn: 'Baiyi', description: 'Baiyi tools' },
-      { slug: 'best', name: 'Best', nameEn: 'Best', description: 'Best tools' },
-      { slug: 'cpb', name: 'CPB', nameEn: 'CPB', description: 'CPB tools' },
-      { slug: 'dl', name: 'DL', nameEn: 'DL', description: 'DL tools' },
-      { slug: 'dlzwin', name: 'DLZ Win', nameEn: 'DLZ Win', description: 'DLZ Win tools' },
-      { slug: 'dobe', name: 'Dobe', nameEn: 'Dobe', description: 'Dobe tools' },
-      { slug: 'dottorpodx', name: 'Dottorpodx', nameEn: 'Dottorpodx', description: 'Dottorpodx tools' },
-      { slug: 'falcon', name: 'Falcon', nameEn: 'Falcon', description: 'Falcon tools' },
-      { slug: 'ifixit', name: 'IFixIt', nameEn: 'IFixIt', description: 'IFixIt tools' },
-      { slug: 'itestbox', name: 'iTestBox', nameEn: 'iTestBox', description: 'iTestBox testers' },
-      { slug: 'i2c', name: 'i2C', nameEn: 'i2C', description: 'i2C tools' },
-      { slug: 'jakemy', name: 'Jakemy', nameEn: 'Jakemy', description: 'Jakemy tools' },
-      { slug: 'jbc', name: 'JBC', nameEn: 'JBC', description: 'JBC soldeer' },
-      { slug: 'jcid', name: 'JCID', nameEn: 'JCID', description: 'JCID programmers' },
-      { slug: 'jetclean', name: 'JetClean', nameEn: 'JetClean', description: 'JetClean products' },
-      { slug: 'kaisi', name: 'Kaisi', nameEn: 'Kaisi', description: 'Kaisi tools' },
-      { slug: 'laserpod', name: 'LaserPod', nameEn: 'LaserPod', description: 'LaserPod' },
-      { slug: 'lb-tool', name: 'LB Tool', nameEn: 'LB Tool', description: 'LB Tool' },
-      { slug: 'maant', name: 'MaAnt', nameEn: 'MaAnt', description: 'MaAnt tools' },
-      { slug: 'mechanic', name: 'Mechanic', nameEn: 'Mechanic', description: 'Mechanic tools' },
-      { slug: 'mijing', name: 'Mijing', nameEn: 'Mijing', description: 'Mijing tools' },
-      { slug: 'm-triangel', name: 'M-Triangel', nameEn: 'M-Triangel', description: 'M-Triangel' },
-      { slug: 'nanch', name: 'Nanch', nameEn: 'Nanch', description: 'Nanch tools' },
-      { slug: 'niceseem', name: 'Niceseem', nameEn: 'Niceseem', description: 'Niceseem' },
-      { slug: 'oca-master', name: 'OCA Master', nameEn: 'OCA Master', description: 'OCA Master' },
-      { slug: 'polartronix', name: 'PolarTronix', nameEn: 'PolarTronix', description: 'PolarTronix' },
-      { slug: 'ppd', name: 'PPD', nameEn: 'PPD', description: 'PPD tools' },
-      { slug: 'qianli', name: 'Qianli', nameEn: 'Qianli', description: 'Qianli tools' },
-      { slug: 'quick', name: 'Quick', nameEn: 'Quick', description: 'Quick stations' },
-      { slug: 'refox', name: 'Refox', nameEn: 'Refox', description: 'Refox tools' },
-      { slug: 'relife', name: 'Relife', nameEn: 'Relife', description: 'Relife tools' },
-      { slug: 'rogers', name: 'Rogers', nameEn: 'Rogers', description: 'Rogers' },
-      { slug: 'smartmod', name: 'Smartmod', nameEn: 'Smartmod', description: 'Smartmod' },
-      { slug: 'ssgp', name: 'SSGP', nameEn: 'SSGP', description: 'SSGP' },
-      { slug: 'sunshine', name: 'Sunshine', nameEn: 'Sunshine', description: 'Sunshine tools' },
-      { slug: 'tapebase', name: 'Tapebase', nameEn: 'Tapebase', description: 'Tapebase' },
-      { slug: 'tbk', name: 'TBK', nameEn: 'TBK', description: 'TBK laminators' },
-      { slug: 'techspray', name: 'TechSpray', nameEn: 'TechSpray', description: 'TechSpray' },
-      { slug: 'tesa', name: 'Tesa', nameEn: 'Tesa', description: 'Tesa tapes' },
-      { slug: 'wera', name: 'Wera', nameEn: 'Wera', description: 'Wera tools' },
-      { slug: 'wiha', name: 'Wiha', nameEn: 'Wiha', description: 'Wiha tools' },
-      { slug: 'wlxy', name: 'WLXY', nameEn: 'WLXY', description: 'WLXY' },
-      { slug: 'wolve', name: 'Wolve', nameEn: 'Wolve', description: 'Wolve' },
-      { slug: 'wowstick', name: 'Wowstick', nameEn: 'Wowstick', description: 'Wowstick' },
-      { slug: 'wrepair', name: 'Wrepair', nameEn: 'Wrepair', description: 'Wrepair' },
-      { slug: 'wylie', name: 'Wylie', nameEn: 'Wylie', description: 'Wylie' },
-      { slug: 'xinzhizao', name: 'XinZhiZao', nameEn: 'XinZhiZao', description: 'XinZhiZao' },
-      { slug: 'ycs', name: 'YCS', nameEn: 'YCS', description: 'YCS' },
-      { slug: 'zhanlida', name: 'Zhanlida', nameEn: 'Zhanlida', description: 'Zhanlida' },
-      { slug: '2uul', name: '2uul', nameEn: '2uul', description: '2uul' },
-      { slug: '3m', name: '3M', nameEn: '3M', description: '3M products' },
-    ]
+    slug: 'samsung',
+    name: 'Samsung',
+    models: [...samsungSModels, ...samsungAModels, ...samsungZModels],
   },
 ];
 

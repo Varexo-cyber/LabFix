@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale, vatMode } = useApp();
@@ -19,6 +19,7 @@ function ProductsPageContent() {
   const [selectedBrand, setSelectedBrand] = useState<string>('');
   const [selectedSub, setSelectedSub] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('');
+  const [selectedAccessoryBrand, setSelectedAccessoryBrand] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>(() => searchParams.get('search') || '');
   const [searchInput, setSearchInput] = useState<string>(() => searchParams.get('search') || '');
@@ -49,6 +50,7 @@ function ProductsPageContent() {
     if (selectedBrand) params.category = selectedBrand;
     if (selectedSub) params.subcategory = selectedSub;
     if (selectedModel) params.model = selectedModel;
+    if (selectedAccessoryBrand) params.brand = selectedAccessoryBrand;
     if (searchQuery) params.search = searchQuery;
     if (sortBy && sortBy !== 'newest') params.sort = sortBy;
     fetchProductsPaginated(params, abortController.signal)
@@ -64,7 +66,7 @@ function ProductsPageContent() {
       })
       .finally(() => setLoadingProducts(false));
     return () => abortController.abort();
-  }, [currentPage, selectedBrand, selectedSub, selectedModel, searchQuery, sortBy]);
+  }, [currentPage, selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, searchQuery, sortBy]);
 
   // Fetch grand total once on mount (in case page loads with a filter active)
   useEffect(() => {
@@ -84,6 +86,7 @@ function ProductsPageContent() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchInput]);
 
+  // Read URL params on mount (only once, not on every searchParams change to avoid resetting user clicks)
   useEffect(() => {
     const brand = searchParams.get('brand');
     const sub = searchParams.get('sub');
@@ -96,23 +99,26 @@ function ProductsPageContent() {
     const laptopBrand = searchParams.get('laptopBrand');
     const laptopModel = searchParams.get('laptopModel');
     const laptopPart = searchParams.get('laptopPart');
+    const accessoryBrand = searchParams.get('accBrand');
     if (brand) { setSelectedBrand(brand); setExpandedBrands([brand]); }
     if (sub) setSelectedSub(sub);
     if (model) setSelectedModel(model);
     if (cat) setSelectedBrand(cat);
     if (search) { setSearchQuery(search); setSearchInput(search); }
     if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
+    if (accessoryBrand) { setSelectedAccessoryBrand(accessoryBrand); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
     if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcParts: true })); }
     if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcAcc: true })); }
     if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); setExpandedSections(p => ({ ...p, laptopBrands: true })); }
     if (laptopModel) setSelectedSub(laptopModel);
     if (laptopPart) setSelectedModel(laptopPart);
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset to page 1 when category/sub/model filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedBrand, selectedSub, selectedModel, sortBy]);
+  }, [selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, sortBy, searchQuery]);
 
   const toggleBrandExpand = (slug: string) => {
     setExpandedBrands(prev => prev.includes(slug) ? prev.filter(b => b !== slug) : [...prev, slug]);
@@ -121,6 +127,45 @@ function ProductsPageContent() {
   const toggleSubExpand = (key: string) => {
     setExpandedSubs(prev => prev.includes(key) ? prev.filter(s => s !== key) : [...prev, key]);
   };
+
+  // Sync filter state to URL without navigation (so refresh keeps filters)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    params.delete('category'); params.delete('sub'); params.delete('model'); params.delete('brand');
+    params.delete('accessory'); params.delete('pcpart'); params.delete('pcacc');
+    params.delete('laptopBrand'); params.delete('laptopModel'); params.delete('laptopPart');
+    params.delete('accBrand'); params.delete('search'); params.delete('sort'); params.delete('page');
+
+    if (searchQuery) params.set('search', searchQuery);
+    if (sortBy && sortBy !== 'newest') params.set('sort', sortBy);
+    if (currentPage > 1) params.set('page', currentPage.toString());
+
+    if (selectedBrand) {
+      if (selectedBrand.startsWith('laptop-')) {
+        params.set('laptopBrand', selectedBrand.slice(7));
+        if (selectedSub) params.set('laptopModel', selectedSub);
+        if (selectedModel) params.set('laptopPart', selectedModel);
+      } else if (selectedBrand.startsWith('acc-')) {
+        params.set('accessory', selectedBrand.slice(4));
+        if (selectedSub) params.set('sub', selectedSub);
+        if (selectedAccessoryBrand) params.set('accBrand', selectedAccessoryBrand);
+        if (selectedModel) params.set('model', selectedModel);
+      } else if (selectedBrand.startsWith('pc-')) {
+        params.set('pcpart', selectedBrand.slice(3));
+        if (selectedSub) params.set('sub', selectedSub);
+      } else if (selectedBrand.startsWith('pca-')) {
+        params.set('pcacc', selectedBrand.slice(4));
+        if (selectedSub) params.set('sub', selectedSub);
+      } else {
+        params.set('brand', selectedBrand);
+        if (selectedSub) params.set('sub', selectedSub);
+        if (selectedModel) params.set('model', selectedModel);
+      }
+    }
+
+    window.history.replaceState({}, '', url.toString());
+  }, [selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, searchQuery, sortBy, currentPage]);
 
   // Products come pre-filtered from API; just use them directly
   const filteredProducts = products;
@@ -143,7 +188,7 @@ function ProductsPageContent() {
           <>
             <span className="mx-2">/</span>
             <span className={`${!selectedSub ? 'text-gray-800' : 'hover:text-primary-500 cursor-pointer'}`}
-              onClick={() => setSelectedSub('')}>
+              onClick={() => { setSelectedSub(''); setSelectedAccessoryBrand(''); setSelectedModel(''); }}>
               {getBrandName(selectedBrand, locale)}
             </span>
           </>
@@ -151,9 +196,18 @@ function ProductsPageContent() {
         {selectedSub && (
           <>
             <span className="mx-2">/</span>
+            <span className={`${!selectedAccessoryBrand ? 'text-gray-800' : 'hover:text-primary-500 cursor-pointer'}`}
+              onClick={() => { setSelectedAccessoryBrand(''); setSelectedModel(''); }}>
+              {getSubcategoryName(selectedBrand, selectedSub, locale)}
+            </span>
+          </>
+        )}
+        {selectedAccessoryBrand && (
+          <>
+            <span className="mx-2">/</span>
             <span className={`${!selectedModel ? 'text-gray-800' : 'hover:text-primary-500 cursor-pointer'}`}
               onClick={() => setSelectedModel('')}>
-              {getSubcategoryName(selectedBrand, selectedSub, locale)}
+              {selectedAccessoryBrand === 'apple' ? 'Apple' : selectedAccessoryBrand === 'samsung' ? 'Samsung' : selectedAccessoryBrand}
             </span>
           </>
         )}
@@ -222,7 +276,7 @@ function ProductsPageContent() {
                         <div key={brand.slug}>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(''); }}
+                              onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(brand.slug) ? prev : [...prev, brand.slug]); }}
                               className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
                                 selectedBrand === brand.slug ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
@@ -247,7 +301,7 @@ function ProductsPageContent() {
                                   <div key={sub.slug}>
                                     <div className="flex items-center">
                                       <button
-                                        onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(''); }}
+                                        onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedSubs(prev => prev.includes(subKey) ? prev : [...prev, subKey]); }}
                                         className={`flex-1 text-left px-2 py-1 rounded-l transition-colors text-xs ${
                                           selectedBrand === brand.slug && selectedSub === sub.slug && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
                                         }`}
@@ -268,7 +322,7 @@ function ProductsPageContent() {
                                         {sub.models.filter(m => !sidebarSearch || m.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((model) => (
                                           <button
                                             key={model.slug}
-                                            onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(model.slug); }}
+                                            onClick={() => { setSelectedBrand(brand.slug); setSelectedSub(sub.slug); setSelectedModel(model.slug); setSidebarSearch(''); }}
                                             className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
                                               selectedModel === model.slug && selectedSub === sub.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
                                             }`}
@@ -304,11 +358,12 @@ function ProductsPageContent() {
                     {accessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
                       const catKey = `acc-${cat.slug}`;
                       const isExpanded = expandedBrands.includes(catKey);
+                      const isScreenProtectors = cat.slug === 'screen-protectors';
                       return (
                         <div key={catKey}>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); setSelectedAccessoryBrand(''); setSelectedModel(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(catKey) ? prev : [...prev, catKey]); }}
                               className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
                                 selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
@@ -326,17 +381,76 @@ function ProductsPageContent() {
                           </div>
                           {isExpanded && cat.subcategories && (
                             <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
-                                <button
-                                  key={sub.slug}
-                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
-                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {locale === 'en' ? sub.nameEn : sub.name}
-                                </button>
-                              ))}
+                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => {
+                                const subKey = `${catKey}/${sub.slug}`;
+                                const isSubExpanded = expandedSubs.includes(subKey);
+                                return (
+                                  <div key={sub.slug}>
+                                    <div className="flex items-center">
+                                      <button
+                                        onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(''); setSelectedModel(''); setSidebarSearch(''); setExpandedSubs(prev => prev.includes(subKey) ? prev : [...prev, subKey]); }}
+                                        className={`flex-1 text-left px-2 py-1 rounded-l transition-colors text-xs ${
+                                          selectedSub === sub.slug && selectedBrand === catKey && !selectedAccessoryBrand ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
+                                        }`}
+                                      >
+                                        {locale === 'en' ? sub.nameEn : sub.name}
+                                      </button>
+                                      {isScreenProtectors && (
+                                        <button
+                                          onClick={() => toggleSubExpand(subKey)}
+                                          className="px-1.5 py-1 hover:bg-gray-100 rounded-r transition-colors"
+                                        >
+                                          <ChevronDown size={10} className={`transition-transform text-gray-400 ${isSubExpanded ? 'rotate-180' : ''}`} />
+                                        </button>
+                                      )}
+                                    </div>
+                                    {/* Screen protector brands (Apple/Samsung) */}
+                                    {isSubExpanded && isScreenProtectors && (
+                                      <div className="ml-2 border-l border-gray-100 pl-2 space-y-0.5">
+                                        {screenProtectorBrands.map((spBrand) => {
+                                          const brandKey = `${subKey}/${spBrand.slug}`;
+                                          const isBrandExpanded = expandedSubs.includes(brandKey);
+                                          return (
+                                            <div key={spBrand.slug}>
+                                              <div className="flex items-center">
+                                                <button
+                                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(spBrand.slug); setSelectedModel(''); setSidebarSearch(''); setExpandedSubs(prev => prev.includes(brandKey) ? prev : [...prev, brandKey]); }}
+                                                  className={`flex-1 text-left px-2 py-0.5 rounded-l transition-colors text-[11px] ${
+                                                    selectedAccessoryBrand === spBrand.slug && selectedSub === sub.slug && selectedBrand === catKey && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
+                                                  }`}
+                                                >
+                                                  {spBrand.name}
+                                                </button>
+                                                <button
+                                                  onClick={() => toggleSubExpand(brandKey)}
+                                                  className="px-1 py-0.5 hover:bg-gray-100 rounded-r transition-colors"
+                                                >
+                                                  <ChevronDown size={8} className={`transition-transform text-gray-400 ${isBrandExpanded ? 'rotate-180' : ''}`} />
+                                                </button>
+                                              </div>
+                                              {isBrandExpanded && (
+                                                <div className="ml-2 border-l border-gray-50 pl-2 space-y-0.5">
+                                                  {spBrand.models.map((model) => (
+                                                    <button
+                                                      key={model.slug}
+                                                      onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(spBrand.slug); setSelectedModel(model.slug); setSidebarSearch(''); }}
+                                                      className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[10px] ${
+                                                        selectedModel === model.slug && selectedAccessoryBrand === spBrand.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-400'
+                                                      }`}
+                                                    >
+                                                      {model.name}
+                                                    </button>
+                                                  ))}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -364,7 +478,7 @@ function ProductsPageContent() {
                         <div key={catKey}>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(catKey) ? prev : [...prev, catKey]); }}
                               className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
                                 selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
@@ -385,7 +499,7 @@ function ProductsPageContent() {
                               {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
                                 <button
                                   key={sub.slug}
-                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); }}
                                   className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
                                     selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
                                   }`}
@@ -420,7 +534,7 @@ function ProductsPageContent() {
                         <div key={catKey}>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); }}
+                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(catKey) ? prev : [...prev, catKey]); }}
                               className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
                                 selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
@@ -441,7 +555,7 @@ function ProductsPageContent() {
                               {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
                                 <button
                                   key={sub.slug}
-                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); }}
+                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); }}
                                   className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
                                     selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
                                   }`}
@@ -476,7 +590,14 @@ function ProductsPageContent() {
                         <div key={brandKey}>
                           <div className="flex items-center">
                             <button
-                              onClick={() => { setSelectedBrand(brandKey); setSelectedSub(''); setSelectedModel(''); }}
+                              onClick={() => {
+                                setSelectedBrand(brandKey);
+                                setSelectedSub('');
+                                setSelectedModel('');
+                                setSelectedAccessoryBrand('');
+                                setSidebarSearch('');
+                                setExpandedBrands(prev => prev.includes(brandKey) ? prev : [...prev, brandKey]);
+                              }}
                               className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
                                 selectedBrand === brandKey && !selectedSub ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
                               }`}
@@ -501,7 +622,14 @@ function ProductsPageContent() {
                                   <div key={model.slug}>
                                     <div className="flex items-center">
                                       <button
-                                        onClick={() => { setSelectedBrand(brandKey); setSelectedSub(model.slug); setSelectedModel(''); }}
+                                        onClick={() => {
+                                          setSelectedBrand(brandKey);
+                                          setSelectedSub(model.slug);
+                                          setSelectedModel('');
+                                          setSelectedAccessoryBrand('');
+                                          setSidebarSearch('');
+                                          setExpandedSubs(prev => prev.includes(modelKey) ? prev : [...prev, modelKey]);
+                                        }}
                                         className={`flex-1 text-left px-2 py-1 rounded-l transition-colors text-xs ${
                                           selectedBrand === brandKey && selectedSub === model.slug && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
                                         }`}
@@ -520,7 +648,7 @@ function ProductsPageContent() {
                                         {laptopPartsCategories.map((part) => (
                                           <button
                                             key={part.slug}
-                                            onClick={() => { setSelectedBrand(brandKey); setSelectedSub(model.slug); setSelectedModel(part.slug); }}
+                                            onClick={() => { setSelectedBrand(brandKey); setSelectedSub(model.slug); setSelectedModel(part.slug); setSidebarSearch(''); }}
                                             className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
                                               selectedBrand === brandKey && selectedSub === model.slug && selectedModel === part.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
                                             }`}
@@ -724,7 +852,17 @@ function ProductsPageContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><div className="skeleton h-96 w-full" /></div>}>
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-xl shadow-md p-16 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
+            <p className="text-gray-600 font-medium">Even geduld...</p>
+            <p className="text-gray-400 text-sm">Producten worden geladen</p>
+          </div>
+        </div>
+      </div>
+    }>
       <ProductsPageContent />
     </Suspense>
   );

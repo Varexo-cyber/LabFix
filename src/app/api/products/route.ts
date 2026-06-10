@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         id: p.id, name: p.name, nameEn: p.name_en, description: p.description, descriptionEn: p.description_en,
         price: parseFloat(p.price), comparePrice: p.compare_price ? parseFloat(p.compare_price) : undefined,
-        category: p.category, subcategory: p.subcategory || '', model: p.model || '',
+        category: p.category, subcategory: p.subcategory || '', model: p.model || '', brand: p.brand || '',
         sku: p.sku, image: p.image, images: p.images || [], inStock: p.in_stock,
         featured: p.featured, isNew: p.is_new, vatApplied: !!p.vat_applied, createdAt: p.created_at,
       });
@@ -132,6 +132,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const subcategory = searchParams.get('subcategory');
     const model = searchParams.get('model');
+    const brand = searchParams.get('brand');
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
     const isNew = searchParams.get('isNew');
@@ -177,33 +178,36 @@ export async function GET(request: NextRequest) {
       } else {
         // STRICT matching: only exact matches on category path OR exact model match
         // No LIKE patterns to avoid matching "s26" with "s26-plus" or "s26-ultra"
+        const brandFilter = brand ? sql` AND brand = ${brand}` : sql``;
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE category = ${fullPath} OR model = ${model} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
-          sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${fullPath} OR model = ${model}`,
+          sql`SELECT * FROM products WHERE (category = ${fullPath} OR model = ${model}) ${brandFilter} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE (category = ${fullPath} OR model = ${model}) ${brandFilter}`,
         ]);
       }
     } else if (subcategory) {
       // Match on full path "apple/iphone" OR "apple/iphone/..." OR subcategory field
       const subPath = category ? `${category}/${subcategory}` : subcategory;
       const subPathLike = subPath + '/%';
+      const brandFilter = brand ? sql` AND brand = ${brand}` : sql``;
       if (category) {
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory}) ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
-          sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory})`,
+          sql`SELECT * FROM products WHERE (category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory})) ${brandFilter} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE (category = ${subPath} OR category LIKE ${subPathLike} OR (category = ${category} AND subcategory = ${subcategory})) ${brandFilter}`,
         ]);
       } else {
         const subPathLike2 = '%/' + subcategory + '/%';
         [rows, totalRows] = await Promise.all([
-          sql`SELECT * FROM products WHERE subcategory = ${subcategory} OR category LIKE ${subPathLike2} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
-          sql`SELECT COUNT(*)::int AS count FROM products WHERE subcategory = ${subcategory} OR category LIKE ${subPathLike2}`,
+          sql`SELECT * FROM products WHERE (subcategory = ${subcategory} OR category LIKE ${subPathLike2}) ${brandFilter} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+          sql`SELECT COUNT(*)::int AS count FROM products WHERE (subcategory = ${subcategory} OR category LIKE ${subPathLike2}) ${brandFilter}`,
         ]);
       }
     } else if (category) {
       // Support hierarchical categories: exact match OR starts with category/
       const likePattern = category + '/%';
+      const brandFilter = brand ? sql` AND brand = ${brand}` : sql``;
       [rows, totalRows] = await Promise.all([
-        sql`SELECT * FROM products WHERE category = ${category} OR category LIKE ${likePattern} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
-        sql`SELECT COUNT(*)::int AS count FROM products WHERE category = ${category} OR category LIKE ${likePattern}`,
+        sql`SELECT * FROM products WHERE (category = ${category} OR category LIKE ${likePattern}) ${brandFilter} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`,
+        sql`SELECT COUNT(*)::int AS count FROM products WHERE (category = ${category} OR category LIKE ${likePattern}) ${brandFilter}`,
       ]);
     } else if (search) {
       const words = search.toLowerCase().split(/\s+/).filter((w: string) => w.length > 1);
@@ -284,6 +288,7 @@ export async function GET(request: NextRequest) {
       category: p.category,
       subcategory: p.subcategory || '',
       model: p.model || '',
+      brand: p.brand || '',
       sku: p.sku,
       image: p.image,
       images: p.images || [],
@@ -314,8 +319,8 @@ export async function POST(request: NextRequest) {
     const id = randomUUID();
 
     await sql`
-      INSERT INTO products (id, name, name_en, description, description_en, price, compare_price, category, subcategory, model, sku, image, images, in_stock, featured, is_new)
-      VALUES (${id}, ${body.name}, ${body.nameEn || ''}, ${body.description || ''}, ${body.descriptionEn || ''}, ${body.price}, ${body.comparePrice || null}, ${body.category}, ${body.subcategory || ''}, ${body.model || ''}, ${body.sku}, ${body.image || ''}, ${body.images || []}, ${body.inStock ?? true}, ${body.featured ?? false}, ${body.isNew ?? false})
+      INSERT INTO products (id, name, name_en, description, description_en, price, compare_price, category, subcategory, model, brand, sku, image, images, in_stock, featured, is_new)
+      VALUES (${id}, ${body.name}, ${body.nameEn || ''}, ${body.description || ''}, ${body.descriptionEn || ''}, ${body.price}, ${body.comparePrice || null}, ${body.category}, ${body.subcategory || ''}, ${body.model || ''}, ${body.brand || ''}, ${body.sku}, ${body.image || ''}, ${body.images || []}, ${body.inStock ?? true}, ${body.featured ?? false}, ${body.isNew ?? false})
     `;
 
     return NextResponse.json({ success: true, id });
@@ -341,6 +346,7 @@ export async function PUT(request: NextRequest) {
         category = ${body.category},
         subcategory = ${body.subcategory || ''},
         model = ${body.model || ''},
+        brand = ${body.brand || ''},
         sku = ${body.sku},
         image = ${body.image || ''},
         images = ${body.images || []},

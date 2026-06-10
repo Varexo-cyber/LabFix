@@ -9,6 +9,7 @@ export interface Product {
   category: string;
   subcategory?: string;
   model?: string;
+  brand?: string;
   sku: string;
   image: string;
   images: string[];

@@ -174,7 +174,7 @@ export default function CheckoutPage() {
             <p className="text-sm text-gray-500">{t('checkout.orderNumber')}</p>
             <p className="text-xl font-bold text-primary-500">{orderId}</p>
           </div>
-          <div className="flex gap-4 justify-center">
+          <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/account" className="bg-primary-500 text-white px-6 py-3 rounded-lg hover:bg-primary-600 transition-colors font-semibold">
               {t('account.orders')}
             </Link>
@@ -463,7 +463,7 @@ export default function CheckoutPage() {
               {/* Payment Method Selection */}
               <div className="mt-6 space-y-3">
                 <p className="text-sm font-medium text-gray-700">Kies betaalmethode:</p>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {paymentMethods.map((method) => (
                     <button
                       key={method.id}

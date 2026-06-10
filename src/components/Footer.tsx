@@ -86,7 +86,6 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/account" className="hover:text-white transition-colors">{locale === 'nl' ? 'Mijn Account' : 'My Account'}</Link></li>
               <li><Link href="/products" className="hover:text-white transition-colors">{t('nav.products')}</Link></li>
-              <li><Link href="/products?brand=tools" className="hover:text-white transition-colors">{locale === 'nl' ? 'Gereedschap' : 'Tools'}</Link></li>
               <li><Link href="/products?brand=accessories" className="hover:text-white transition-colors">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</Link></li>
             </ul>
           </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { fetchNews, NewsArticle } from '@/lib/store';
 import {
@@ -17,6 +18,10 @@ import {
   ChevronRight,
   Bot,
   Wrench,
+  Search,
+  Package,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 // WhatsApp icon component
@@ -28,10 +33,29 @@ const WhatsAppIcon = ({ size = 20, className = '' }: { size?: number; className?
 
 type WidgetTab = 'home' | 'bot' | 'help' | 'news';
 
+interface AssistantProduct {
+  id: string;
+  name: string;
+  nameEn: string;
+  price: number;
+  image: string;
+  category: string;
+  inStock: boolean;
+}
+
+interface AssistantAction {
+  type: 'link';
+  url: string;
+  label: string;
+}
+
 interface BotMessage {
   role: 'user' | 'bot';
   text: string;
   isTyping?: boolean;
+  products?: AssistantProduct[];
+  suggestions?: string[];
+  action?: AssistantAction;
 }
 
 interface ConversationContext {
@@ -360,6 +384,7 @@ function getLabFixAnswer(question: string, nl: boolean, context?: ConversationCo
 
 export default function HelpWidget() {
   const { locale } = useApp();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<WidgetTab>('home');
   const [prevTab, setPrevTab] = useState<WidgetTab>('home');
@@ -368,11 +393,30 @@ export default function HelpWidget() {
   const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
   const [botInput, setBotInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [typedText, setTypedText] = useState('');
+  const [assistantContext, setAssistantContext] = useState<Record<string, any>>({});
+  const [showAiPrompt, setShowAiPrompt] = useState(false);
+  const assistantContextRef = useRef<Record<string, any>>({});
   const widgetRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const contextRef = useRef<ConversationContext>(createContext());
+
+  // Show AI prompt on product page after 7 seconds
+  useEffect(() => {
+    if (pathname?.startsWith('/products')) {
+      const timer = setTimeout(() => {
+        setShowAiPrompt(true);
+      }, 7000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowAiPrompt(false);
+    }
+  }, [pathname]);
+
+  // Keep ref in sync with state for closures
+  useEffect(() => {
+    assistantContextRef.current = assistantContext;
+  }, [assistantContext]);
 
   const nl = locale === 'nl';
 
@@ -384,6 +428,8 @@ export default function HelpWidget() {
         contextRef.current = createContext();
         setBotMessages([]);
         setBotInput('');
+        setAssistantContext({});
+        assistantContextRef.current = {};
       }, 300);
     }
   };
@@ -409,7 +455,7 @@ export default function HelpWidget() {
         chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
     }
-  }, [botMessages, typedText, isTyping]);
+  }, [botMessages, isTyping]);
 
   // Clear typing interval on unmount
   useEffect(() => {
@@ -428,75 +474,49 @@ export default function HelpWidget() {
     setTimeout(() => setIsAnimating(false), 200);
   };
 
+  const sendToAssistant = async (text: string) => {
+    if (isTyping) return;
+    setBotMessages(prev => [...prev, { role: 'user', text }]);
+    setIsTyping(true);
+
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, context: assistantContextRef.current }),
+      });
+      const data = await res.json();
+      setIsTyping(false);
+
+      if (data.updatedContext) setAssistantContext(data.updatedContext);
+
+      const botMsg: BotMessage = {
+        role: 'bot',
+        text: data.text || '',
+        products: data.products || [],
+        suggestions: data.suggestions || [],
+        action: data.action || undefined,
+      };
+      setBotMessages(prev => [...prev, botMsg]);
+    } catch (err) {
+      setIsTyping(false);
+      const answer = getLabFixAnswer(text, nl, contextRef.current);
+      setBotMessages(prev => [...prev, { role: 'bot', text: answer }]);
+    }
+  };
+
   const handleBotSend = () => {
     if (!botInput.trim() || isTyping) return;
     const userMsg = botInput.trim();
     setBotInput('');
-    setBotMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    
-    // Show typing indicator after 400ms delay (natural feel)
-    setTimeout(() => {
-      setIsTyping(true);
-      
-      // Get the answer with context
-      const answer = getLabFixAnswer(userMsg, nl, contextRef.current);
-      
-      // Simulate "thinking" time with loading dots (1-2 seconds)
-      const thinkingTime = 1000 + Math.random() * 1000; // 1-2 seconds
-      
-      setTimeout(() => {
-        setIsTyping(false);
-        
-        // Start typing effect - character by character
-        let charIndex = 0;
-        setTypedText('');
-        
-        // Add empty bot message first
-        setBotMessages(prev => [...prev, { role: 'bot', text: '', isTyping: true }]);
-        
-        // Type out characters smoothly
-        typingIntervalRef.current = setInterval(() => {
-          if (charIndex <= answer.length) {
-            const currentText = answer.slice(0, charIndex);
-            setTypedText(currentText);
-            setBotMessages(prev => {
-              const newMessages = [...prev];
-              const lastMsg = newMessages[newMessages.length - 1];
-              if (lastMsg && lastMsg.role === 'bot') {
-                lastMsg.text = currentText;
-              }
-              return newMessages;
-            });
-            charIndex++;
-          } else {
-            // Done typing
-            if (typingIntervalRef.current) {
-              clearInterval(typingIntervalRef.current);
-              typingIntervalRef.current = null;
-            }
-            setBotMessages(prev => {
-              const newMessages = [...prev];
-              const lastMsg = newMessages[newMessages.length - 1];
-              if (lastMsg && lastMsg.role === 'bot') {
-                lastMsg.text = answer;
-                lastMsg.isTyping = false;
-              }
-              return newMessages;
-            });
-            setTypedText('');
-          }
-        }, 25); // 25ms per character for smooth typing effect
-        
-      }, thinkingTime);
-      
-    }, 400);
+    sendToAssistant(userMsg);
   };
 
   return (
-    <div ref={widgetRef} className="fixed bottom-6 right-6 z-50">
+    <div ref={widgetRef} className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
       {/* Popup */}
       <div
-        className={`absolute bottom-16 right-0 w-[370px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 origin-bottom-right ${
+        className={`absolute bottom-14 sm:bottom-16 right-0 w-[calc(100vw-2rem)] sm:w-[370px] max-w-[370px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 origin-bottom-right ${
           isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
         }`}
       >
@@ -660,12 +680,12 @@ export default function HelpWidget() {
                     </p>
                     <div className="flex flex-wrap gap-1.5 justify-center mt-3 px-2">
                       {(nl
-                        ? ['Wat is LabFix?', 'Hoe verzenden jullie?', 'Welke betaalmethoden?', 'iPhone onderdelen']
-                        : ['What is LabFix?', 'Shipping options?', 'Payment methods?', 'iPhone parts']
+                        ? ['Wat is LabFix?', 'Hoe verzenden jullie?', 'iPhone scherm zoeken', 'Laptop onderdelen']
+                        : ['What is LabFix?', 'Shipping options?', 'iPhone screen search', 'Laptop parts']
                       ).map((q) => (
                         <button
                           key={q}
-                          onClick={() => { setBotInput(q); }}
+                          onClick={() => sendToAssistant(q)}
                           className="text-[11px] bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full hover:bg-primary-50 hover:text-primary-600 transition-colors"
                         >
                           {q}
@@ -676,16 +696,81 @@ export default function HelpWidget() {
                 )}
                 {botMessages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
-                      msg.role === 'user'
-                        ? 'bg-primary-600 text-white rounded-br-md'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                    }`}>
-                      {msg.text}
-                      {msg.isTyping && (
-                        <span className="inline-block w-2 h-4 ml-0.5 bg-gray-500 animate-pulse" />
-                      )}
-                    </div>
+                    {msg.role === 'user' ? (
+                      <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm bg-primary-600 text-white rounded-br-md">
+                        {msg.text}
+                      </div>
+                    ) : (
+                      <div className="max-w-[95%]">
+                        {/* Bot text bubble */}
+                        <div className="px-3.5 py-2.5 rounded-2xl text-sm bg-gray-100 text-gray-800 rounded-bl-md mb-2">
+                          {msg.text}
+                        </div>
+                        {/* Product cards */}
+                        {msg.products && msg.products.length > 0 && (
+                          <div className="space-y-2 mb-2">
+                            {msg.products.filter(p => p.id && typeof p.id === 'string').slice(0, 3).map((product) => (
+                              <Link
+                                key={product.id}
+                                href={`/products/${product.id}`}
+                                onClick={handleClose}
+                                className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl p-2.5 hover:shadow-md hover:border-primary-200 transition-all"
+                              >
+                                <div className="w-12 h-12 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden">
+                                  {product.image ? (
+                                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Package size={20} className="text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-800 truncate">{product.name}</p>
+                                  <p className="text-xs text-gray-500">{product.inStock ? '✅ Op voorraad' : '⏳ Niet op voorraad'}</p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <p className="text-sm font-bold text-primary-600">€{product.price.toFixed(2)}</p>
+                                  <ArrowRight size={14} className="text-gray-400 inline-block" />
+                                </div>
+                              </Link>
+                            ))}
+                            {msg.products.filter(p => p.id && typeof p.id === 'string').length > 3 && (
+                              <p className="text-xs text-gray-500 text-center">
+                                +{msg.products.filter(p => p.id && typeof p.id === 'string').length - 3} {nl ? 'meer producten gevonden' : 'more products found'}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {/* Action link */}
+                        {msg.action && typeof msg.action === 'object' && msg.action.url && (
+                          <div className="mb-2">
+                            <Link
+                              href={msg.action.url}
+                              onClick={handleClose}
+                              className="inline-flex items-center gap-2 bg-primary-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:bg-primary-700 transition-colors"
+                            >
+                              {msg.action.label}
+                              <ArrowRight size={14} />
+                            </Link>
+                          </div>
+                        )}
+                        {/* Suggestion chips */}
+                        {msg.suggestions && msg.suggestions.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {msg.suggestions.map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                onClick={() => sendToAssistant(suggestion)}
+                                className="text-[11px] bg-primary-50 text-primary-700 border border-primary-200 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {/* Typing indicator with animated dots */}
@@ -858,6 +943,46 @@ export default function HelpWidget() {
           ))}
         </div>
       </div>
+
+      {/* AI Prompt Popup — only on product page after 7s */}
+      {showAiPrompt && !isOpen && (
+        <div className="absolute bottom-[72px] right-0 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-xl border border-primary-200 p-4 w-[calc(100vw-3rem)] max-w-[280px] relative">
+            <button
+              onClick={() => setShowAiPrompt(false)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 p-1"
+            >
+              <X size={14} />
+            </button>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <Bot size={20} className="text-primary-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-800">
+                  {nl ? 'Moeite met vinden?' : 'Having trouble finding?'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {nl
+                    ? 'Onze AI-assistent helpt je direct het juiste product te vinden!'
+                    : 'Our AI assistant helps you find the right product instantly!'}
+                </p>
+                <button
+                  onClick={() => {
+                    setShowAiPrompt(false);
+                    setIsOpen(true);
+                    setActiveTab('bot');
+                  }}
+                  className="mt-2 bg-primary-600 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-primary-700 transition-colors flex items-center gap-1.5"
+                >
+                  <Sparkles size={12} />
+                  {nl ? 'Vraag AI-assistent' : 'Ask AI Assistant'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Button */}
       <button

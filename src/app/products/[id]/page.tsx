@@ -159,8 +159,8 @@ export default function ProductDetailPage() {
 
           {/* Quantity + Add to Cart */}
           {product.inStock && (
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center border rounded-lg">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="flex items-center border rounded-lg flex-shrink-0">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-2 hover:bg-gray-100 transition-colors"
@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
               </div>
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 py-3 px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
+                className={`flex-1 min-w-[140px] py-3 px-4 sm:px-6 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors text-sm sm:text-base ${
                   addedToCart
                     ? 'bg-green-500 text-white'
                     : 'bg-accent-500 text-white hover:bg-accent-600'

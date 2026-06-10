@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
-import { brandCategories, getAllCategoryOptions, getAllProductCategories, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, getAllCategoryOptions, getAllProductCategories, laptopPartsCategories, screenProtectorBrands } from '@/lib/categories';
 import { normalizeImageUrl } from '@/lib/utils';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
@@ -19,6 +19,7 @@ const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   category: 'apple',
   subcategory: '',
   model: '',
+  brand: '',
   sku: '',
   image: '',
   images: [],
@@ -409,6 +410,8 @@ export default function AdminPage() {
       comparePrice: product.comparePrice,
       category: product.category,
       subcategory: product.subcategory || '',
+      model: product.model || '',
+      brand: product.brand || '',
       sku: product.sku,
       image: product.image,
       images: product.images,
@@ -803,7 +806,7 @@ export default function AdminPage() {
                         <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Model *' : 'Productlijn *'}</label>
                         <select 
                           value={formData.subcategory || ''} 
-                          onChange={(e) => setFormData({ ...formData, subcategory: e.target.value })}
+                          onChange={(e) => setFormData({ ...formData, subcategory: e.target.value, brand: '', model: '' })}
                           className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
                           <option value="">{isLaptopBrand ? '-- Kies model --' : '-- Kies productlijn --'}</option>
                           {(productCategories.find(b => b.slug === baseCat)?.subcategories || []).map((sub: any) => (
@@ -813,33 +816,62 @@ export default function AdminPage() {
                       </div>
                     );
                   })()}
+                  {/* Screen Protector Brand (Apple/Samsung) */}
+                  {(() => {
+                    const baseCat = formData.category.split('/')[0] || formData.category;
+                    const isScreenProtector = baseCat === 'acc-screen-protectors';
+                    if (!isScreenProtector) return null;
+                    return (
+                      <div>
+                        <label className="block text-sm font-semibold mb-1">Merk *</label>
+                        <select
+                          value={formData.brand || ''}
+                          onChange={(e) => setFormData({ ...formData, brand: e.target.value, model: '' })}
+                          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
+                          <option value="">-- Kies merk --</option>
+                          {screenProtectorBrands.map((b) => (
+                            <option key={b.slug} value={b.slug}>{b.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })()}
                   <div>
                     {(() => {
                       const baseCat = formData.category.split('/')[0] || formData.category;
                       const isLaptopBrand = baseCat.startsWith('laptop-');
+                      const isScreenProtector = baseCat === 'acc-screen-protectors';
                       return (
                         <>
-                          <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Onderdeel' : 'Model'}</label>
+                          <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Onderdeel' : isScreenProtector ? 'Model *' : 'Model'}</label>
                           <select 
                             value={formData.model || ''} 
                             onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                            <option value="">-- Optioneel --</option>
+                            <option value="">{isScreenProtector ? '-- Kies model --' : '-- Optioneel --'}</option>
                             {isLaptopBrand
                               ? laptopPartsCategories.map((part) => (
                                   <option key={part.slug} value={part.slug}>{part.name}</option>
                                 ))
-                              : (() => {
-                                  const brand = productCategories.find(b => b.slug === baseCat);
-                                  const sub = brand?.subcategories.find((s: any) => s.slug === formData.subcategory);
-                                  const models = sub?.models || [];
-                                  if (models.length === 0) {
-                                    return <option value="" disabled>(Geen modellen voor deze categorie)</option>;
-                                  }
-                                  return models.map((model: any) => (
-                                    <option key={model.slug} value={model.slug}>{model.name}</option>
-                                  ));
-                                })()}
+                              : isScreenProtector
+                                ? (() => {
+                                    const spBrand = screenProtectorBrands.find(b => b.slug === formData.brand);
+                                    if (!spBrand) return <option value="" disabled>Kies eerst een merk</option>;
+                                    return spBrand.models.map((model) => (
+                                      <option key={model.slug} value={model.slug}>{model.name}</option>
+                                    ));
+                                  })()
+                                : (() => {
+                                    const brand = productCategories.find(b => b.slug === baseCat);
+                                    const sub = brand?.subcategories.find((s: any) => s.slug === formData.subcategory);
+                                    const models = sub?.models || [];
+                                    if (models.length === 0) {
+                                      return <option value="" disabled>(Geen modellen voor deze categorie)</option>;
+                                    }
+                                    return models.map((model: any) => (
+                                      <option key={model.slug} value={model.slug}>{model.name}</option>
+                                    ));
+                                  })()}
                           </select>
                         </>
                       );
