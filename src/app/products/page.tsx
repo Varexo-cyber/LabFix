@@ -27,6 +27,7 @@ function ProductsPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const PRODUCTS_PER_PAGE = 24;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchIdRef = useRef(0);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
   const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -42,6 +43,7 @@ function ProductsPageContent() {
   // Fetch products from API with server-side pagination
   useEffect(() => {
     const abortController = new AbortController();
+    const currentFetchId = ++fetchIdRef.current;
     setLoadingProducts(true);
     const params: Record<string, string> = {
       page: currentPage.toString(),
@@ -55,6 +57,8 @@ function ProductsPageContent() {
     if (sortBy && sortBy !== 'newest') params.sort = sortBy;
     fetchProductsPaginated(params, abortController.signal)
       .then((data) => {
+        // Ignore stale fetches to prevent overwriting newer results
+        if (currentFetchId !== fetchIdRef.current) return;
         setProducts(data.products);
         setTotalCount(data.total);
         // Track grand total (no filter) once we have it
@@ -64,7 +68,12 @@ function ProductsPageContent() {
         // Ignore abort errors (cleanup)
         if (err?.name !== 'AbortError') throw err;
       })
-      .finally(() => setLoadingProducts(false));
+      .finally(() => {
+        // Only clear loading state if this is still the most recent fetch
+        if (currentFetchId === fetchIdRef.current) {
+          setLoadingProducts(false);
+        }
+      });
     return () => abortController.abort();
   }, [currentPage, selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, searchQuery, sortBy]);
 
@@ -86,7 +95,7 @@ function ProductsPageContent() {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchInput]);
 
-  // Read URL params on mount (only once, not on every searchParams change to avoid resetting user clicks)
+  // Read URL params on mount AND when URL changes via Link navigation
   useEffect(() => {
     const brand = searchParams.get('brand');
     const sub = searchParams.get('sub');
@@ -100,20 +109,39 @@ function ProductsPageContent() {
     const laptopModel = searchParams.get('laptopModel');
     const laptopPart = searchParams.get('laptopPart');
     const accessoryBrand = searchParams.get('accBrand');
-    if (brand) { setSelectedBrand(brand); setExpandedBrands([brand]); }
-    if (sub) setSelectedSub(sub);
-    if (model) setSelectedModel(model);
-    if (cat) setSelectedBrand(cat);
-    if (search) { setSearchQuery(search); setSearchInput(search); }
-    if (accessory) { setSelectedBrand(`acc-${accessory}`); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
-    if (accessoryBrand) { setSelectedAccessoryBrand(accessoryBrand); setExpandedBrands([`acc-${accessory}`]); setExpandedSections(p => ({ ...p, accessories: true })); }
-    if (pcpart) { setSelectedBrand(`pc-${pcpart}`); setExpandedBrands([`pc-${pcpart}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcParts: true })); }
-    if (pcacc) { setSelectedBrand(`pca-${pcacc}`); setExpandedBrands([`pca-${pcacc}`]); setSelectedSub(sub || ''); setExpandedSections(p => ({ ...p, pcAcc: true })); }
-    if (laptopBrand) { setSelectedBrand(`laptop-${laptopBrand}`); setExpandedBrands([`laptop-${laptopBrand}`]); setExpandedSections(p => ({ ...p, laptopBrands: true })); }
-    if (laptopModel) setSelectedSub(laptopModel);
-    if (laptopPart) setSelectedModel(laptopPart);
+
+    // Only update state if URL params differ from current state (prevents overwriting sidebar clicks)
+    const targetBrand = cat || brand || (accessory ? `acc-${accessory}` : '') || (pcpart ? `pc-${pcpart}` : '') || (pcacc ? `pca-${pcacc}` : '') || (laptopBrand ? `laptop-${laptopBrand}` : '') || '';
+    const targetSub = sub || laptopModel || '';
+    const targetModel = model || laptopPart || '';
+
+    if (targetBrand && targetBrand !== selectedBrand) {
+      setSelectedBrand(targetBrand);
+      setExpandedBrands(prev => prev.includes(targetBrand) ? prev : [...prev, targetBrand]);
+    }
+    if (!targetBrand && selectedBrand) setSelectedBrand('');
+
+    if (targetSub && targetSub !== selectedSub) setSelectedSub(targetSub);
+    if (!targetSub && selectedSub) setSelectedSub('');
+
+    if (targetModel && targetModel !== selectedModel) setSelectedModel(targetModel);
+    if (!targetModel && selectedModel) setSelectedModel('');
+
+    if (search && search !== searchQuery) { setSearchQuery(search); setSearchInput(search); }
+    if (!search && searchQuery) { setSearchQuery(''); setSearchInput(''); }
+
+    if (accessoryBrand && accessoryBrand !== selectedAccessoryBrand) {
+      setSelectedAccessoryBrand(accessoryBrand);
+      setExpandedSections(p => ({ ...p, accessories: true }));
+    }
+    if (!accessoryBrand && selectedAccessoryBrand) setSelectedAccessoryBrand('');
+
+    if (accessory) setExpandedSections(p => ({ ...p, accessories: true }));
+    if (pcpart) setExpandedSections(p => ({ ...p, pcParts: true }));
+    if (pcacc) setExpandedSections(p => ({ ...p, pcAcc: true }));
+    if (laptopBrand) setExpandedSections(p => ({ ...p, laptopBrands: true }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   // Reset to page 1 when category/sub/model filters change
   useEffect(() => {
@@ -762,10 +790,10 @@ function ProductsPageContent() {
               <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin" />
                 <p className="text-gray-600 font-medium">
-                  {locale === 'nl' ? 'Even geduld...' : 'Please wait...'}
+                  {locale === 'nl' ? 'Producten aan het laden...' : 'Loading products...'}
                 </p>
                 <p className="text-gray-400 text-sm">
-                  {locale === 'nl' ? 'Producten worden geladen' : 'Loading products'}
+                  {locale === 'nl' ? 'Even geduld a.u.b.' : 'Please wait'}
                 </p>
               </div>
             </div>

@@ -785,7 +785,7 @@ export default function Header() {
                   </div>
                   {/* Kolom 3: Alleen voor screen protectors — Merken */}
                   {hoveredAccessoryCat === 'screen-protectors' && (
-                    <div className="w-[180px] border-r border-gray-100 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto">
                       {hoveredAccessorySub && (() => {
                         const sub = accessoryCategories.find(c => c.slug === 'screen-protectors')?.subcategories.find(s => s.slug === hoveredAccessorySub);
                         if (!sub) return null;
@@ -793,27 +793,8 @@ export default function Header() {
                           <>
                             <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Merk' : 'Brand'}</div>
                             {screenProtectorBrands.map((brand) => (
-                              <div key={brand.slug} onMouseEnter={() => setHoveredScreenProtectorBrand(brand.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredScreenProtectorBrand === brand.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
+                              <Link key={brand.slug} href={`/products?accessory=screen-protectors&sub=${hoveredAccessorySub}&accBrand=${brand.slug}`} className="block px-3 py-2 text-sm hover:bg-primary-50 hover:text-primary-600 transition-colors" onClick={() => setOpenDropdown(null)}>
                                 {brand.name}
-                              </div>
-                            ))}
-                          </>
-                        );
-                      })()}
-                    </div>
-                  )}
-                  {/* Kolom 4: Alleen voor screen protectors — Modellen */}
-                  {hoveredAccessoryCat === 'screen-protectors' && (
-                    <div className="flex-1 overflow-y-auto p-3">
-                      {hoveredAccessorySub && hoveredScreenProtectorBrand && (() => {
-                        const brand = screenProtectorBrands.find(b => b.slug === hoveredScreenProtectorBrand);
-                        if (!brand) return null;
-                        return (
-                          <>
-                            <div className="text-sm font-bold text-primary-600 mb-2">{brand.name} — {locale === 'nl' ? 'Kies model' : 'Choose model'}</div>
-                            {brand.models.map((model) => (
-                              <Link key={model.slug} href={`/products?accessory=screen-protectors&sub=${hoveredAccessorySub}&accBrand=${brand.slug}&model=${model.slug}`} className="block px-2 py-1.5 text-sm hover:bg-gray-50" onClick={() => setOpenDropdown(null)}>
-                                {model.name}
                               </Link>
                             ))}
                           </>
@@ -1108,9 +1089,29 @@ export default function Header() {
               {mobileOpenBrand === '__acc' && (
                 <div className="bg-gray-50">
                   {accessoryCategories.map((cat) => (
-                    <Link key={cat.slug} href={`/products?accessory=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
-                      {locale === 'en' ? cat.nameEn : cat.name}
-                    </Link>
+                    <div key={cat.slug}>
+                      <Link href={`/products?accessory=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600" onClick={() => setMobileMenuOpen(false)}>
+                        {locale === 'en' ? cat.nameEn : cat.name}
+                      </Link>
+                      {/* Subcategories / Types */}
+                      {cat.subcategories.map((sub) => (
+                        <div key={sub.slug}>
+                          <Link href={`/products?accessory=${cat.slug}&sub=${sub.slug}`} className="block px-8 py-1.5 hover:bg-gray-100 text-xs text-gray-600" onClick={() => setMobileMenuOpen(false)}>
+                            {locale === 'en' ? sub.nameEn : sub.name}
+                          </Link>
+                          {/* Screen protector brands */}
+                          {cat.slug === 'screen-protectors' && (
+                            <div className="bg-white">
+                              {screenProtectorBrands.map((brand) => (
+                                <Link key={brand.slug} href={`/products?accessory=screen-protectors&sub=${sub.slug}&accBrand=${brand.slug}`} className="block px-10 py-1 text-xs text-gray-500 hover:bg-gray-50 hover:text-primary-600" onClick={() => setMobileMenuOpen(false)}>
+                                  {brand.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
