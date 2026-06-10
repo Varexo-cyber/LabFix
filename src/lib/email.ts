@@ -628,9 +628,12 @@ export async function sendRepairConfirmation(data: RepairEmailData) {
 
   const fullHtml = headerHtml + bodyHtml + footerHtml;
 
-  // Send from LabFix (info@labfix.nl)
+  // Send from noreply so the mailserver doesn't auto-copy the confirmation
+  // to the sending account inbox (info@labfix.nl). Reply-To ensures the
+  // customer can still reply directly to LabFix.
   return labfixTransporter.sendMail({
-    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    from: `"LabFix" <${process.env.SMTP_NOREPLY || 'noreply@labfix.nl'}>`,
+    replyTo: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to: data.to,
     subject: `LabFix - Reparatie Aanvraag Ontvangen #${data.repairId.slice(0,8).toUpperCase()}`,
     html: fullHtml,
