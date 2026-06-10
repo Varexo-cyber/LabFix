@@ -99,9 +99,14 @@ export async function POST(request: NextRequest) {
         const stockQty = parseInt(product.stock_qty) || 0;
         const inStock = stockQty > 0 || product.is_in_stock === true;
         const image = product.image_url || '';
-        const category = product.targetCategory || targetCategory || 'onderdelen';
-        const brand = product.brand || '';
+        const rawCategory = product.targetCategory || targetCategory || 'onderdelen';
         const entityId = product.entity_id || '';
+
+        // Parse hierarchical category: category/subcategory/brand (e.g. acc-screen-protectors/gehard-glas/apple)
+        const catParts = rawCategory.split('/');
+        const category = catParts[0] || rawCategory;
+        const subcategory = catParts[1] || '';
+        const brand = catParts[2] || product.brand || '';
 
         // Auto-translate English name and description to Dutch
         const nameNL = await translateToNL(nameEn);
@@ -135,6 +140,8 @@ export async function POST(request: NextRequest) {
               in_stock = ${inStock},
               image = ${image},
               category = ${category},
+              subcategory = ${subcategory},
+              brand = ${brand},
               sort_order = ${sortOrder},
               updated_at = ${now}
             WHERE id = ${productId}
@@ -144,10 +151,10 @@ export async function POST(request: NextRequest) {
           await sql`
             INSERT INTO products (
               id, name, name_en, description, description_en, price, compare_price,
-              category, sku, in_stock, image, sort_order, created_at
+              category, subcategory, brand, sku, in_stock, image, sort_order, created_at
             ) VALUES (
               ${productId}, ${nameNL}, ${nameEn}, ${descriptionNL}, ${descriptionEn}, ${price}, ${null},
-              ${category}, ${sku}, ${inStock}, ${image}, ${sortOrder}, ${now}
+              ${category}, ${subcategory}, ${brand}, ${sku}, ${inStock}, ${image}, ${sortOrder}, ${now}
             )
           `;
         }

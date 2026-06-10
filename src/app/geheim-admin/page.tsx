@@ -843,12 +843,12 @@ export default function AdminPage() {
                       const isScreenProtector = baseCat === 'acc-screen-protectors';
                       return (
                         <>
-                          <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Onderdeel' : isScreenProtector ? 'Model *' : 'Model'}</label>
+                          <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Onderdeel' : 'Model'}</label>
                           <select 
                             value={formData.model || ''} 
                             onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                            <option value="">{isScreenProtector ? '-- Kies model --' : '-- Optioneel --'}</option>
+                            <option value="">-- Optioneel --</option>
                             {isLaptopBrand
                               ? laptopPartsCategories.map((part) => (
                                   <option key={part.slug} value={part.slug}>{part.name}</option>

@@ -1193,7 +1193,9 @@ export function getAllProductCategories(): BrandCategory[] {
         slug: sub.slug,
         name: sub.name,
         nameEn: sub.nameEn,
-        models: [] as ModelItem[],
+        models: cat.slug === 'screen-protectors'
+          ? screenProtectorBrands.map(b => ({ slug: b.slug, name: b.name, nameEn: b.name }))
+          : [] as ModelItem[],
       })),
     }));
 

@@ -435,45 +435,17 @@ function ProductsPageContent() {
                                     {/* Screen protector brands (Apple/Samsung) */}
                                     {isSubExpanded && isScreenProtectors && (
                                       <div className="ml-2 border-l border-gray-100 pl-2 space-y-0.5">
-                                        {screenProtectorBrands.map((spBrand) => {
-                                          const brandKey = `${subKey}/${spBrand.slug}`;
-                                          const isBrandExpanded = expandedSubs.includes(brandKey);
-                                          return (
-                                            <div key={spBrand.slug}>
-                                              <div className="flex items-center">
-                                                <button
-                                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(spBrand.slug); setSelectedModel(''); setSidebarSearch(''); setExpandedSubs(prev => prev.includes(brandKey) ? prev : [...prev, brandKey]); }}
-                                                  className={`flex-1 text-left px-2 py-0.5 rounded-l transition-colors text-[11px] ${
-                                                    selectedAccessoryBrand === spBrand.slug && selectedSub === sub.slug && selectedBrand === catKey && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
-                                                  }`}
-                                                >
-                                                  {spBrand.name}
-                                                </button>
-                                                <button
-                                                  onClick={() => toggleSubExpand(brandKey)}
-                                                  className="px-1 py-0.5 hover:bg-gray-100 rounded-r transition-colors"
-                                                >
-                                                  <ChevronDown size={8} className={`transition-transform text-gray-400 ${isBrandExpanded ? 'rotate-180' : ''}`} />
-                                                </button>
-                                              </div>
-                                              {isBrandExpanded && (
-                                                <div className="ml-2 border-l border-gray-50 pl-2 space-y-0.5">
-                                                  {spBrand.models.map((model) => (
-                                                    <button
-                                                      key={model.slug}
-                                                      onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(spBrand.slug); setSelectedModel(model.slug); setSidebarSearch(''); }}
-                                                      className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[10px] ${
-                                                        selectedModel === model.slug && selectedAccessoryBrand === spBrand.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-400'
-                                                      }`}
-                                                    >
-                                                      {model.name}
-                                                    </button>
-                                                  ))}
-                                                </div>
-                                              )}
-                                            </div>
-                                          );
-                                        })}
+                                        {screenProtectorBrands.map((spBrand) => (
+                                          <button
+                                            key={spBrand.slug}
+                                            onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedAccessoryBrand(spBrand.slug); setSelectedModel(''); setSidebarSearch(''); }}
+                                            className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
+                                              selectedAccessoryBrand === spBrand.slug && selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
+                                            }`}
+                                          >
+                                            {spBrand.name}
+                                          </button>
+                                        ))}
                                       </div>
                                     )}
                                   </div>
