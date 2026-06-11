@@ -907,95 +907,6 @@ export default function Header() {
               Laptop
             </button>
 
-            {/* Laptop Modal Popup */}
-            {laptopModalOpen && (() => {
-              const wizardBrand = laptopBrands.find(b => b.slug === laptopWizardBrand);
-              const wizardModels = wizardBrand?.subcategories || [];
-              const wizardParts = laptopPartsCategories;
-              return (
-                <div
-                  className={`fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 ${laptopModalClosing ? 'animate-modal-backdrop-out' : 'animate-modal-backdrop'}`}
-                  onClick={(e) => { if (e.target === e.currentTarget) closeLaptopModal(); }}
-                >
-                  <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative text-gray-900 ${laptopModalClosing ? 'animate-modal-content-out' : 'animate-modal-content'}`}>
-                    {/* Close button */}
-                    <button
-                      onClick={closeLaptopModal}
-                      className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      <X size={20} className="text-gray-500" />
-                    </button>
-
-                    {/* Title */}
-                    <h2 className="text-lg font-bold text-gray-800 mb-1">{locale === 'nl' ? 'Kies je laptop' : 'Choose your laptop'}</h2>
-                    <p className="text-sm text-gray-400 mb-4">{locale === 'nl' ? 'Selecteer merk, model en onderdeel' : 'Select brand, model and part'}</p>
-
-                    {/* Refurbished Section */}
-                    <Link
-                      href="/products?laptopBrand=refurbished"
-                      className="block w-full mb-4 bg-green-500 hover:bg-green-600 text-white text-center py-2.5 rounded-lg text-sm font-semibold transition-colors"
-                      onClick={closeLaptopModal}
-                    >
-                      {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
-                    </Link>
-
-                    <div className="border-t border-gray-200 mb-4"></div>
-                    <div className="text-xs font-bold text-gray-400 uppercase mb-3">{locale === 'nl' ? 'Zoek laptop onderdeel' : 'Find laptop part'}</div>
-
-                    {/* Step 1: Kies Merk */}
-                    <div className="mb-3">
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '1. Kies Merk' : '1. Choose Brand'}</label>
-                      <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white"
-                        value={laptopWizardBrand || ''}
-                        onChange={e => { setLaptopWizardBrand(e.target.value || null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
-                      >
-                        <option value="">{locale === 'nl' ? '-- Selecteer merk --' : '-- Select brand --'}</option>
-                        {laptopBrands.map(b => <option key={b.slug} value={b.slug}>{b.name}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Step 2: Kies Model */}
-                    <div className="mb-3">
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '2. Kies Model' : '2. Choose Model'}</label>
-                      <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                        value={laptopWizardModel || ''}
-                        onChange={e => { setLaptopWizardModel(e.target.value || null); setLaptopWizardPart(null); }}
-                        disabled={!laptopWizardBrand}
-                      >
-                        <option value="">{locale === 'nl' ? '-- Selecteer model --' : '-- Select model --'}</option>
-                        {wizardModels.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Step 3: Kies Onderdeel */}
-                    <div className="mb-5">
-                      <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '3. Kies Onderdeel' : '3. Choose Part'}</label>
-                      <select
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400"
-                        value={laptopWizardPart || ''}
-                        onChange={e => setLaptopWizardPart(e.target.value || null)}
-                        disabled={!laptopWizardModel}
-                      >
-                        <option value="">{locale === 'nl' ? '-- Selecteer onderdeel --' : '-- Select part --'}</option>
-                        {wizardParts.map(p => <option key={p.slug} value={p.slug}>{locale === 'nl' ? p.name : p.nameEn}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Search button */}
-                    <Link
-                      href={laptopWizardBrand ? `/products?laptopBrand=${laptopWizardBrand}${laptopWizardModel ? `&laptopModel=${laptopWizardModel}` : ''}${laptopWizardPart ? `&laptopPart=${laptopWizardPart}` : ''}` : '/products?category=laptop'}
-                      onClick={closeLaptopModal}
-                      className="block w-full bg-red-500 hover:bg-red-600 text-white text-center py-3 rounded-lg text-sm font-semibold transition-colors"
-                    >
-                      {locale === 'nl' ? 'Zoeken' : 'Search'}
-                    </Link>
-                  </div>
-                </div>
-              );
-            })()}
-
             <div className="flex-1" />
 
             <Link href="/about" className={`px-3 py-3 hover:bg-primary-600 text-sm font-medium ${pathname === '/about' ? 'bg-primary-600' : ''}`}>{t('nav.about')}</Link>
@@ -1151,10 +1062,9 @@ export default function Header() {
                   setLaptopWizardModel(null);
                   setLaptopWizardPart(null);
                 }}
-                className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm"
+                className="w-full px-4 py-3 hover:bg-gray-50 text-left font-semibold text-sm"
               >
                 <span>Laptop</span>
-                <ChevronRight size={16} className="text-gray-400" />
               </button>
             </div>
 
@@ -1168,6 +1078,97 @@ export default function Header() {
           </div>
         </div>
       )}
+      {/* ════════════════════════════════════════════
+           LAPTOP MODAL — Works on BOTH desktop & mobile
+           Placed at root level, outside hidden desktop nav
+          ════════════════════════════════════════════ */}
+      {laptopModalOpen && (() => {
+        const wizardBrand = laptopBrands.find(b => b.slug === laptopWizardBrand);
+        const wizardModels = wizardBrand?.subcategories || [];
+        const wizardParts = laptopPartsCategories;
+        return (
+          <div
+            className={`fixed inset-0 bg-black/60 z-[200] flex items-start sm:items-center justify-center p-0 sm:p-4 ${laptopModalClosing ? 'animate-modal-backdrop-out' : 'animate-modal-backdrop'}`}
+            onClick={(e) => { if (e.target === e.currentTarget) closeLaptopModal(); }}
+          >
+            <div className={`bg-white rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto p-5 sm:p-6 relative text-gray-900 ${laptopModalClosing ? 'animate-modal-content-out' : 'animate-modal-content'}`}>
+              {/* Close button */}
+              <button
+                onClick={closeLaptopModal}
+                className="absolute top-3 right-3 p-2 hover:bg-gray-100 rounded-full transition-colors z-10"
+              >
+                <X size={22} className="text-gray-500" />
+              </button>
+
+              {/* Title */}
+              <h2 className="text-xl sm:text-lg font-bold text-gray-800 mb-1 pr-8">{locale === 'nl' ? 'Kies je laptop' : 'Choose your laptop'}</h2>
+              <p className="text-sm text-gray-400 mb-4">{locale === 'nl' ? 'Selecteer merk, model en onderdeel' : 'Select brand, model and part'}</p>
+
+              {/* Refurbished Section */}
+              <Link
+                href="/products?laptopBrand=refurbished"
+                className="block w-full mb-4 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-center py-3 sm:py-2.5 rounded-lg text-sm font-semibold transition-colors"
+                onClick={closeLaptopModal}
+              >
+                {locale === 'nl' ? 'Refurbished Laptops' : 'Refurbished Laptops'}
+              </Link>
+
+              <div className="border-t border-gray-200 mb-4"></div>
+              <div className="text-xs font-bold text-gray-400 uppercase mb-3">{locale === 'nl' ? 'Zoek laptop onderdeel' : 'Find laptop part'}</div>
+
+              {/* Step 1: Kies Merk */}
+              <div className="mb-3">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '1. Kies Merk' : '1. Choose Brand'}</label>
+                <select
+                  className="w-full border border-gray-200 rounded-lg px-3 py-3 sm:py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white min-h-[44px]"
+                  value={laptopWizardBrand || ''}
+                  onChange={e => { setLaptopWizardBrand(e.target.value || null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
+                >
+                  <option value="">{locale === 'nl' ? '-- Selecteer merk --' : '-- Select brand --'}</option>
+                  {laptopBrands.map(b => <option key={b.slug} value={b.slug}>{b.name}</option>)}
+                </select>
+              </div>
+
+              {/* Step 2: Kies Model */}
+              <div className="mb-3">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '2. Kies Model' : '2. Choose Model'}</label>
+                <select
+                  className="w-full border border-gray-200 rounded-lg px-3 py-3 sm:py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400 min-h-[44px]"
+                  value={laptopWizardModel || ''}
+                  onChange={e => { setLaptopWizardModel(e.target.value || null); setLaptopWizardPart(null); }}
+                  disabled={!laptopWizardBrand}
+                >
+                  <option value="">{locale === 'nl' ? '-- Selecteer model --' : '-- Select model --'}</option>
+                  {wizardModels.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+                </select>
+              </div>
+
+              {/* Step 3: Kies Onderdeel */}
+              <div className="mb-5">
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{locale === 'nl' ? '3. Kies Onderdeel' : '3. Choose Part'}</label>
+                <select
+                  className="w-full border border-gray-200 rounded-lg px-3 py-3 sm:py-2.5 text-sm text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 bg-white disabled:bg-gray-50 disabled:text-gray-400 min-h-[44px]"
+                  value={laptopWizardPart || ''}
+                  onChange={e => setLaptopWizardPart(e.target.value || null)}
+                  disabled={!laptopWizardModel}
+                >
+                  <option value="">{locale === 'nl' ? '-- Selecteer onderdeel --' : '-- Select part --'}</option>
+                  {wizardParts.map(p => <option key={p.slug} value={p.slug}>{locale === 'nl' ? p.name : p.nameEn}</option>)}
+                </select>
+              </div>
+
+              {/* Search button */}
+              <Link
+                href={laptopWizardBrand ? `/products?laptopBrand=${laptopWizardBrand}${laptopWizardModel ? `&laptopModel=${laptopWizardModel}` : ''}${laptopWizardPart ? `&laptopPart=${laptopWizardPart}` : ''}` : '/products?category=laptop'}
+                onClick={closeLaptopModal}
+                className="block w-full bg-red-500 hover:bg-red-600 active:bg-red-700 text-white text-center py-4 sm:py-3 rounded-lg text-base sm:text-sm font-semibold transition-colors"
+              >
+                {locale === 'nl' ? 'Zoeken' : 'Search'}
+              </Link>
+            </div>
+          </div>
+        );
+      })()}
     </header>
   );
 }

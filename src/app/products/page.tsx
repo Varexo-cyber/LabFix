@@ -41,6 +41,20 @@ function ProductsPageContent() {
     laptopParts: false
   });
 
+  // Stable key that only changes when actual param values change (not object reference)
+  const urlParamsKey = useMemo(() => {
+    const sp = searchParams;
+    return [
+      sp.get('brand'), sp.get('sub'), sp.get('model'), sp.get('category'),
+      sp.get('search'), sp.get('accessory'), sp.get('pcpart'), sp.get('pcacc'),
+      sp.get('laptopBrand'), sp.get('laptopModel'), sp.get('laptopPart'), sp.get('accBrand')
+    ].join('|');
+  }, [searchParams]);
+
+  // Ref to read latest expandedSections inside effects without stale closure
+  const expandedSectionsRef = useRef(expandedSections);
+  expandedSectionsRef.current = expandedSections;
+
   // Fetch products from API with server-side pagination
   useEffect(() => {
     const abortController = new AbortController();
@@ -136,16 +150,26 @@ function ProductsPageContent() {
 
     if (accessoryBrand && accessoryBrand !== selectedAccessoryBrand) {
       setSelectedAccessoryBrand(accessoryBrand);
-      setExpandedSections(p => ({ ...p, accessories: true }));
+      if (!expandedSectionsRef.current.accessories) {
+        setExpandedSections(p => ({ ...p, accessories: true }));
+      }
     }
     if (!accessoryBrand && selectedAccessoryBrand) setSelectedAccessoryBrand('');
 
-    if (accessory) setExpandedSections(p => ({ ...p, accessories: true }));
-    if (pcpart) setExpandedSections(p => ({ ...p, pcParts: true }));
-    if (pcacc) setExpandedSections(p => ({ ...p, pcAcc: true }));
-    if (laptopBrand) setExpandedSections(p => ({ ...p, laptopBrands: true }));
+    if (accessory && !expandedSectionsRef.current.accessories) {
+      setExpandedSections(p => ({ ...p, accessories: true }));
+    }
+    if (pcpart && !expandedSectionsRef.current.pcParts) {
+      setExpandedSections(p => ({ ...p, pcParts: true }));
+    }
+    if (pcacc && !expandedSectionsRef.current.pcAcc) {
+      setExpandedSections(p => ({ ...p, pcAcc: true }));
+    }
+    if (laptopBrand && !expandedSectionsRef.current.laptopBrands) {
+      setExpandedSections(p => ({ ...p, laptopBrands: true }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [urlParamsKey]);
 
   // Reset to page 1 when category/sub/model filters change
   useEffect(() => {
@@ -200,8 +224,8 @@ function ProductsPageContent() {
     if (newUrl !== window.location.href) {
       isSyncingFromState.current = true;
       window.history.replaceState({}, '', newUrl);
-      // Reset flag on next tick so future URL changes (e.g. Link navigation) are still handled
-      setTimeout(() => { isSyncingFromState.current = false; }, 0);
+      // Reset flag after a short delay so URL-reading effects don't fire during the sync
+      setTimeout(() => { isSyncingFromState.current = false; }, 150);
     }
   }, [selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, searchQuery, sortBy, currentPage]);
 
