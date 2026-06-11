@@ -161,6 +161,28 @@ export async function POST() {
       )
     `;
 
+    // Assistant chat history & learning table
+    await sql`
+      CREATE TABLE IF NOT EXISTS assistant_chats (
+        id SERIAL PRIMARY KEY,
+        session_id TEXT NOT NULL DEFAULT '',
+        message TEXT NOT NULL,
+        intent TEXT DEFAULT '',
+        brand TEXT DEFAULT '',
+        product_type TEXT DEFAULT '',
+        model TEXT DEFAULT '',
+        keywords TEXT[] DEFAULT '{}',
+        products_found INTEGER DEFAULT 0,
+        response_text TEXT DEFAULT '',
+        user_clicked_product BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_assistant_chats_session ON assistant_chats(session_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_assistant_chats_intent ON assistant_chats(intent)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_assistant_chats_brand ON assistant_chats(brand)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_assistant_chats_created ON assistant_chats(created_at)`;
+
     // Seed default categories
     const existingCats = await sql`SELECT COUNT(*) as count FROM categories`;
     if (Number(existingCats[0].count) === 0) {

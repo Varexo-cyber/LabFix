@@ -278,6 +278,439 @@ function extractSpBrand(msg: string): string | null {
   return null;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ══ BILINGUAL KEYWORD MAPPING (NL ↔ EN) ════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
+// Maps Dutch terms to English equivalents for cross-language search
+const BILINGUAL_MAP: Record<string, string[]> = {
+  'batterij': ['battery', 'batteries'],
+  'battery': ['batterij', 'accu'],
+  'accu': ['battery', 'batteries'],
+  'scherm': ['screen', 'display', 'lcd', 'oled'],
+  'screen': ['scherm', 'display', 'lcd', 'oled'],
+  'display': ['scherm', 'screen'],
+  'glas': ['glass', 'screen', 'display'],
+  'glass': ['glas', 'screen'],
+  'camera': ['camera', 'lens'],
+  'oplader': ['charger', 'charging', 'adapter'],
+  'charger': ['oplader', 'lader'],
+  'lader': ['charger', 'charging'],
+  'charging': ['laden', 'oplader'],
+  'laad': ['charge', 'charging'],
+  'port': ['poort', 'connector'],
+  'connector': ['connector', 'aansluiting'],
+  'back cover': ['achterkant', 'achterdeksel', 'housing'],
+  'achterkant': ['back cover', 'housing'],
+  'housing': ['behuizing', 'achterkant'],
+  'frame': ['frame', 'behuizing'],
+  'buttons': ['knoppen', 'toetsen', 'button'],
+  'speaker': ['luidspreker', 'speaker'],
+  'luidspreker': ['speaker'],
+  'microphone': ['microfoon', 'mic'],
+  'microfoon': ['microphone', 'mic'],
+  'toetsenbord': ['keyboard'],
+  'keyboard': ['toetsenbord'],
+  'geheugen': ['ram', 'memory'],
+  'ram': ['geheugen', 'memory'],
+  'opslag': ['storage', 'ssd', 'hdd'],
+  'storage': ['opslag'],
+  'motherboard': ['moederbord'],
+  'moederbord': ['motherboard'],
+  'touch': ['touch', 'digitizer'],
+  'folie': ['screen protector', 'protector'],
+  'beschermglas': ['screen protector', 'tempered glass'],
+  'screenprotector': ['screen protector', 'beschermglas'],
+  'screen protector': ['screenprotector', 'beschermglas'],
+  'lcd': ['lcd', 'scherm', 'display'],
+  'oled': ['oled', 'scherm', 'display'],
+  'flex': ['flex', 'cable', 'kabel'],
+  'kabel': ['cable', 'flex'],
+  'cable': ['kabel', 'flex'],
+  'earpiece': ['earpiece', 'hoorspeaker'],
+  'hoorspeaker': ['earpiece'],
+  'vibration': ['vibrator', 'tril'],
+  'vibrator': ['vibration', 'tril'],
+  'sim': ['sim', 'simkaart'],
+  'simkaart': ['sim', 'sim tray'],
+  'antenne': ['antenna'],
+  'antenna': ['antenne'],
+  'sensor': ['sensor'],
+  'nfc': ['nfc'],
+  'wifi': ['wifi', 'wlan', 'wireless'],
+  'bluetooth': ['bluetooth'],
+  'waterproof': ['waterproof', 'waterdicht'],
+  'waterdicht': ['waterproof'],
+};
+
+// Expand a keyword with its bilingual equivalents
+function expandBilingual(terms: string[]): string[] {
+  const expanded = new Set<string>();
+  for (const term of terms) {
+    const key = term.toLowerCase().trim();
+    expanded.add(key);
+    if (BILINGUAL_MAP[key]) {
+      for (const equiv of BILINGUAL_MAP[key]) expanded.add(equiv);
+    }
+  }
+  return Array.from(expanded);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ══ SMART ENTITY EXTRACTION ════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
+interface ExtractedEntities {
+  brand: string | null;
+  productType: string | null;
+  model: string | null;
+  modelKeywords: string[];
+  allKeywords: string[];
+  isLaptop: boolean;
+  isPhone: boolean;
+}
+
+function extractEntities(msg: string): ExtractedEntities {
+  const q = msg.toLowerCase();
+  const brand = extractBrand(msg);
+  const productType = extractProductType(msg);
+  const modelKeywords = extractModelKeywords(msg);
+
+  // Detect laptop-specific queries
+  const isLaptop = /\b(laptop|notebook|dell|hp\s|lenovo|asus|acer|msi|macbook|thinkpad|inspiron|xps|latitude|vostro|g15|g16|alienware|surface)\b/i.test(msg);
+  const isPhone = /\b(iphone|samsung|galaxy|xiaomi|redmi|pixel|huawei|oneplus|oppo|motorola|sony|nokia|lg)\b/i.test(msg);
+
+  // Extract specific model (e.g., "iPhone 14", "Galaxy S24")
+  let model: string | null = null;
+  if (modelKeywords.length > 0) {
+    model = modelKeywords[0];
+  }
+
+  // Build comprehensive keyword list
+  const allKeywords: string[] = [];
+  if (brand) allKeywords.push(brand);
+  if (productType) allKeywords.push(productType);
+  if (model) allKeywords.push(...modelKeywords);
+
+  // Extract bare numbers that might be models
+  const bareNumbers = q.match(/\b\d{1,2}\b/g);
+  if (bareNumbers) {
+    for (const num of bareNumbers) {
+      if (!allKeywords.some(k => k.includes(num))) {
+        allKeywords.push(num);
+      }
+    }
+  }
+
+  return { brand, productType, model, modelKeywords, allKeywords, isLaptop, isPhone };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ══ CHAT HISTORY & LEARNING ════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
+async function saveChat(sql: any, data: {
+  sessionId: string;
+  message: string;
+  intent: string;
+  brand: string;
+  productType: string;
+  model: string;
+  keywords: string[];
+  productsFound: number;
+  responseText: string;
+}) {
+  try {
+    await sql`
+      INSERT INTO assistant_chats (session_id, message, intent, brand, product_type, model, keywords, products_found, response_text)
+      VALUES (${data.sessionId}, ${data.message}, ${data.intent}, ${data.brand}, ${data.productType}, ${data.model}, ${data.keywords}, ${data.productsFound}, ${data.responseText})
+    `;
+  } catch (e) {
+    console.error('Failed to save chat:', e);
+  }
+}
+
+async function getPopularQueries(sql: any, brand?: string, productType?: string): Promise<string[]> {
+  try {
+    let rows;
+    if (brand && productType) {
+      rows = await sql`
+        SELECT message, COUNT(*) as cnt
+        FROM assistant_chats
+        WHERE brand = ${brand} AND product_type = ${productType} AND products_found > 0
+        GROUP BY message
+        ORDER BY cnt DESC
+        LIMIT 5
+      `;
+    } else if (brand) {
+      rows = await sql`
+        SELECT message, COUNT(*) as cnt
+        FROM assistant_chats
+        WHERE brand = ${brand} AND products_found > 0
+        GROUP BY message
+        ORDER BY cnt DESC
+        LIMIT 5
+      `;
+    } else {
+      rows = await sql`
+        SELECT message, COUNT(*) as cnt
+        FROM assistant_chats
+        WHERE products_found > 0
+        GROUP BY message
+        ORDER BY cnt DESC
+        LIMIT 5
+      `;
+    }
+    return rows.map((r: any) => r.message);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function getSimilarSuccessfulQueries(sql: any, keywords: string[]): Promise<string[]> {
+  try {
+    const rows = await sql`
+      SELECT DISTINCT message
+      FROM assistant_chats
+      WHERE keywords && ${keywords}::text[] AND products_found > 0
+      ORDER BY created_at DESC
+      LIMIT 3
+    `;
+    return rows.map((r: any) => r.message);
+  } catch (e) {
+    return [];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ══ INTELLIGENT PRODUCT SEARCH ═════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
+interface SearchResult {
+  id: string;
+  name: string;
+  nameEn: string;
+  price: number;
+  image: string;
+  category: string;
+  subcategory: string;
+  brand: string;
+  model: string;
+  sku: string;
+  inStock: boolean;
+  score: number;
+}
+
+async function smartProductSearch(
+  sql: any,
+  entities: ExtractedEntities,
+  msg: string
+): Promise<SearchResult[]> {
+  const { brand, productType, model, modelKeywords, allKeywords, isLaptop, isPhone } = entities;
+
+  // Build bilingual search terms
+  let searchTerms: string[] = [];
+
+  // 1. Model terms (highest priority)
+  const modelTerms = [...modelKeywords];
+  // Expand with bilingual
+  for (const mk of modelKeywords) {
+    const parts = mk.split('-');
+    for (const part of parts) {
+      if (part.length > 1) searchTerms.push(part);
+    }
+    searchTerms.push(mk);
+  }
+
+  // 2. Product type terms with bilingual expansion
+  const productTypeTerms: string[] = [];
+  if (productType) {
+    const typeMap: Record<string, string[]> = {
+      'screen': ['screen', 'scherm', 'display', 'lcd', 'oled', 'glas', 'glass', 'touch'],
+      'screen_protector': ['screen protector', 'screenprotector', 'beschermglas', 'tempered glass', 'folie'],
+      'battery': ['battery', 'batterij', 'accu'],
+      'camera': ['camera', 'lens', 'frontcam', 'backcam'],
+      'charging': ['charging', 'charger', 'oplader', 'lader', 'port', 'connector', 'usb', 'laad'],
+      'back_cover': ['back cover', 'achterkant', 'housing', 'behuizing', 'frame'],
+      'buttons': ['button', 'knop', 'volume', 'power', 'home'],
+      'speaker': ['speaker', 'luidspreker', 'earpiece', 'hoorspeaker'],
+      'microphone': ['microphone', 'microfoon', 'mic'],
+      'keyboard': ['keyboard', 'toetsenbord'],
+      'ram': ['ram', 'geheugen', 'memory'],
+      'storage': ['storage', 'ssd', 'hdd', 'opslag'],
+      'motherboard': ['motherboard', 'moederbord', 'logic board'],
+    };
+    const terms = typeMap[productType] || [productType];
+    productTypeTerms.push(...terms);
+  }
+
+  // 3. Brand terms
+  const brandTerms: string[] = [];
+  if (brand) {
+    brandTerms.push(brand);
+    if (brand === 'apple') { brandTerms.push('iphone', 'ipad', 'macbook'); }
+    if (brand === 'samsung') { brandTerms.push('samsung', 'galaxy'); }
+  }
+
+  // Combine all unique search terms
+  searchTerms = Array.from(new Set([...searchTerms, ...productTypeTerms, ...brandTerms]));
+
+  // Also add raw message words (for fallback broad search)
+  const rawWords = msg.toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w: string) => w.length > 2 && !['het','een','voor','wil','ik','je','de','dat','wat','hoe','kan','met','zijn','dit','die','heb','nodig','zoek','hebben','een','zoeken','the','for','want','need','search','looking','find'].includes(w));
+
+  // Limit search terms to avoid too many queries
+  const limitedTerms = searchTerms.slice(0, 8);
+  const fallbackTerms = rawWords.slice(0, 6);
+
+  const allResults: any[] = [];
+
+  // Query strategy: multiple targeted searches
+  try {
+    // Strategy 1: Combined model + product type (most specific)
+    if (modelKeywords.length > 0 && productTypeTerms.length > 0) {
+      const modelPattern = modelKeywords.map(k => `%${k.replace(/-/g, '%')}%`).join('');
+      const typePattern = productTypeTerms[0];
+      const qCombined = await sql`
+        SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
+        FROM products
+        WHERE (
+          name ILIKE ${`%${modelKeywords[0].replace(/-/g, ' ')}%${typePattern}%`}
+          OR name_en ILIKE ${`%${modelKeywords[0].replace(/-/g, ' ')}%${typePattern}%`}
+          OR name ILIKE ${`%${typePattern}%${modelKeywords[0].replace(/-/g, ' ')}%`}
+          OR name_en ILIKE ${`%${typePattern}%${modelKeywords[0].replace(/-/g, ' ')}%`}
+        )
+        LIMIT 10
+      `;
+      allResults.push(...qCombined);
+    }
+
+    // Strategy 2: Search by each important term in both name and name_en
+    for (const term of limitedTerms) {
+      const q = await sql`
+        SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
+        FROM products
+        WHERE name ILIKE ${`%${term}%`} OR name_en ILIKE ${`%${term}%`}
+        LIMIT 8
+      `;
+      allResults.push(...q);
+    }
+
+    // Strategy 3: Category-based search for laptop/phone parts
+    if (isLaptop) {
+      const laptopCat = brand ? `laptop-${brand}` : 'laptop';
+      const qLaptop = await sql`
+        SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
+        FROM products
+        WHERE category ILIKE ${`%laptop%`} OR category = ${laptopCat}
+        LIMIT 8
+      `;
+      allResults.push(...qLaptop);
+    }
+
+    if (isPhone && brand) {
+      const qPhone = await sql`
+        SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
+        FROM products
+        WHERE category = ${brand} OR brand = ${brand}
+        LIMIT 8
+      `;
+      allResults.push(...qPhone);
+    }
+
+    // Strategy 4: Broader fallback with raw words
+    if (allResults.length < 5) {
+      for (const word of fallbackTerms) {
+        const q = await sql`
+          SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
+          FROM products
+          WHERE name ILIKE ${`%${word}%`} OR name_en ILIKE ${`%${word}%`}
+          LIMIT 5
+        `;
+        allResults.push(...q);
+      }
+    }
+  } catch (e) {
+    console.error('Smart search error:', e);
+  }
+
+  // Deduplicate and score
+  const seen = new Set<string>();
+  const scored: SearchResult[] = [];
+
+  for (const p of allResults) {
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+
+    const nameLower = (p.name || '').toLowerCase();
+    const nameEnLower = (p.name_en || '').toLowerCase();
+    let score = 0;
+
+    // Score model matches (highest weight)
+    for (const mk of modelKeywords) {
+      const mkParts = mk.split('-');
+      for (const part of mkParts) {
+        if (part.length > 1) {
+          if (nameLower.includes(part)) score += 25;
+          if (nameEnLower.includes(part)) score += 20;
+        }
+      }
+      if (nameLower.includes(mk.replace(/-/g, ' '))) score += 30;
+      if (nameEnLower.includes(mk.replace(/-/g, ' '))) score += 25;
+    }
+
+    // Score product type matches
+    for (const pt of productTypeTerms) {
+      if (nameLower.includes(pt)) score += 20;
+      if (nameEnLower.includes(pt)) score += 18;
+    }
+
+    // Score brand matches
+    for (const bt of brandTerms) {
+      if (nameLower.includes(bt)) score += 15;
+      if (nameEnLower.includes(bt)) score += 12;
+    }
+
+    // Score raw word matches
+    for (const w of rawWords) {
+      if (nameLower.includes(w)) score += 5;
+      if (nameEnLower.includes(w)) score += 4;
+    }
+
+    // Bonus for exact combined match (e.g. "iphone 14 battery")
+    const combinedPattern = modelKeywords.map(k => k.replace(/-/g, ' ')).join(' ');
+    if (combinedPattern.length > 3) {
+      if (nameLower.includes(combinedPattern)) score += 50;
+      if (nameEnLower.includes(combinedPattern)) score += 45;
+    }
+
+    // Penalty for wrong category (e.g. phone query matching laptop part)
+    if (isPhone && p.category?.includes('laptop')) score -= 20;
+    if (isLaptop && !p.category?.includes('laptop')) score -= 10;
+
+    scored.push({
+      id: p.id,
+      name: p.name,
+      nameEn: p.name_en,
+      price: parseFloat(p.price),
+      image: p.image,
+      category: p.category,
+      subcategory: p.subcategory,
+      brand: p.brand,
+      model: p.model,
+      sku: p.sku,
+      inStock: p.in_stock,
+      score,
+    });
+  }
+
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score);
+  return scored;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
@@ -397,188 +830,116 @@ export async function POST(request: NextRequest) {
 
     // ── CONVERSATIONAL PRODUCT SEARCH FLOW ───────────────────────
     else if (intent === 'product_search' || intent === 'unknown') {
-      // Step tracking in context
-      const step = context.step || 'initial';
-      const ctxBrand = context.brand || null;
-      const ctxProductType = context.productType || null;
+      const entities = extractEntities(message || '');
+      const { brand: eBrand, productType: eProductType, modelKeywords, isLaptop, isPhone } = entities;
 
-      // If brand is detected in message, store it
-      if (brand) {
-        response.updatedContext.brand = brand;
-      }
-      if (productType) {
-        response.updatedContext.productType = productType;
-      }
+      // Store detected entities in context
+      if (eBrand) response.updatedContext.brand = eBrand;
+      if (eProductType) response.updatedContext.productType = eProductType;
 
-      // ── Build keywords for search ───────────────────────────────
-      // Priority order: model name > product type > brand > other words
-      const keywords: { term: string; weight: number }[] = [];
+      // ── Smart product search ──────────────────────────────────
+      const searchResults = await smartProductSearch(sql, entities, message || '');
 
-      // 1. Model identifiers (highest weight)
-      const modelPatterns = [
-        /\biphone\s+\d+\s*(pro\s*max|pro|plus|max|mini)?\b/gi,
-        /\biphone\s+(se|xr|xs)\b/gi,
-        /\bipad\s+\w+\b/gi,
-        /\bmacbook\s+(air|pro)?\b/gi,
-        /\bgalaxy\s+s?\d+\s*(fe|plus|ultra)?\b/gi,
-        /\bgalaxy\s+a\d+\s*(5g)?\b/gi,
-        /\b(samsung\s+)?a\d+\s*(5g)?\b/gi,
-        /\bpixel\s+\d+\b/gi,
-        /\b(xiaomi|redmi|poco)\s+\d+\b/gi,
-        /\b(dell|hp|lenovo|asus|acer|msi)\s+\w+\b/gi,
-        /\b(inspiron|xps|thinkpad|ideapad)\s*\d*\b/gi,
-        /\b\d+\s*(pro\s*max|pro|plus|max|ultra|fe|5g)\b/gi,
-      ];
-      for (const p of modelPatterns) {
-        const matches = msg.match(p);
-        if (matches) {
-          for (const m of matches) {
-            const clean = m.toLowerCase().trim();
-            if (clean.length > 2) keywords.push({ term: clean, weight: 20 });
-          }
-        }
-      }
+      // Map results to response format
+      response.products = searchResults.slice(0, 10).map((r) => ({
+        id: r.id,
+        name: r.name,
+        nameEn: r.nameEn,
+        price: r.price,
+        image: r.image,
+        category: r.category,
+        subcategory: r.subcategory,
+        model: r.model,
+        brand: r.brand,
+        sku: r.sku,
+        inStock: r.inStock,
+      }));
 
-      // 2. Product type (high weight)
-      const productPatterns: Record<string, RegExp> = {
-        'screen protector': /\bscreen\s*protector\b/gi,
-        'tempered glass': /\btempered\s*glass\b/gi,
-        'scherm': /\bscherm\b/gi,
-        'batterij': /\bbatterij\b/gi,
-        'battery': /\bbattery\b/gi,
-        'camera': /\bcamera\b/gi,
-        'charger': /\bcharger\b/gi,
-        'lader': /\blader\b/gi,
-        'oplader': /\boplader\b/gi,
-        'frame': /\bframe\b/gi,
-        'back cover': /\bback\s*cover\b/gi,
-        'achterkant': /\bachterkant\b/gi,
-        'housing': /\bhousing\b/gi,
-        'lcd': /\blcd\b/gi,
-        'oled': /\boled\b/gi,
-        'glas': /\bglas\b/gi,
-        'glass': /\bglass\b/gi,
-        'touch': /\btouch\b/gi,
-        'display': /\bdisplay\b/gi,
-        'accu': /\baccu\b/gi,
-        'charging port': /\bcharging\s*port\b/gi,
-        'laad poort': /\blaad\s*poort\b/gi,
-        'usb': /\busb\b/gi,
-        'connector': /\bconnector\b/gi,
-      };
-      for (const [name, p] of Object.entries(productPatterns)) {
-        if (p.test(msg)) keywords.push({ term: name, weight: 15 });
-      }
+      // ── Learning: Get suggestions from chat history ─────────────
+      let historySuggestions: string[] = [];
+      try {
+        const popular = await getPopularQueries(sql, eBrand || undefined, eProductType || undefined);
+        historySuggestions = popular.slice(0, 3);
+      } catch (e) { /* ignore */ }
 
-      // 3. Brand (medium weight)
-      if (brand) keywords.push({ term: brand, weight: 10 });
-      const brandWords = ['iphone', 'ipad', 'macbook', 'samsung', 'galaxy', 'xiaomi', 'redmi', 'poco', 'google', 'pixel', 'huawei', 'motorola', 'oneplus', 'oppo', 'sony', 'xperia', 'nokia', 'lg', 'dell', 'hp', 'lenovo', 'asus', 'acer', 'msi', 'microsoft', 'surface'];
-      for (const bw of brandWords) {
-        if (msg.includes(bw) && !keywords.some(k => k.term === bw)) {
-          keywords.push({ term: bw, weight: 10 });
-        }
-      }
-
-      // 4. Other important words (low weight)
-      const otherWords = msg.split(/\s+/).filter((w: string) => w.length > 2 && !['het','een','voor','wil','ik','je','de','dat','wat','hoe','kan','met','zijn','dit','die','heb','nodig','zoek','hebben','een','het','zoeken','ik','wil','een','voor','heb','nodig','zoek'].includes(w));
-      for (const w of otherWords) {
-        if (!keywords.some(k => k.term === w)) {
-          keywords.push({ term: w.toLowerCase(), weight: 3 });
-        }
-      }
-
-      // Deduplicate
-      const uniqueKeywords = Array.from(new Map(keywords.map(k => [k.term, k])).values()).slice(0, 12);
-
-      // ── Execute search ────────────────────────────────────────
-      if (uniqueKeywords.length > 0) {
-        try {
-          const terms = uniqueKeywords.map(k => k.term);
-
-          // Build a simple OR pattern for ILIKE search
-          // We run multiple small queries and combine results in JS
-          const allProducts: any[] = [];
-
-          // Query 1: Exact phrase match (most specific)
-          const phrase = terms.slice(0, 3).join(' ');
-          const q1 = await sql`
-            SELECT id, name, name_en, price, image, category, subcategory, model, sku, in_stock
-            FROM products
-            WHERE name ILIKE ${`%${phrase}%`}
-            LIMIT 5
-          `;
-          allProducts.push(...q1);
-
-          // Query 2: Search by individual top-weighted terms
-          const topTerms = terms.slice(0, 4);
-          for (let i = 0; i < topTerms.length; i++) {
-            const term = topTerms[i];
-            const q = await sql`
-              SELECT id, name, name_en, price, image, category, subcategory, model, sku, in_stock
-              FROM products
-              WHERE name ILIKE ${`%${term}%`} OR name_en ILIKE ${`%${term}%`}
-              LIMIT 5
-            `;
-            allProducts.push(...q);
-          }
-
-          // Deduplicate and score
-          const seen = new Set<string>();
-          const scored: any[] = [];
-          for (const p of allProducts) {
-            if (seen.has(p.id)) continue;
-            seen.add(p.id);
-            const nameLower = (p.name || '').toLowerCase();
-            const nameEnLower = (p.name_en || '').toLowerCase();
-            let score = 0;
-            for (let i = 0; i < uniqueKeywords.length; i++) {
-              const kw = uniqueKeywords[i].term.toLowerCase();
-              if (nameLower.includes(kw)) score += uniqueKeywords[i].weight;
-              else if (nameEnLower.includes(kw)) score += Math.floor(uniqueKeywords[i].weight / 2);
-            }
-            scored.push({ ...p, score });
-          }
-
-          // Sort by score (desc)
-          scored.sort((a: any, b: any) => b.score - a.score);
-
-          response.products = scored.slice(0, 10).map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            nameEn: r.name_en,
-            price: parseFloat(r.price),
-            image: r.image,
-            category: r.category,
-            subcategory: r.subcategory,
-            model: r.model,
-            sku: r.sku,
-            inStock: r.in_stock,
-          }));
-        } catch (searchErr) {
-          console.error('Assistant product search error:', searchErr);
-        }
-      }
-
-      // Conversational logic
+      // ── Conversational response logic ─────────────────────────
       if (response.products.length > 0) {
-        // Direct show products - no more annoying questions
-        response.text = `Ik heb ${response.products.length} product(en) gevonden! Hier zijn de beste matches:`;
-        response.action = null;
+        // Products found - smart response based on what was searched
+        const topProduct = response.products[0];
+        const productTypeLabel = eProductType
+          ? ({ screen: 'scherm', battery: 'batterij', camera: 'camera', charging: 'oplader', back_cover: 'achterkant', buttons: 'knoppen', speaker: 'speaker', microphone: 'microfoon', keyboard: 'toetsenbord', ram: 'RAM', storage: 'opslag', motherboard: 'moederbord', screen_protector: 'screen protector' })[eProductType] || eProductType
+          : 'onderdeel';
+
+        if (modelKeywords.length > 0 && eProductType) {
+          response.text = `Perfect! Ik heb ${response.products.length} ${productTypeLabel}(s) gevonden voor ${modelKeywords[0].replace(/-/g, ' ')}. Hier zijn de beste matches:`;
+        } else if (eBrand) {
+          response.text = `Ik heb ${response.products.length} producten gevonden voor ${eBrand.charAt(0).toUpperCase() + eBrand.slice(1)}. Bekijk ze hieronder:`;
+        } else {
+          response.text = `Ik heb ${response.products.length} product(en) gevonden! Hier zijn de beste matches:`;
+        }
         response.updatedContext.step = 'show_results';
-      } else if (brand || ctxBrand) {
-        response.text = `Ik heb helaas geen producten gevonden voor ${brand || ctxBrand} met "${msg}". \n\nProbeer het eens met een ander zoekwoord, of vraag me om een specifiek model (bijv. Galaxy S24, iPhone 15 Pro).`;
-        response.suggestions = ['Alle schermen', 'Alle batterijen', 'iPhone onderdelen', 'Samsung onderdelen', 'Laptop onderdelen'];
-        response.updatedContext.step = 'no_results';
-      } else if (msg.includes('laptop')) {
-        response.text = 'Ik heb helaas geen laptop onderdelen gevonden met die zoekterm. Bekijk alle laptop onderdelen in onze catalogus.';
-        response.action = { type: 'link', url: '/products?category=laptop', label: 'Laptop onderdelen bekijken' };
-        response.suggestions = ['Dell laptop', 'HP laptop', 'Lenovo laptop', 'Asus laptop'];
-        response.updatedContext.step = 'laptop_results';
+
+        // Add history-based suggestions
+        if (historySuggestions.length > 0) {
+          response.suggestions = [...historySuggestions, 'Anders zoeken'];
+        } else {
+          response.suggestions = ['Anders zoeken'];
+        }
       } else {
-        response.text = 'Ik begrijp je vraag! Ik kan je helpen met:\n\n🔍 Producten zoeken - Vertel me merk + model + onderdeel\n🔧 Reparatie aanvragen - Ophalen of opsturen via /repair\n📦 Bestelling volgen - Via Mijn Account\n💬 Contact - info@labfix.nl of +31 6 5113 1133\n\nWaar ben je naar op zoek?';
-        response.suggestions = ['iPhone 15 scherm', 'Samsung batterij', 'Laptop onderdelen', 'Reparatie aanvragen', 'Contact opnemen'];
-        response.updatedContext.step = 'initial';
+        // ── NO RESULTS → SMART FOLLOW-UP ────────────────────────
+        const detectedModel = modelKeywords.length > 0 ? modelKeywords[0].replace(/-/g, ' ') : null;
+        const detectedBrand = eBrand;
+        const detectedType = eProductType;
+
+        // Check context for step tracking
+        const searchStep = context.searchStep || 'initial';
+
+        if (searchStep === 'initial' && (!detectedModel || !detectedType)) {
+          // Missing info - ask follow-up questions
+          if (!detectedBrand && !detectedModel) {
+            response.text = 'Ik begrijp dat je een onderdeel zoekt! Om je beter te helpen, heb ik wat meer info nodig:\n\nWelk merk en model heb je? Bijvoorbeeld: iPhone 14, Samsung Galaxy S24, of Dell XPS 13.';
+            response.suggestions = ['iPhone', 'Samsung Galaxy', 'iPad', 'Dell laptop', 'HP laptop'];
+            response.updatedContext.searchStep = 'ask_brand_model';
+          } else if (detectedBrand && !detectedModel) {
+            response.text = `Top, je zoekt iets voor ${detectedBrand.charAt(0).toUpperCase() + detectedBrand.slice(1)}! Welk model heb je?\n\nBijvoorbeeld: iPhone 14 Pro, Galaxy S24 Ultra, of XPS 15.`;
+            response.suggestions = ['iPhone 14', 'iPhone 15 Pro', 'Galaxy S24', 'Galaxy A54', 'XPS 13'];
+            response.updatedContext.searchStep = 'ask_model';
+            response.updatedContext.brand = detectedBrand;
+          } else if (detectedModel && !detectedType) {
+            response.text = `Je zoekt dus iets voor ${detectedModel}! Welk onderdeel heb je nodig?\n\nBijvoorbeeld: scherm, batterij, camera, oplader, of achterkant.`;
+            response.suggestions = ['Scherm', 'Batterij', 'Camera', 'Oplader', 'Achterkant'];
+            response.updatedContext.searchStep = 'ask_part';
+            response.updatedContext.detectedModel = detectedModel;
+          } else {
+            // Have both model and type but no results
+            response.text = `Ik heb helaas geen exacte matches gevonden voor ${detectedModel} ${detectedType}.\n\nDat kan betekenen dat dit onderdeel tijdelijk niet op voorraad is, of dat we het onder een andere naam hebben staan.\n\nProbeer het eens met de zoekbalk bovenaan de productpagina, of vraag me iets anders!`;
+            response.action = { type: 'link', url: '/products', label: 'Zelf zoeken op productpagina' };
+            response.suggestions = ['iPhone onderdelen', 'Samsung onderdelen', 'Laptop onderdelen', 'Contact opnemen'];
+            response.updatedContext.searchStep = 'no_results_final';
+          }
+        } else {
+          // Already asked follow-ups, still no results
+          response.text = `Ik heb helaas nog steeds geen producten gevonden.\n\nMogelijke oplossingen:\n1. Probeer het zelf met de zoekbalk op de productpagina\n2. Neem contact op met ons team - we kunnen het onderdeel misschien bestellen\n3. Vraag om een vergelijkbaar alternatief`;
+          response.action = { type: 'link', url: '/products', label: 'Productpagina openen' };
+          response.suggestions = ['Contact opnemen', 'Reparatie aanvragen', 'Alternatief zoeken'];
+          response.updatedContext.searchStep = 'no_results_final';
+        }
       }
+
+      // ── SAVE TO CHAT HISTORY (async, non-blocking) ───────────
+      const sessionId = context.sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      response.updatedContext.sessionId = sessionId;
+      saveChat(sql, {
+        sessionId,
+        message: message || '',
+        intent,
+        brand: eBrand || '',
+        productType: eProductType || '',
+        model: modelKeywords[0] || '',
+        keywords: entities.allKeywords,
+        productsFound: response.products.length,
+        responseText: response.text,
+      });
     }
 
     // ── REPAIR ──────────────────────────────────────────────────
