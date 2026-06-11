@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
         const currentType = ctxSpType;
         const typeNames: Record<string, string> = { 'gehard-glas': 'Gehard Glas', 'privacy-glass': 'Privacy Glass', 'magic-glass': 'Magic Glass' };
         const typeName = typeNames[currentType || ''] || currentType;
-        response.text = `Geen probleem! Voor welk merk zoek je een **${typeName}** screen protector?`;
+        response.text = `Geen probleem! Voor welk merk zoek je een ${typeName} screen protector?`;
         response.suggestions = ['Apple', 'Samsung'];
         response.updatedContext.spStep = 'ask_brand';
         return NextResponse.json(response);
@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
       const currentBrand = spBrand || ctxSpBrand;
 
       if (!currentType) {
-        response.text = 'Top! Je zoekt screen protectors. Welk type heb je nodig?\n\nWe hebben 3 soorten:\n📱 **Gehard Glas** – maximale bescherming tegen krassen en vallen\n🔒 **Privacy Glass** – privacyfilter, alleen jij ziet je scherm\n✨ **Magic Glass** – premium kwaliteit met extra features';
+        response.text = 'Top! Je zoekt screen protectors. Welk type heb je nodig?\n\nWe hebben 3 soorten:\n📱 Gehard Glas – maximale bescherming tegen krassen en vallen\n🔒 Privacy Glass – privacyfilter, alleen jij ziet je scherm\n✨ Magic Glass – premium kwaliteit met extra features';
         response.suggestions = ['Gehard Glas', 'Privacy Glass', 'Magic Glass'];
         response.action = { type: 'link', url: '/products?accessory=screen-protectors', label: 'Alle screen protectors bekijken' };
         response.updatedContext.spStep = 'ask_type';
@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
           'magic-glass': 'Magic Glass',
         };
         const typeName = typeNames[currentType] || currentType;
-        response.text = `Perfect! Je hebt gekozen voor **${typeName}**. Nu nog 1 vraag: voor welk merk zoek je een screen protector?\n\nWe hebben screen protectors voor:\n🍎 **Apple** – iPhone, iPad\n📱 **Samsung** – Galaxy series`;
+        response.text = `Perfect! Je hebt gekozen voor ${typeName}. Nu nog 1 vraag: voor welk merk zoek je een screen protector?\n\nWe hebben screen protectors voor:\n🍎 Apple – iPhone, iPad\n📱 Samsung – Galaxy series`;
         response.suggestions = ['Apple', 'Samsung'];
         response.updatedContext.spStep = 'ask_brand';
       } else {
@@ -364,7 +364,7 @@ export async function POST(request: NextRequest) {
         const typeName = typeNames[currentType] || currentType;
         const brandName = brandNames[currentBrand] || currentBrand;
         const url = `/products?accessory=screen-protectors&sub=${currentType}&accBrand=${currentBrand}`;
-        response.text = `Geweldig! Hier zijn alle **${brandName} ${typeName}** screen protectors. Klik op de link om direct te shoppen! 🛒`;
+        response.text = `Geweldig! Hier zijn alle ${brandName} ${typeName} screen protectors. Klik op de link om direct te shoppen! 🛒`;
         response.action = { type: 'link', url, label: `Bekijk ${brandName} ${typeName}` };
         response.suggestions = ['Anders merk', 'Anders type', 'Meer accessoires'];
         response.updatedContext.spStep = 'show_results';
