@@ -28,6 +28,7 @@ function ProductsPageContent() {
   const PRODUCTS_PER_PAGE = 24;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchIdRef = useRef(0);
+  const isSyncingFromState = useRef(false);
   const [expandedBrands, setExpandedBrands] = useState<string[]>([]);
   const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
   const [sidebarSearch, setSidebarSearch] = useState('');
@@ -97,6 +98,9 @@ function ProductsPageContent() {
 
   // Read URL params on mount AND when URL changes via Link navigation
   useEffect(() => {
+    // Skip if we just synced state to URL (prevents loop with replaceState)
+    if (isSyncingFromState.current) return;
+
     const brand = searchParams.get('brand');
     const sub = searchParams.get('sub');
     const model = searchParams.get('model');
@@ -192,7 +196,13 @@ function ProductsPageContent() {
       }
     }
 
-    window.history.replaceState({}, '', url.toString());
+    const newUrl = url.toString();
+    if (newUrl !== window.location.href) {
+      isSyncingFromState.current = true;
+      window.history.replaceState({}, '', newUrl);
+      // Reset flag on next tick so future URL changes (e.g. Link navigation) are still handled
+      setTimeout(() => { isSyncingFromState.current = false; }, 0);
+    }
   }, [selectedBrand, selectedSub, selectedModel, selectedAccessoryBrand, searchQuery, sortBy, currentPage]);
 
   // Products come pre-filtered from API; just use them directly

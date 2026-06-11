@@ -139,6 +139,16 @@ function detectIntent(msg: string): string {
       weight: 0.5,
     },
     {
+      key: 'screen_protector',
+      patterns: [
+        /\bscreenprotector|screen\s*protector|screenprotectors\b/i,
+        /\bbeschermglas|bescherm\s*glas|tempered\s*glass|gehard\s*glas\b/i,
+        /\bprivacy\s*glass|privacyglass|magic\s*glass|magicglass\b/i,
+        /\bscreen\s*protectie|display\s*bescherming|folie\b/i,
+      ],
+      weight: 2,
+    },
+    {
       key: 'product_search',
       patterns: [
         /\bzoek|zoeken|heb\s+nodig|wil\s+(een|het|de)\b/,
@@ -207,6 +217,7 @@ function extractBrand(msg: string): string | null {
 function extractProductType(msg: string): string | null {
   const types: Record<string, RegExp> = {
     'screen': /\b(scherm|screen|display|lcd|oled|glas|glass|touch)\b/i,
+    'screen_protector': /\b(screenprotector|screen\s*protector|tempered\s*glass|gehard\s*glas|beschermglas|folie|privacy\s*glass|magic\s*glass|display\s*bescherming)\b/i,
     'battery': /\b(batterij|battery|accu)\b/i,
     'camera': /\b(camera|lens|frontcam|backcam)\b/i,
     'charging': /\b(charging|laad|oplader|charger|port|connector|usb)\b/i,
@@ -250,6 +261,23 @@ function extractModelKeywords(msg: string): string[] {
   return Array.from(new Set(keywords));
 }
 
+// ── Extract screen protector subtype ────────────────────────────
+function extractScreenProtectorSubtype(msg: string): string | null {
+  const q = msg.toLowerCase();
+  if (/\bgehard\s*glas|tempered\s*glass\b/i.test(q)) return 'gehard-glas';
+  if (/\bprivacy\s*glass|privacyglass\b/i.test(q)) return 'privacy-glass';
+  if (/\bmagic\s*glass|magicglass\b/i.test(q)) return 'magic-glass';
+  return null;
+}
+
+// ── Extract screen protector brand (Apple/Samsung) ──────────────
+function extractSpBrand(msg: string): string | null {
+  const q = msg.toLowerCase();
+  if (/\biphone|ipad|apple\b/i.test(q)) return 'apple';
+  if (/\bsamsung|galaxy\b/i.test(q)) return 'samsung';
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const sql = getDb();
@@ -270,9 +298,105 @@ export async function POST(request: NextRequest) {
     const brand = extractBrand(msg);
     const productType = extractProductType(msg);
     const modelKeywords = extractModelKeywords(msg);
+    const spSubtype = extractScreenProtectorSubtype(message || '');
+    const spBrand = extractSpBrand(message || '');
+
+    // ── SCREEN PROTECTOR SMART FLOW ──────────────────────────────
+    // Also handle follow-up answers (Apple, Samsung, Gehard Glas) when in active SP conversation
+    const isScreenProtectorFlow = intent === 'screen_protector' || (context.spStep && (spSubtype || spBrand || msg.includes('apple') || msg.includes('samsung') || msg.includes('anders')));
+    if (isScreenProtectorFlow) {
+      const ctxSpStep = context.spStep || 'ask_type';
+      const ctxSpType = context.spType || null;
+      const ctxSpBrand = context.spBrand || null;
+
+      // Handle "Anders merk" / "Anders type" reset
+      if (msg.includes('anders merk') || msg.includes('andere merk')) {
+        response.updatedContext.spBrand = null;
+        const currentType = ctxSpType;
+        const typeNames: Record<string, string> = { 'gehard-glas': 'Gehard Glas', 'privacy-glass': 'Privacy Glass', 'magic-glass': 'Magic Glass' };
+        const typeName = typeNames[currentType || ''] || currentType;
+        response.text = `Geen probleem! Voor welk merk zoek je een **${typeName}** screen protector?`;
+        response.suggestions = ['Apple', 'Samsung'];
+        response.updatedContext.spStep = 'ask_brand';
+        return NextResponse.json(response);
+      }
+      if (msg.includes('anders type') || msg.includes('andere type')) {
+        response.updatedContext.spType = null;
+        response.updatedContext.spBrand = null;
+        response.text = 'Geen probleem! Welk type screen protector zoek je?';
+        response.suggestions = ['Gehard Glas', 'Privacy Glass', 'Magic Glass'];
+        response.updatedContext.spStep = 'ask_type';
+        return NextResponse.json(response);
+      }
+
+      // Update context with newly detected values
+      if (spSubtype) response.updatedContext.spType = spSubtype;
+      if (spBrand) response.updatedContext.spBrand = spBrand;
+      const currentType = spSubtype || ctxSpType;
+      const currentBrand = spBrand || ctxSpBrand;
+
+      if (!currentType) {
+        response.text = 'Top! Je zoekt screen protectors. Welk type heb je nodig?\n\nWe hebben 3 soorten:\n📱 **Gehard Glas** – maximale bescherming tegen krassen en vallen\n🔒 **Privacy Glass** – privacyfilter, alleen jij ziet je scherm\n✨ **Magic Glass** – premium kwaliteit met extra features';
+        response.suggestions = ['Gehard Glas', 'Privacy Glass', 'Magic Glass'];
+        response.action = { type: 'link', url: '/products?accessory=screen-protectors', label: 'Alle screen protectors bekijken' };
+        response.updatedContext.spStep = 'ask_type';
+      } else if (!currentBrand) {
+        const typeNames: Record<string, string> = {
+          'gehard-glas': 'Gehard Glas',
+          'privacy-glass': 'Privacy Glass',
+          'magic-glass': 'Magic Glass',
+        };
+        const typeName = typeNames[currentType] || currentType;
+        response.text = `Perfect! Je hebt gekozen voor **${typeName}**. Nu nog 1 vraag: voor welk merk zoek je een screen protector?\n\nWe hebben screen protectors voor:\n🍎 **Apple** – iPhone, iPad\n📱 **Samsung** – Galaxy series`;
+        response.suggestions = ['Apple', 'Samsung'];
+        response.updatedContext.spStep = 'ask_brand';
+      } else {
+        // Both type and brand known → direct link
+        const typeNames: Record<string, string> = {
+          'gehard-glas': 'Gehard Glas',
+          'privacy-glass': 'Privacy Glass',
+          'magic-glass': 'Magic Glass',
+        };
+        const brandNames: Record<string, string> = {
+          'apple': 'Apple',
+          'samsung': 'Samsung',
+        };
+        const typeName = typeNames[currentType] || currentType;
+        const brandName = brandNames[currentBrand] || currentBrand;
+        const url = `/products?accessory=screen-protectors&sub=${currentType}&accBrand=${currentBrand}`;
+        response.text = `Geweldig! Hier zijn alle **${brandName} ${typeName}** screen protectors. Klik op de link om direct te shoppen! 🛒`;
+        response.action = { type: 'link', url, label: `Bekijk ${brandName} ${typeName}` };
+        response.suggestions = ['Anders merk', 'Anders type', 'Meer accessoires'];
+        response.updatedContext.spStep = 'show_results';
+
+        // Also search products
+        try {
+          const rows = await sql`
+            SELECT id, name, name_en, price, image, category, subcategory, brand, sku, in_stock
+            FROM products
+            WHERE category = 'acc-screen-protectors'
+              AND subcategory = ${currentType}
+              AND brand = ${currentBrand}
+            LIMIT 5
+          `;
+          response.products = rows.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            nameEn: r.name_en,
+            price: parseFloat(r.price),
+            image: r.image,
+            category: r.category,
+            subcategory: r.subcategory,
+            brand: r.brand,
+            sku: r.sku,
+            inStock: r.in_stock,
+          }));
+        } catch (e) { /* ignore */ }
+      }
+    }
 
     // ── CONVERSATIONAL PRODUCT SEARCH FLOW ───────────────────────
-    if (intent === 'product_search' || intent === 'unknown') {
+    else if (intent === 'product_search' || intent === 'unknown') {
       // Step tracking in context
       const step = context.step || 'initial';
       const ctxBrand = context.brand || null;
