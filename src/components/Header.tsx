@@ -1143,26 +1143,19 @@ export default function Header() {
 
             {/* Laptop */}
             <div className="border-b">
-              <button onClick={() => setMobileOpenBrand(mobileOpenBrand === '__laptop' ? null : '__laptop')} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setLaptopModalOpen(true);
+                  setLaptopWizardBrand(null);
+                  setLaptopWizardModel(null);
+                  setLaptopWizardPart(null);
+                }}
+                className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm"
+              >
                 <span>Laptop</span>
-                <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === '__laptop' ? 'rotate-180' : ''}`} />
+                <ChevronRight size={16} className="text-gray-400" />
               </button>
-              {mobileOpenBrand === '__laptop' && (
-                <div className="bg-gray-50">
-                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">Refurbished</div>
-                  {laptopBrands.map((b) => (
-                    <Link key={b.slug} href={`/products?laptop=${b.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
-                      {locale === 'en' ? b.nameEn : b.name}
-                    </Link>
-                  ))}
-                  <div className="px-6 py-1.5 text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
-                  {laptopPartsCategories.map((c) => (
-                    <Link key={c.slug} href={`/products?laptop-parts=${c.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm" onClick={() => setMobileMenuOpen(false)}>
-                      {locale === 'en' ? c.nameEn : c.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
             </div>
 
             <Link href="/repair" className="mx-3 my-3 px-4 py-4 bg-red-500 text-white rounded-xl text-center font-bold flex items-center justify-center gap-2 glow-red-static" onClick={() => setMobileMenuOpen(false)}>

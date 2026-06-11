@@ -1227,6 +1227,19 @@ export function getAllProductCategories(): BrandCategory[] {
     // Laptop section header (merk -> model -> onderdeel)
     { slug: '_section_lb', name: '── 💻 LAPTOPS ──', nameEn: '── 💻 LAPTOPS ──', subcategories: [] },
     ...convertLaptopBrands(),
+    // Refurbished section header
+    { slug: '_section_rf', name: '── ♻️ REFURBISHED ──', nameEn: '── ♻️ REFURBISHED ──', subcategories: [] },
+    {
+      slug: 'laptop-refurbished',
+      name: 'Refurbished Laptops',
+      nameEn: 'Refurbished Laptops',
+      subcategories: laptopBrands.map(b => ({
+        slug: b.slug,
+        name: b.name,
+        nameEn: b.nameEn,
+        models: [] as ModelItem[],
+      })),
+    },
   ];
 }
 
