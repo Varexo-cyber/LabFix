@@ -61,8 +61,25 @@ function wordBoundaryScore(name: string, nameEn: string, words: string[]): numbe
 
 export const runtime = 'nodejs';
 
-// Ensure table exists
+// Cache the schema-setup so the ~10 DDL statements (CREATE TABLE / ALTER /
+// CREATE INDEX) only run ONCE per server instance instead of on every single
+// API request. All statements use IF NOT EXISTS, so a single run is enough.
+// This removes a large amount of unnecessary DB round-trips on the hot path
+// (home page, product list, detail page, search) without changing behavior.
+let schemaReady: Promise<void> | null = null;
+
 async function ensureTable(sql: any) {
+  if (!schemaReady) {
+    schemaReady = runSchemaSetup(sql).catch((err) => {
+      // Reset on failure so the next request can retry the setup.
+      schemaReady = null;
+      throw err;
+    });
+  }
+  return schemaReady;
+}
+
+async function runSchemaSetup(sql: any) {
   await sql`
     CREATE TABLE IF NOT EXISTS products (
       id TEXT PRIMARY KEY,

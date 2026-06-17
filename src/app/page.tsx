@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import ProductCard from '@/components/ProductCard';
 import ScrollReveal from '@/components/ScrollReveal';
-import { fetchProducts, Product, fetchNews, NewsArticle } from '@/lib/store';
+import { fetchProductsPaginated, Product, fetchNews, NewsArticle } from '@/lib/store';
 import {
   Truck, Shield, CreditCard, ArrowRight, Smartphone, Wrench,
   Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock,
@@ -21,7 +21,18 @@ export default function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    fetchProducts().then(setProducts);
+    // Only fetch the products actually shown on the home page (featured + new),
+    // instead of downloading the entire catalog. Two small, targeted queries.
+    Promise.all([
+      fetchProductsPaginated({ featured: 'true', limit: '10' }),
+      fetchProductsPaginated({ isNew: 'true', limit: '10' }),
+    ]).then(([featured, news]) => {
+      // Merge unique products; the existing .filter(featured/isNew) logic below
+      // still correctly partitions them into the two sections.
+      const byId = new Map<string, Product>();
+      [...featured.products, ...news.products].forEach(p => byId.set(p.id, p));
+      setProducts(Array.from(byId.values()));
+    });
     fetchNews().then(articles => setNewsArticles(articles.filter(a => a.published)));
   }, []);
 
@@ -317,6 +328,8 @@ export default function HomePage() {
                   <img 
                     src={card.image} 
                     alt={card.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/20"></div>
@@ -476,6 +489,8 @@ export default function HomePage() {
                       <img 
                         src={article.image} 
                         alt="" 
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
                       />
                     </div>
