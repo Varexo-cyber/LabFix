@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
     `;
 
     // Send email notifications
+    // 1. Send beautiful confirmation email to customer
     try {
-      // 1. Send beautiful confirmation email to customer (from info@labfix.nl)
       await sendRepairConfirmation({
         to: email,
         name,
@@ -123,8 +123,13 @@ export async function POST(request: NextRequest) {
         pickupLocation: shipping_address,
         repairId: id,
       });
+    } catch (customerEmailError) {
+      console.error('Failed to send customer repair confirmation:', customerEmailError);
+      // Continue — admin notification must still be attempted
+    }
 
-      // 2. Send admin notification to LabFix (from info@labfix.nl)
+    // 2. Send admin notification to LabFix (independent of customer email)
+    try {
       const adminHtml = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
           <div style="background:#1e40af;padding:24px;text-align:center">
@@ -154,8 +159,8 @@ export async function POST(request: NextRequest) {
         subject: `Nieuwe Reparatie Aanvraag #${id.slice(0,8).toUpperCase()} - ${name}`,
         html: adminHtml,
       });
-    } catch (emailError) {
-      console.error('Failed to send repair notification emails:', emailError);
+    } catch (adminEmailError) {
+      console.error('Failed to send admin repair notification to info@labfix.nl:', adminEmailError);
       // Don't fail the request if email fails
     }
 

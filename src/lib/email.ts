@@ -196,9 +196,14 @@ export async function sendOrderConfirmation(data: OrderEmailData) {
 }
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  // Notifications sent from LabFix (info@labfix.nl)
+  // Internal notifications (e.g. admin alerts) are sent TO info@labfix.nl.
+  // Sending FROM info@labfix.nl TO info@labfix.nl is a self-send that Zoho
+  // filters out / files in "Sent" instead of the Inbox — so the notification
+  // never arrives. We send FROM noreply@labfix.nl with Reply-To info@labfix.nl
+  // so it reliably lands in the inbox while replies still go to info@.
   return labfixTransporter.sendMail({
-    from: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
+    from: `"LabFix" <${process.env.SMTP_NOREPLY || 'noreply@labfix.nl'}>`,
+    replyTo: `"LabFix" <${process.env.SMTP_USER_LABFIX || 'info@labfix.nl'}>`,
     to,
     subject,
     html,
