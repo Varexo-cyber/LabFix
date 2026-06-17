@@ -198,7 +198,7 @@ export default function RepairPage() {
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">Afspraak Verzonden!</h1>
             <p className="text-gray-600 mb-6">
-              Bedankt voor uw aanvraag. We hebben een bevestiging gestuurd naar <strong>info@labfix.nl</strong>.
+              Bedankt voor uw aanvraag. We hebben een bevestiging gestuurd naar <strong>{formData.email}</strong>.
             </p>
             <p className="text-gray-500 text-sm mb-8">
               U ontvangt binnen 24 uur een reactie of uw afspraak is goedgekeurd. We nemen zo snel mogelijk contact met u op om een passend tijdstip af te spreken.
