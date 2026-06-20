@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
               <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Telefoon:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${phone}</td></tr>
               <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Apparaat:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${device_type} - ${device_model}</td></tr>
               <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Service:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${service_type === 'pickup' ? 'Ophalen' : 'Opsturen'}</td></tr>
+              <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Adres:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${shipping_address || 'Nog niet ingepland'}</td></tr>
               <tr><td style="padding:8px;border:1px solid #e2e8f0"><strong>Datum/Tijd:</strong></td><td style="padding:8px;border:1px solid #e2e8f0">${appointment_date || 'Nog niet ingepland'} ${appointment_time || ''}</td></tr>
             </table>
             <p style="margin-top:16px"><strong>Probleem beschrijving:</strong><br/>${problem_description}</p>

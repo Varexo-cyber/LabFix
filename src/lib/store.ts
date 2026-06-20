@@ -71,7 +71,7 @@ export interface RepairAppointment {
   problemDescription: string;
   appointmentDate: string;
   appointmentTime: string;
-  serviceType: 'bring_in' | 'shipping';
+  serviceType: 'bring_in' | 'pickup' | 'shipping';
   shippingAddress?: string;
   status: RepairStatus;
   rejectionReason?: string;

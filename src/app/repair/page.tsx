@@ -16,6 +16,8 @@ export default function RepairPage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [pickupLocation, setPickupLocation] = useState('');
   const [pickupValid, setPickupValid] = useState(false);
+  const [pickupAddress, setPickupAddress] = useState('');
+  const [pickupCity, setPickupCity] = useState('');
   
   // Gratis ophalen alleen beschikbaar voor deze locaties
   const allowedPickupLocations = [
@@ -57,6 +59,60 @@ export default function RepairPage() {
     // 's-Gravenzande (2691-2695)
     '2691', '2692', '2693', '2694', '2695',
   ];
+
+  // Postcode → Stad mapping voor automatische invulling
+  const postcodeToCity: Record<string, string> = {
+    // Den Haag
+    '2490': 'Den Haag', '2491': 'Den Haag', '2492': 'Den Haag', '2493': 'Den Haag',
+    '2496': 'Den Haag', '2497': 'Den Haag', '2498': 'Den Haag',
+    '2511': 'Den Haag', '2512': 'Den Haag', '2513': 'Den Haag', '2514': 'Den Haag',
+    '2515': 'Den Haag', '2516': 'Den Haag', '2517': 'Den Haag', '2518': 'Den Haag',
+    '2521': 'Den Haag', '2522': 'Den Haag', '2523': 'Den Haag', '2524': 'Den Haag',
+    '2525': 'Den Haag', '2526': 'Den Haag',
+    '2531': 'Den Haag', '2532': 'Den Haag', '2533': 'Den Haag',
+    '2541': 'Den Haag', '2542': 'Den Haag', '2543': 'Den Haag', '2544': 'Den Haag',
+    '2545': 'Den Haag', '2546': 'Den Haag', '2547': 'Den Haag', '2548': 'Den Haag',
+    '2551': 'Den Haag', '2552': 'Den Haag', '2553': 'Den Haag', '2554': 'Den Haag', '2555': 'Den Haag',
+    '2561': 'Den Haag', '2562': 'Den Haag', '2563': 'Den Haag', '2564': 'Den Haag',
+    '2565': 'Den Haag', '2566': 'Den Haag',
+    '2571': 'Den Haag', '2572': 'Den Haag', '2573': 'Den Haag', '2574': 'Den Haag',
+    '2581': 'Den Haag', '2582': 'Den Haag', '2583': 'Den Haag', '2584': 'Den Haag',
+    '2585': 'Den Haag', '2586': 'Den Haag', '2587': 'Den Haag',
+    '2591': 'Den Haag', '2592': 'Den Haag', '2593': 'Den Haag', '2594': 'Den Haag',
+    '2595': 'Den Haag', '2596': 'Den Haag', '2597': 'Den Haag',
+    // Delft
+    '2611': 'Delft', '2612': 'Delft', '2613': 'Delft', '2614': 'Delft', '2616': 'Delft',
+    '2621': 'Delft', '2622': 'Delft', '2623': 'Delft', '2624': 'Delft', '2625': 'Delft',
+    '2626': 'Delft', '2627': 'Delft', '2628': 'Delft', '2629': 'Delft',
+    // Rijswijk
+    '2280': 'Rijswijk', '2281': 'Rijswijk', '2282': 'Rijswijk', '2283': 'Rijswijk',
+    '2284': 'Rijswijk', '2285': 'Rijswijk', '2286': 'Rijswijk', '2287': 'Rijswijk',
+    '2288': 'Rijswijk', '2289': 'Rijswijk',
+    // Zoetermeer
+    '2711': 'Zoetermeer', '2712': 'Zoetermeer', '2713': 'Zoetermeer', '2714': 'Zoetermeer',
+    '2715': 'Zoetermeer', '2716': 'Zoetermeer', '2717': 'Zoetermeer', '2718': 'Zoetermeer', '2719': 'Zoetermeer',
+    '2721': 'Zoetermeer', '2722': 'Zoetermeer', '2723': 'Zoetermeer', '2724': 'Zoetermeer',
+    '2725': 'Zoetermeer', '2726': 'Zoetermeer', '2727': 'Zoetermeer', '2728': 'Zoetermeer', '2729': 'Zoetermeer',
+    // Nootdorp
+    '2631': 'Nootdorp', '2632': 'Nootdorp', '2633': 'Nootdorp',
+    // Pijnacker
+    '2641': 'Pijnacker', '2642': 'Pijnacker', '2643': 'Pijnacker', '2645': 'Pijnacker',
+    // Leidschendam
+    '2260': 'Leidschendam', '2261': 'Leidschendam', '2262': 'Leidschendam', '2263': 'Leidschendam',
+    '2264': 'Leidschendam', '2265': 'Leidschendam', '2266': 'Leidschendam', '2267': 'Leidschendam',
+    // Wateringen
+    '2291': 'Wateringen', '2292': 'Wateringen', '2293': 'Wateringen', '2294': 'Wateringen', '2295': 'Wateringen',
+    // Monster
+    '2681': 'Monster', '2682': 'Monster',
+    // Poeldijk
+    '2685': 'Poeldijk', '2686': 'Poeldijk',
+    // Naaldwijk
+    '2671': 'Naaldwijk', '2672': 'Naaldwijk', '2673': 'Naaldwijk', '2674': 'Naaldwijk',
+    '2675': 'Naaldwijk', '2676': 'Naaldwijk',
+    // 's-Gravenzande
+    '2691': "'s-Gravenzande", '2692': "'s-Gravenzande", '2693': "'s-Gravenzande",
+    '2694': "'s-Gravenzande", '2695': "'s-Gravenzande",
+  };
   
   const [formData, setFormData] = useState<{
     name: string;
@@ -78,16 +134,41 @@ export default function RepairPage() {
     shippingAddress: '',
   });
 
+  const extractPostcode = (text: string): string | null => {
+    const match = text.match(/(\d{4})\s*[a-z]{0,2}/i);
+    return match ? match[1] : null;
+  };
+
+  const autoFillCity = (addressText: string) => {
+    const postcode = extractPostcode(addressText);
+    if (postcode && postcodeToCity[postcode]) {
+      setPickupCity(postcodeToCity[postcode]);
+      // Build full location string: address + city
+      const fullLocation = `${addressText.trim()}, ${postcodeToCity[postcode]}`;
+      setPickupLocation(fullLocation);
+      setPickupValid(true);
+      return postcodeToCity[postcode];
+    }
+    // Fallback: check if city name is directly typed in the address
+    const normalized = addressText.toLowerCase().trim();
+    const isValidLocation = allowedPickupLocations.some(loc => normalized.includes(loc));
+    if (isValidLocation) {
+      setPickupCity(addressText.trim());
+      setPickupLocation(addressText.trim());
+      setPickupValid(true);
+    } else {
+      setPickupCity('');
+      setPickupLocation(addressText.trim());
+      setPickupValid(false);
+    }
+    return null;
+  };
+
   const checkPickupLocation = (location: string) => {
     const normalized = location.toLowerCase().trim();
-    // Check if input contains a known city name
     const isValidLocation = allowedPickupLocations.some(loc => normalized.includes(loc));
-
-    // Check if input contains a valid 4-digit postal code (e.g., "2694 BA" or just "2694")
-    const postalCodeMatch = location.match(/(\d{4})\s*[a-z]{0,2}/i);
-    const extractedPostalCode = postalCodeMatch ? postalCodeMatch[1] : null;
-    const isValidPostalCode = !!(extractedPostalCode && allowedPostalCodes.includes(extractedPostalCode));
-
+    const postcode = extractPostcode(location);
+    const isValidPostalCode = !!(postcode && allowedPostalCodes.includes(postcode));
     const isValid = isValidLocation || isValidPostalCode;
     setPickupValid(isValid);
     return isValid;
@@ -212,8 +293,11 @@ export default function RepairPage() {
                 <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
                 <p><span className="text-gray-500">Probleem:</span> {formData.problemDescription}</p>
                 <p><span className="text-gray-500">Service:</span> {formData.serviceType === 'pickup' ? 'Ophalen' : 'Opsturen'}</p>
-                {formData.serviceType === 'pickup' && pickupLocation && (
-                  <p><span className="text-gray-500">Ophaaladres:</span> {pickupLocation}</p>
+                {formData.serviceType === 'pickup' && (
+                  <>
+                    <p><span className="text-gray-500">Ophaaladres:</span> {pickupAddress}</p>
+                    <p><span className="text-gray-500">Plaats:</span> {pickupCity}</p>
+                  </>
                 )}
                 {formData.serviceType === 'shipping' && (
                   <p className="text-blue-600 italic">U ontvangt het verzendadres en instructies via e-mail.</p>
@@ -469,25 +553,59 @@ export default function RepairPage() {
             </div>
 
             {formData.serviceType === 'pickup' && (
-              <div className="mb-8">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Plaats *</label>
-                <input
-                  type="text"
-                  value={pickupLocation}
-                  onChange={(e) => {
-                    setPickupLocation(e.target.value);
-                    checkPickupLocation(e.target.value);
-                  }}
-                  className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
-                  placeholder="Bijv. Den Haag"
-                />
-                {pickupLocation && !pickupValid && (
-                  <p className="text-red-500 text-sm mt-2">
+              <div className="mb-8 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Adres + Postcode *</label>
+                  <input
+                    type="text"
+                    value={pickupAddress}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPickupAddress(val);
+                      autoFillCity(val);
+                    }}
+                    className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500"
+                    placeholder="Bijv. Leyweg 303, 2521 AC"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Voer straat, huisnummer en postcode in. De plaats wordt automatisch ingevuld.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Plaats / Stad</label>
+                  <input
+                    type="text"
+                    value={pickupCity}
+                    onChange={(e) => {
+                      setPickupCity(e.target.value);
+                      if (pickupAddress) {
+                        const full = `${pickupAddress.trim()}, ${e.target.value.trim()}`;
+                        setPickupLocation(full);
+                        checkPickupLocation(e.target.value);
+                      }
+                    }}
+                    readOnly={!!extractPostcode(pickupAddress) && !!postcodeToCity[extractPostcode(pickupAddress) || '']}
+                    className={`w-full border-2 rounded-lg px-4 py-3 focus:outline-none ${
+                      extractPostcode(pickupAddress) && postcodeToCity[extractPostcode(pickupAddress) || '']
+                        ? 'border-gray-200 bg-gray-50 text-gray-600'
+                        : 'border-gray-200 focus:border-primary-500'
+                    }`}
+                    placeholder="Wordt automatisch ingevuld"
+                  />
+                  {extractPostcode(pickupAddress) && postcodeToCity[extractPostcode(pickupAddress) || ''] && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <CheckCircle size={12} />
+                      Automatisch herkend
+                    </p>
+                  )}
+                </div>
+                {pickupAddress && !pickupValid && (
+                  <p className="text-red-500 text-sm">
                     Ophalen is helaas niet beschikbaar in deze regio. Kies "Opsturen" of neem contact op.
                   </p>
                 )}
                 {pickupValid && (
-                  <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
+                  <p className="text-green-600 text-sm flex items-center gap-1">
                     <CheckCircle size={16} />
                     Ophalen beschikbaar in deze regio!
                   </p>
@@ -515,9 +633,15 @@ export default function RepairPage() {
               </button>
               <button
                 onClick={() => {
-                  if (formData.serviceType === 'pickup' && !pickupValid) {
-                    setError('Vul een geldige postcode/plaats in voor ophalen');
-                    return;
+                  if (formData.serviceType === 'pickup') {
+                    if (!pickupAddress.trim()) {
+                      setError('Vul uw adres en postcode in voor ophalen');
+                      return;
+                    }
+                    if (!pickupValid) {
+                      setError('Vul een geldige postcode/plaats in voor ophalen');
+                      return;
+                    }
                   }
                   setError('');
                   if (formData.serviceType === 'pickup') {
@@ -554,7 +678,8 @@ export default function RepairPage() {
                     <p><span className="text-gray-500">Naam:</span> {formData.name}</p>
                     <p><span className="text-gray-500">Apparaat:</span> {deviceTypes.find(d => d.value === formData.deviceType)?.label} {formData.deviceModel}</p>
                     <p><span className="text-gray-500">Service:</span> Ophalen</p>
-                    <p><span className="text-gray-500">Locatie:</span> {pickupLocation}</p>
+                    <p><span className="text-gray-500">Ophaaladres:</span> {pickupAddress}</p>
+                    <p><span className="text-gray-500">Plaats:</span> {pickupCity}</p>
                   </div>
                 </div>
 

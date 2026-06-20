@@ -2148,6 +2148,11 @@ export default function AdminPage() {
                         <div className="text-sm font-medium text-gray-900">{repair.name}</div>
                         <div className="text-xs text-gray-500">{repair.email}</div>
                         <div className="text-xs text-gray-400">{repair.phone}</div>
+                        {repair.shippingAddress && (
+                          <div className="text-xs text-gray-400 mt-1 max-w-[200px] truncate" title={repair.shippingAddress}>
+                            {repair.shippingAddress}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="text-sm text-gray-900">{repair.deviceType} {repair.deviceModel}</div>
@@ -2183,11 +2188,11 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                          repair.serviceType === 'bring_in' 
-                            ? 'bg-blue-100 text-blue-800' 
+                          repair.serviceType === 'pickup' || repair.serviceType === 'bring_in'
+                            ? 'bg-blue-100 text-blue-800'
                             : 'bg-purple-100 text-purple-800'
                         }`}>
-                          {repair.serviceType === 'bring_in' ? 'Langs brengen' : 'Opsturen'}
+                          {repair.serviceType === 'pickup' || repair.serviceType === 'bring_in' ? 'Ophalen' : 'Opsturen'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
