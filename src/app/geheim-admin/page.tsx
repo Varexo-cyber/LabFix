@@ -2138,9 +2138,11 @@ export default function AdminPage() {
                     <tr key={repair.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {new Date(repair.appointmentDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {new Date(repair.createdAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </div>
-                        <div className="text-xs text-gray-500">{repair.appointmentTime}</div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(repair.createdAt).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="text-sm font-medium text-gray-900">{repair.name}</div>
