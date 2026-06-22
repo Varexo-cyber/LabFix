@@ -327,7 +327,7 @@ export async function fetchContactMessages(status?: string): Promise<{ data: Con
   return res.json();
 }
 
-export async function createContactMessage(message: { name: string; email: string; subject: string; message: string }): Promise<{ success: boolean; message?: string; error?: string }> {
+export async function createContactMessage(message: { name: string; email: string; subject: string; message: string; company?: string; elapsedMs?: number }): Promise<{ success: boolean; message?: string; error?: string }> {
   const res = await fetch(`${API_BASE}/api/contact`, { 
     method: 'POST', 
     headers: { 'Content-Type': 'application/json' }, 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { createContactMessage } from '@/lib/store';
@@ -10,6 +10,10 @@ export default function ContactPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Honeypot: bots fill this hidden field, humans never see it.
+  const [hp, setHp] = useState('');
+  // Timestamp of when the form was first rendered (bots submit instantly).
+  const formLoadedAt = useRef<number>(Date.now());
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,13 +26,19 @@ export default function ContactPage() {
     setLoading(true);
     setError('');
 
-    const result = await createContactMessage(formData);
+    const result = await createContactMessage({
+      ...formData,
+      // Anti-spam fields
+      company: hp,
+      elapsedMs: Date.now() - formLoadedAt.current,
+    });
     
     setLoading(false);
     
     if (result.success) {
       setSent(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
+      formLoadedAt.current = Date.now();
       setTimeout(() => setSent(false), 5000);
     } else {
       setError(result.error || 'Er is iets misgegaan');
@@ -92,6 +102,20 @@ export default function ContactPage() {
               ></textarea>
             </div>
             
+            {/* Honeypot field — hidden from humans, bots tend to fill it. */}
+            <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+              <label htmlFor="company">Company (laat dit veld leeg)</label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                value={hp}
+                onChange={(e) => setHp(e.target.value)}
+              />
+            </div>
+
             {error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
                 {error}

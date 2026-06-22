@@ -17,6 +17,75 @@ const transporter = nodemailer.createTransport({
 
 const CONTACT_NOTIFY_TO = process.env.CONTACT_NOTIFY_TO || 'info@labfix.nl';
 
+// ── Anti-spam ────────────────────────────────────────────────────────────────
+// In-memory per-IP rate limiter. Resets on cold start, which is fine: it only
+// needs to throttle the rapid-fire bursts a bot produces within one instance.
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_MAX = 3; // max 3 messages per IP per hour
+const ipHits = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (ipHits.get(ip) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  hits.push(now);
+  ipHits.set(ip, hits);
+  // Occasionally prune the map to avoid unbounded growth.
+  if (ipHits.size > 5000) {
+    Array.from(ipHits.entries()).forEach(([key, times]) => {
+      if (times.every((t: number) => now - t >= RATE_LIMIT_WINDOW_MS)) ipHits.delete(key);
+    });
+  }
+  return hits.length > RATE_LIMIT_MAX;
+}
+
+function getClientIp(request: NextRequest): string {
+  const fwd = request.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
+// Heuristic gibberish/spam detector for the bot pattern seen in the wild:
+// random mixed-case strings with no spaces, no vowels, no real words.
+function looksLikeSpam(name: string, subject: string, message: string): boolean {
+  const fields = [name, subject, message];
+
+  for (const raw of fields) {
+    const value = (raw || '').trim();
+    if (!value) continue;
+
+    // Long single "word" with no spaces is a strong bot signal.
+    const hasNoSpaces = !/\s/.test(value);
+    const isLong = value.length >= 12;
+
+    if (hasNoSpaces && isLong) {
+      const letters = value.replace(/[^a-zA-Z]/g, '');
+      if (letters.length >= 10) {
+        const vowels = (letters.match(/[aeiouAEIOU]/g) || []).length;
+        const vowelRatio = vowels / letters.length;
+        // Natural language ~38–45% vowels. Random strings skew far lower.
+        if (vowelRatio < 0.22) return true;
+
+        // Frequent case alternation (aBcDeF...) is typical of random generators.
+        let switches = 0;
+        for (let i = 1; i < letters.length; i++) {
+          const prevUpper = letters[i - 1] === letters[i - 1].toUpperCase();
+          const curUpper = letters[i] === letters[i].toUpperCase();
+          if (prevUpper !== curUpper) switches++;
+        }
+        if (switches / letters.length > 0.45) return true;
+      }
+    }
+  }
+
+  // Classic spam keywords / link flooding.
+  const combined = `${name} ${subject} ${message}`.toLowerCase();
+  const linkCount = (combined.match(/https?:\/\//g) || []).length;
+  if (linkCount >= 4) return true;
+  if (/\b(viagra|cialis|casino|porn|crypto airdrop|seo services|buy followers)\b/.test(combined)) return true;
+
+  return false;
+}
+
 function escapeHtml(value: string) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -80,7 +149,22 @@ export async function POST(request: NextRequest) {
     const sql = getDb();
     await ensureTable(sql);
     
-    const { name, email, subject, message } = await request.json();
+    const { name, email, subject, message, company, elapsedMs } = await request.json();
+
+    // ── Anti-spam layer 1: Honeypot ──
+    // The hidden "company" field is invisible to humans. If it is filled, a bot
+    // submitted the form. Return a fake success so the bot doesn't retry.
+    if (typeof company === 'string' && company.trim() !== '') {
+      console.warn('Contact spam blocked: honeypot filled');
+      return NextResponse.json({ success: true, message: 'Bericht succesvol verstuurd' });
+    }
+
+    // ── Anti-spam layer 2: Time trap ──
+    // A real person needs several seconds to fill the form. Bots submit instantly.
+    if (typeof elapsedMs === 'number' && elapsedMs >= 0 && elapsedMs < 2500) {
+      console.warn('Contact spam blocked: submitted too fast', elapsedMs);
+      return NextResponse.json({ success: true, message: 'Bericht succesvol verstuurd' });
+    }
 
     // Validation
     if (!name || !email || !message) {
@@ -96,6 +180,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Ongeldig email adres' },
         { status: 400 }
+      );
+    }
+
+    // ── Anti-spam layer 3: Content heuristics ──
+    // Detect the random gibberish bot pattern seen in the wild.
+    if (looksLikeSpam(name, subject || '', message)) {
+      console.warn('Contact spam blocked: gibberish heuristic', { name, subject });
+      return NextResponse.json({ success: true, message: 'Bericht succesvol verstuurd' });
+    }
+
+    // ── Anti-spam layer 4: Per-IP rate limiting ──
+    const ip = getClientIp(request);
+    if (isRateLimited(ip)) {
+      console.warn('Contact spam blocked: rate limit', ip);
+      return NextResponse.json(
+        { error: 'Te veel berichten verstuurd. Probeer het later opnieuw.' },
+        { status: 429 }
       );
     }
 
