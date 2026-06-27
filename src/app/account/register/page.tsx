@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { registerUserApi } from '@/lib/store';
 import Link from 'next/link';
@@ -14,6 +14,10 @@ export default function RegisterPage() {
   const redirect = searchParams.get('redirect') || '/account';
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // Anti-spam: honeypot field, hidden from humans
+  const [hp, setHp] = useState('');
+  // Anti-spam: how long the form has been open (bots submit instantly)
+  const formLoadedAt = useRef<number>(Date.now());
   const [customerType, setCustomerType] = useState<'individual' | 'business'>('individual');
   const [form, setForm] = useState({
     email: '',
@@ -79,6 +83,9 @@ export default function RegisterPage() {
         postalCode: form.postalCode,
         country: form.country,
         newsletter: form.newsletter,
+        // Anti-spam fields
+        company: hp,
+        elapsedMs: Date.now() - formLoadedAt.current,
       });
 
       // If newsletter is checked, also subscribe to newsletter
@@ -292,6 +299,20 @@ export default function RegisterPage() {
                   Ik wil me aanmelden voor de nieuwsbrief met updates en aanbiedingen
                 </span>
               </label>
+            </div>
+
+            {/* Honeypot field — hidden from humans, bots tend to fill it. */}
+            <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+              <label htmlFor="company">Company (laat dit veld leeg)</label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                value={hp}
+                onChange={(e) => setHp(e.target.value)}
+              />
             </div>
 
             <button

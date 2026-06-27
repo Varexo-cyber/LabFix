@@ -265,7 +265,7 @@ export async function updateReturnApi(id: string, updates: { status?: ReturnStat
   return res.json();
 }
 
-export async function registerUserApi(userData: any): Promise<{ success: boolean; message: string }> {
+export async function registerUserApi(userData: { email: string; password: string; customerType: 'individual' | 'business'; firstName: string; lastName: string; companyName?: string; kvkNumber?: string; contactPerson?: string; phone: string; address: string; city: string; postalCode: string; country: string; newsletter: boolean; company?: string; elapsedMs?: number }): Promise<{ success: boolean; message: string }> {
   const res = await fetch(`${API_BASE}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userData) });
   const data = await res.json().catch(() => ({ success: false, message: 'Server fout. Probeer het opnieuw.' }));
   if (!res.ok && data.success !== false) {

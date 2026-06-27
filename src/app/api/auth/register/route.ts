@@ -7,6 +7,76 @@ import { createCustomer as msSyncCustomer, findMsCustomerByEmail } from '@/lib/m
 
 export const runtime = 'nodejs';
 
+// ── Anti-spam helpers ───────────────────────────────────────────────────────
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const RATE_LIMIT_MAX = 3; // max 3 registrations per IP per hour
+const ipHits = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (ipHits.get(ip) || []).filter((t: number) => now - t < RATE_LIMIT_WINDOW_MS);
+  hits.push(now);
+  ipHits.set(ip, hits);
+  if (ipHits.size > 5000) {
+    Array.from(ipHits.entries()).forEach(([key, times]) => {
+      if (times.every((t: number) => now - t >= RATE_LIMIT_WINDOW_MS)) ipHits.delete(key);
+    });
+  }
+  return hits.length > RATE_LIMIT_MAX;
+}
+
+function getClientIp(request: NextRequest): string {
+  const fwd = request.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
+const DISPOSABLE_DOMAINS = new Set([
+  '10minutemail.com', 'tempmail.com', 'mailinator.com', 'guerrillamail.com', 'yopmail.com',
+  'throwawaymail.com', 'fakeinbox.com', 'sharklasers.com', 'getairmail.com', 'temp.inbox',
+  'mailcatch.com', 'tempr.email', 'anonbox.net', 'trashmail.com', 'getnada.com',
+  'inboxbear.com', 'burnermail.io', 'tempmailaddress.com', 'mailtemporaire.com', 'dispostable.com',
+  'tempmailplus.com', 'tmpmail.org', 'tmpbox.net', 'throwam.com', 'moakt.com', 'emailondeck.com'
+]);
+
+function isDisposableEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return !!domain && DISPOSABLE_DOMAINS.has(domain);
+}
+
+function looksLikeSpam(name: string, address: string, city: string, phone: string): boolean {
+  const fields = [name, address, city];
+  for (const raw of fields) {
+    const value = (raw || '').trim();
+    if (!value) continue;
+
+    // Long single "word" with no spaces is a strong bot signal.
+    const hasNoSpaces = !/\s/.test(value);
+    const isLong = value.length >= 12;
+    if (hasNoSpaces && isLong) {
+      const letters = value.replace(/[^a-zA-Z]/g, '');
+      if (letters.length >= 10) {
+        const vowels = (letters.match(/[aeiouAEIOU]/g) || []).length;
+        const vowelRatio = vowels / letters.length;
+        if (vowelRatio < 0.22) return true;
+        let switches = 0;
+        for (let i = 1; i < letters.length; i++) {
+          const prevUpper = letters[i - 1] === letters[i - 1].toUpperCase();
+          const curUpper = letters[i] === letters[i].toUpperCase();
+          if (prevUpper !== curUpper) switches++;
+        }
+        if (switches / letters.length > 0.45) return true;
+      }
+    }
+  }
+
+  // Phone should contain only digits and be a reasonable length (mobile NL is 10 digits).
+  const digits = (phone || '').replace(/\D/g, '');
+  if (digits.length > 0 && (digits.length < 7 || digits.length > 15)) return true;
+
+  return false;
+}
+
 // Ensure table exists with all columns
 async function ensureTable(sql: any) {
   await sql`
@@ -57,11 +127,56 @@ async function ensureTable(sql: any) {
 export async function POST(request: NextRequest) {
   let customerType = 'individual';
   try {
-    const sql = getDb();
-    await ensureTable(sql);
     const body = await request.json();
     customerType = body.customerType || 'individual';
     const isBusiness = customerType === 'business';
+    let displayName = isBusiness
+      ? (body.contactPerson || body.companyName || '')
+      : `${body.firstName || ''} ${body.lastName || ''}`.trim();
+
+    // ── Anti-spam layer 1: Honeypot ──
+    // The hidden "company" field is invisible to humans. If filled, it's a bot.
+    if (typeof body.company === 'string' && body.company.trim() !== '') {
+      console.warn('Register spam blocked: honeypot filled');
+      return NextResponse.json({ success: true, message: 'Account succesvol aangemaakt' });
+    }
+
+    // ── Anti-spam layer 2: Time trap ──
+    // Real users need seconds to fill the form. Bots submit instantly.
+    if (typeof body.elapsedMs === 'number' && body.elapsedMs >= 0 && body.elapsedMs < 3500) {
+      console.warn('Register spam blocked: submitted too fast', body.elapsedMs);
+      return NextResponse.json({ success: true, message: 'Account succesvol aangemaakt' });
+    }
+
+    // ── Anti-spam layer 3: Disposable email domains ──
+    if (isDisposableEmail(body.email || '')) {
+      console.warn('Register spam blocked: disposable email', body.email);
+      return NextResponse.json({ success: false, message: 'E-mailadres is niet toegestaan.' }, { status: 400 });
+    }
+
+    // ── Anti-spam layer 4: Content heuristics ──
+    // Detect the random gibberish bot pattern (screenshots: random names/addresses/phone numbers).
+    if (looksLikeSpam(displayName, body.address || '', body.city || '', body.phone || '')) {
+      console.warn('Register spam blocked: gibberish heuristic', {
+        name: displayName,
+        address: body.address,
+        city: body.city,
+      });
+      return NextResponse.json({ success: true, message: 'Account succesvol aangemaakt' });
+    }
+
+    // ── Anti-spam layer 5: Per-IP rate limiting ──
+    const ip = getClientIp(request);
+    if (isRateLimited(ip)) {
+      console.warn('Register spam blocked: rate limit', ip);
+      return NextResponse.json(
+        { success: false, message: 'Te veel registraties vanaf dit IP. Probeer het later opnieuw.' },
+        { status: 429 }
+      );
+    }
+
+    const sql = getDb();
+    await ensureTable(sql);
 
     // Check existing email
     const existingEmail = await sql`SELECT id FROM users WHERE LOWER(email) = ${body.email.toLowerCase()}`;
@@ -86,7 +201,7 @@ export async function POST(request: NextRequest) {
     // Set display name
     const firstName = (body.firstName || '').trim();
     const lastName = (body.lastName || '').trim();
-    const displayName = isBusiness 
+    displayName = isBusiness 
       ? (body.contactPerson || body.companyName || 'LabFix Klant')
       : `${firstName} ${lastName}`.trim() || 'LabFix Klant';
 
@@ -142,13 +257,13 @@ export async function POST(request: NextRequest) {
 
     // Send beautiful welcome email
     try {
-      const displayName = isBusiness
+      const finalDisplayName = displayName || (isBusiness
         ? (body.contactPerson || body.companyName || 'LabFix Klant')
-        : `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'LabFix Klant';
+        : `${body.firstName || ''} ${body.lastName || ''}`.trim() || 'LabFix Klant');
 
       await sendAccountConfirmation({
         to: body.email,
-        name: displayName,
+        name: finalDisplayName,
         email: body.email,
         customerType: isBusiness ? 'business' : 'individual',
         companyName: isBusiness ? body.companyName : undefined,
