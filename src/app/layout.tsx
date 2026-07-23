@@ -84,9 +84,6 @@ export const metadata: Metadata = {
       'Jouw betrouwbare leverancier van smartphone en tablet reparatieonderdelen. Snelle levering door heel Europa.',
     images: ['/logo.png'],
   },
-  verification: {
-    google: 'google-site-verification-code',
-  },
   category: 'technology',
   icons: {
     icon: [
