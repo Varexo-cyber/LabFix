@@ -201,15 +201,76 @@ export default function RepairPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Compress an image in the browser so uploads stay small and reliable.
+  // Modern phone photos are 3-8MB which can exceed the serverless body limit
+  // and cause the whole submission to fail. We resize to max 1600px and
+  // re-encode as JPEG (~0.8 quality), keeping each file well under 1MB.
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      // Only process images; leave anything else untouched.
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const MAX_DIM = 1600;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width >= height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const newName = file.name.replace(/\.(png|gif|webp|bmp|heic|heif)$/i, '.jpg');
+            resolve(new File([blob], newName, { type: 'image/jpeg', lastModified: Date.now() }));
+          },
+          'image/jpeg',
+          0.8
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+      };
+      img.src = objectUrl;
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    
-    const newFiles = Array.from(files);
-    setAttachments(prev => [...prev, ...newFiles]);
-    
+
+    const selected = Array.from(files);
+    // Reset the input so selecting the same file again still triggers onChange.
+    e.target.value = '';
+
+    const compressed = await Promise.all(selected.map((f) => compressImage(f)));
+
+    setAttachments(prev => [...prev, ...compressed]);
+
     // Create preview URLs
-    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    const newPreviews = compressed.map(file => URL.createObjectURL(file));
     setPreviewUrls(prev => [...prev, ...newPreviews]);
   };
 

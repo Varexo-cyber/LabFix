@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     
     if (files && files.length > 0) {
       for (const file of files) {
-        if (file.size > 0 && file.size < 2 * 1024 * 1024) { // Max 2MB
+        if (file.size > 0 && file.size < 5 * 1024 * 1024) { // Max 5MB
           try {
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
