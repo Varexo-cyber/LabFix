@@ -1,8 +1,17 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Veelgestelde Vragen | LabFix',
-  description: 'Antwoorden op de meest gestelde vragen over LabFix',
+  title: 'Veelgestelde Vragen - LabFix FAQ',
+  description:
+    'Antwoorden op de meest gestelde vragen over LabFix: reparatietijd, prijzen, garantie, verzending en meer. Alles wat je moet weten over onze service.',
+  alternates: {
+    canonical: 'https://labfix.nl/faq',
+  },
+  openGraph: {
+    title: 'Veelgestelde Vragen | LabFix FAQ',
+    description: 'Antwoorden op de meest gestelde vragen over LabFix reparaties en onderdelen.',
+    url: 'https://labfix.nl/faq',
+  },
 };
 
 export default function FaqPage() {

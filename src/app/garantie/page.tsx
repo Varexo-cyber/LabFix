@@ -2,8 +2,17 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Garantievoorwaarden | LabFix',
-  description: 'Garantievoorwaarden voor producten en reparaties bij LabFix.',
+  title: 'Garantievoorwaarden - LabFix',
+  description:
+    'Garantievoorwaarden voor producten en reparaties bij LabFix. Wij staan achter de kwaliteit van onze onderdelen en reparaties.',
+  alternates: {
+    canonical: 'https://labfix.nl/garantie',
+  },
+  openGraph: {
+    title: 'Garantievoorwaarden | LabFix',
+    description: 'Garantievoorwaarden voor producten en reparaties bij LabFix.',
+    url: 'https://labfix.nl/garantie',
+  },
 };
 
 export default function GarantiePage() {

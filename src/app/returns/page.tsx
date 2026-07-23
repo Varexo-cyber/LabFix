@@ -2,8 +2,17 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Retourbeleid | LabFix',
-  description: 'Retourbeleid en procedure voor LabFix producten en onderdelen.',
+  title: 'Retourbeleid - LabFix Onderdelen',
+  description:
+    'Retourbeleid en procedure voor LabFix producten en onderdelen. Niet tevreden? Bekijk onze retourvoorwaarden en hoe je een retour aanvraagt.',
+  alternates: {
+    canonical: 'https://labfix.nl/returns',
+  },
+  openGraph: {
+    title: 'Retourbeleid | LabFix',
+    description: 'Retourbeleid en procedure voor LabFix producten en onderdelen.',
+    url: 'https://labfix.nl/returns',
+  },
 };
 
 export default function ReturnsPage() {

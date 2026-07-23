@@ -1,8 +1,17 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Verzending | LabFix',
-  description: 'Verzendinformatie en leveringsopties bij LabFix',
+  title: 'Verzending & Levering - LabFix',
+  description:
+    'Verzending door heel Europa via PostNL en DHL. Bestellingen boven €150 gratis verzonden binnen Nederland. Besteld voor 16:00, dezelfde dag verwerkt.',
+  alternates: {
+    canonical: 'https://labfix.nl/shipping',
+  },
+  openGraph: {
+    title: 'Verzending & Levering | LabFix',
+    description: 'Snelle verzending door heel Europa. Gratis boven €150 binnen Nederland.',
+    url: 'https://labfix.nl/shipping',
+  },
 };
 
 export default function ShippingPage() {
