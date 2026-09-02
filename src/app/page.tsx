@@ -101,7 +101,7 @@ export default function HomePage() {
       ],
       cta: locale === 'nl' ? 'Bekijk PC Onderdelen' : 'Shop PC Parts',
       link: '/products',
-      image: '/images/products/laptop-parts.jpg'
+      image: '/images/banners/dhl-delivery.jpg'
     },
     {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',

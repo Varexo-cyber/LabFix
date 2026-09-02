@@ -15,6 +15,10 @@ function detectModel(name: string, brand: string): string | null {
   if (brand === 'apple') {
     // iPhone models
     const patterns = [
+      { match: /iphone\s*18\s*pro\s*max/, slug: 'iphone-18-pro-max' },
+      { match: /iphone\s*18\s*pro/, slug: 'iphone-18-pro' },
+      { match: /iphone\s*18\s*e/, slug: 'iphone-18e' },
+      { match: /iphone\s*18/, slug: 'iphone-18' },
       { match: /iphone\s*17\s*pro\s*max/, slug: 'iphone-17-pro-max' },
       { match: /iphone\s*17\s*pro/, slug: 'iphone-17-pro' },
       { match: /iphone\s*17\s*e/, slug: 'iphone-17e' },
@@ -113,13 +117,11 @@ function detectModel(name: string, brand: string): string | null {
       { match: /galaxy\s*z\s*flip\s*5/, slug: 'galaxy-z-flip-5' },
       { match: /galaxy\s*z\s*flip\s*4/, slug: 'galaxy-z-flip-4' },
       { match: /galaxy\s*z\s*flip\s*3/, slug: 'galaxy-z-flip-3' },
-      { match: /galaxy\s*a98/, slug: 'galaxy-a98' },
-      { match: /galaxy\s*a96/, slug: 'galaxy-a96' },
-      { match: /galaxy\s*a95/, slug: 'galaxy-a95' },
       { match: /galaxy\s*a73/, slug: 'galaxy-a73' },
       { match: /galaxy\s*a72/, slug: 'galaxy-a72' },
       { match: /galaxy\s*a71/, slug: 'galaxy-a71' },
       { match: /galaxy\s*a70/, slug: 'galaxy-a70' },
+      { match: /galaxy\s*a57/, slug: 'galaxy-a57' },
       { match: /galaxy\s*a56/, slug: 'galaxy-a56' },
       { match: /galaxy\s*a55/, slug: 'galaxy-a55' },
       { match: /galaxy\s*a54/, slug: 'galaxy-a54' },

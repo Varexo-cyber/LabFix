@@ -31,6 +31,10 @@ export const brandCategories: BrandCategory[] = [
       {
         slug: 'iphone', name: 'iPhone', nameEn: 'iPhone',
         models: [
+          { slug: 'iphone-18-pro-max', name: 'iPhone 18 Pro Max' },
+          { slug: 'iphone-18-pro', name: 'iPhone 18 Pro' },
+          { slug: 'iphone-18', name: 'iPhone 18' },
+          { slug: 'iphone-18e', name: 'iPhone 18e' },
           { slug: 'iphone-air', name: 'iPhone Air' },
           { slug: 'iphone-17-pro-max', name: 'iPhone 17 Pro Max' },
           { slug: 'iphone-17-pro', name: 'iPhone 17 Pro' },
@@ -223,18 +227,12 @@ export const brandCategories: BrandCategory[] = [
       {
         slug: 'galaxy-a', name: 'Galaxy A Serie', nameEn: 'Galaxy A Series',
         models: [
-          { slug: 'galaxy-a98', name: 'Galaxy A98 5G (2024)' },
-          { slug: 'galaxy-a96', name: 'Galaxy A96 5G (2022)' },
-          { slug: 'galaxy-a95', name: 'Galaxy A95 5G (2021)' },
-          { slug: 'galaxy-a94', name: 'Galaxy A94 5G (2021)' },
-          { slug: 'galaxy-a93', name: 'Galaxy A93 5G (2021)' },
-          { slug: 'galaxy-a92', name: 'Galaxy A92 (2020)' },
-          { slug: 'galaxy-a91', name: 'Galaxy A91 (2019)' },
           { slug: 'galaxy-a73', name: 'Galaxy A73 5G' },
           { slug: 'galaxy-a72', name: 'Galaxy A72' },
           { slug: 'galaxy-a71', name: 'Galaxy A71' },
           { slug: 'galaxy-a70', name: 'Galaxy A70' },
           { slug: 'galaxy-a70s', name: 'Galaxy A70s' },
+          { slug: 'galaxy-a57', name: 'Galaxy A57 5G' },
           { slug: 'galaxy-a56', name: 'Galaxy A56 5G' },
           { slug: 'galaxy-a55', name: 'Galaxy A55' },
           { slug: 'galaxy-a54', name: 'Galaxy A54 5G' },
