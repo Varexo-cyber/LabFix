@@ -43,7 +43,7 @@ function returnReasonLabel(reason: string): string {
 function returnStatusLabelAdmin(status: string): string {
   const labels: Record<string, string> = {
     pending: 'In afwachting',
-    label_sent: 'Label verstuurd',
+    label_sent: 'Instructies verstuurd',
     received: 'Ontvangen',
     refunded: 'Terugbetaald',
     rejected: 'Afgewezen',
@@ -1530,7 +1530,7 @@ export default function AdminPage() {
                       className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500"
                     >
                       <option value="pending">In afwachting</option>
-                      <option value="label_sent">Retourlabel verstuurd</option>
+                      <option value="label_sent">Retourinstructies verstuurd</option>
                       <option value="received">Retour ontvangen</option>
                       <option value="refunded">Terugbetaald</option>
                       <option value="rejected">Afgewezen</option>
@@ -1554,7 +1554,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800">
-                  <strong>Actie:</strong> Vraag een retourlabel aan bij MobileSentrix (order #{selectedReturn.msIncrementId || '—'}) en stuur deze naar {selectedReturn.userEmail}. Zet daarna de status op "Retourlabel verstuurd".
+                  <strong>Actie:</strong> Mail de retourinstructies met het retouradres naar {selectedReturn.userEmail} (MobileSentrix order #{selectedReturn.msIncrementId || '—'}). Zet daarna de status op "Retourinstructies verstuurd".
                 </div>
 
                 <div>
@@ -1564,7 +1564,7 @@ export default function AdminPage() {
                     onChange={(e) => setReturnAdminNotes(e.target.value)}
                     onFocus={() => { if (!returnAdminNotes) setReturnAdminNotes(selectedReturn.adminNotes || ''); }}
                     rows={3}
-                    placeholder="Notities (bijv. retourlabel verstuurd op...)"
+                    placeholder="Notities (bijv. retourinstructies verstuurd op...)"
                     className="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-500 text-sm"
                   />
                   <button

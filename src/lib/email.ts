@@ -893,7 +893,7 @@ export async function sendReturnRequestAdmin(data: ReturnAdminData) {
   const body = `
     <div style="padding:32px 24px;background:#fff">
       <h2 style="color:#dc2626;font-size:22px;margin:0 0 8px">🔄 Nieuwe retouraanvraag</h2>
-      <p style="color:#64748b;font-size:14px;margin:0 0 24px">Een klant heeft een retour aangevraagd. Vraag een retourlabel aan bij MobileSentrix en stuur deze naar de klant.</p>
+      <p style="color:#64748b;font-size:14px;margin:0 0 24px">Een klant heeft een retour aangevraagd. Stuur de klant per e-mail de retourinstructies met het retouradres.</p>
 
       <div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:8px;padding:20px;margin:0 0 24px">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
@@ -978,9 +978,9 @@ export async function sendReturnConfirmation(data: ReturnConfirmationData) {
         <p style="margin:0 0 8px;color:#1e40af;font-size:16px;font-weight:bold">📦 Wat gebeurt er nu?</p>
         <ol style="margin:0;padding-left:20px;color:#334155;font-size:14px;line-height:1.7">
           <li>Uw retour staat nu <strong>in afwachting</strong>.</li>
-          <li>Binnen <strong>3 werkdagen</strong> ontvangt u per e-mail een <strong>retourlabel</strong>.</li>
+          <li>Binnen <strong>3 werkdagen</strong> ontvangt u per e-mail de <strong>retourinstructies</strong>, met het adres waar u het pakket naartoe stuurt.</li>
           <li>Verpak het product <strong>goed en stevig</strong> in de originele verpakking of een vergelijkbare doos, zodat het onbeschadigd retour kan.</li>
-          <li>Plak het retourlabel op het pakket en lever het in bij het aangegeven afgiftepunt.</li>
+          <li>Stuur het pakket volgens die instructies terug en <strong>bewaar uw verzendbewijs</strong> tot de terugbetaling is afgerond.</li>
         </ol>
       </div>
 

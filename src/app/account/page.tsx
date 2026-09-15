@@ -20,7 +20,7 @@ const returnDaysLeft = (createdAt: string): number => {
 const returnStatusLabel = (status: string): string => {
   const labels: Record<string, string> = {
     'pending': 'In afwachting',
-    'label_sent': 'Retourlabel verstuurd',
+    'label_sent': 'Retourinstructies verstuurd',
     'received': 'Retour ontvangen',
     'refunded': 'Terugbetaald',
     'rejected': 'Afgewezen',
@@ -784,8 +784,9 @@ export default function AccountPage() {
                 </div>
                 <h2 className="text-xl font-bold text-gray-800 mb-2">Retouraanvraag ontvangen!</h2>
                 <p className="text-gray-600 text-sm mb-4">
-                  Uw retour staat nu <strong>in afwachting</strong>. Binnen 3 werkdagen ontvangt u per e-mail een retourlabel.
-                  Verpak het product goed en stevig zodat het onbeschadigd retour kan.
+                  Uw retour staat nu <strong>in afwachting</strong>. Binnen 3 werkdagen ontvangt u per e-mail de
+                  retourinstructies met het adres waar u het pakket naartoe stuurt. Verpak het product goed en stevig
+                  zodat het onbeschadigd retour kan.
                 </p>
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700 mb-6">
                   Let op: de retourkosten zijn voor eigen rekening.
