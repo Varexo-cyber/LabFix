@@ -23,7 +23,7 @@ export default function ReturnsPage() {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Retourbeleid – LabFix</h1>
-          <p className="text-gray-500 text-sm">Laatst bijgewerkt: 20 mei 2026</p>
+          <p className="text-gray-500 text-sm">Laatst bijgewerkt: 15 september 2026</p>
           <p className="text-gray-600 mt-4">
             Bij LabFix vinden we het belangrijk dat je tevreden bent met je aankoop.
           </p>
@@ -80,7 +80,15 @@ export default function ReturnsPage() {
               </li>
               <li className="flex gap-3">
                 <span className="bg-primary-100 text-primary-700 font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm">3</span>
-                <span>Je ontvangt van ons per e-mail een <strong>retourlabel</strong>. Print het label en bevestig het op je pakket. Vervolgens kun je het pakket afgeven bij een servicepunt van PostNL, DHL of een andere vervoerder (afhankelijk van het label).</span>
+                <div>
+                  <span>Stuur je pakket naar:</span>
+                  <address className="not-italic mt-2 bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-800 leading-relaxed">
+                    <strong>LabFix</strong><br />
+                    Leyweg 303<br />
+                    2545 CK Den Haag<br />
+                    Nederland
+                  </address>
+                </div>
               </li>
               <li className="flex gap-3">
                 <span className="bg-primary-100 text-primary-700 font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm">4</span>
