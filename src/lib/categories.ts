@@ -1965,3 +1965,51 @@ export const laptopPartsCategories: AccessoryCategory[] = [
     ]
   },
 ];
+
+// ==================== TARGET CATEGORY PATH RESOLVER ====================
+// The admin import screen sends the chosen target as a slash-separated path.
+// Two different shapes exist in the tree, and the third level does NOT mean
+// the same thing in both:
+//
+//   apple/iphone/iphone-18-pro                   → 3rd level is a MODEL
+//   acc-screen-protectors/gehard-glas/apple      → 3rd level is a BRAND
+//
+// Reading the third level as a brand for a device path leaves `model` empty on
+// the product, which makes it invisible on its model page in the shop.
+
+// Top-level slugs whose third level is a brand instead of a model.
+const BRAND_ON_THIRD_LEVEL_PREFIXES = ['acc-', 'pc-', 'pca-'];
+
+export interface ResolvedCategoryPath {
+  category: string;
+  subcategory: string;
+  model: string;
+  brand: string;
+}
+
+export function resolveCategoryPath(path: string): ResolvedCategoryPath {
+  const parts = (path || '').split('/').filter(Boolean);
+  const category = parts[0] || '';
+  const subcategory = parts[1] || '';
+  const third = parts[2] || '';
+
+  if (!third) return { category, subcategory, model: '', brand: '' };
+
+  if (BRAND_ON_THIRD_LEVEL_PREFIXES.some((p) => category.startsWith(p))) {
+    return { category, subcategory, model: '', brand: third };
+  }
+
+  // Device tree: the third level is the model, the top level is the brand.
+  return { category, subcategory, model: third, brand: category };
+}
+
+// True when `slug` is a real model of category/subcategory in the device tree.
+export function isKnownModelSlug(category: string, subcategory: string, slug: string): boolean {
+  if (!category || !slug) return false;
+  const brand = brandCategories.find((b) => b.slug === category);
+  if (!brand) return false;
+  const subs = subcategory
+    ? brand.subcategories.filter((s) => s.slug === subcategory)
+    : brand.subcategories;
+  return subs.some((s) => s.models.some((m) => m.slug === slug));
+}
