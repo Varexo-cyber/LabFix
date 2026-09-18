@@ -101,7 +101,7 @@ export default function HomePage() {
       ],
       cta: locale === 'nl' ? 'Bekijk Randapparatuur' : 'Shop Peripherals',
       link: '/products?pcacc=keyboards',
-      image: '/images/banners/tools.jpg'
+      image: '/images/banners/laptops.jpg'
     },
     {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
