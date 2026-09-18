@@ -90,18 +90,18 @@ export default function HomePage() {
       image: '/images/banners/phones-hero.jpg'
     },
     {
-      badge: locale === 'nl' ? 'PC & Laptop Onderdelen' : 'PC & Laptop Parts',
-      badgeIcon: '💻',
-      title: locale === 'nl' ? 'Computer & Laptop Onderdelen' : 'Computer & Laptop Parts',
-      subtitle: locale === 'nl' ? 'PC Onderdelen • Laptop Accessoires • Reparatie Tools • Kabels' : 'PC Parts • Laptop Accessories • Repair Tools • Cables',
+      badge: locale === 'nl' ? 'Randapparatuur' : 'Peripherals',
+      badgeIcon: '🖱️',
+      title: locale === 'nl' ? 'Randapparatuur voor je Werkplek' : 'Peripherals for your Desk',
+      subtitle: locale === 'nl' ? 'Toetsenborden • Muizen • Muismatten • Headsets • Webcams' : 'Keyboards • Mice • Mousepads • Headsets • Webcams',
       features: [
-        { label: 'OEM', sub: 'Quality' },
         { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
+        { label: locale === 'nl' ? 'Snelle' : 'Fast', sub: locale === 'nl' ? 'Levering' : 'Delivery' },
         { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
       ],
-      cta: locale === 'nl' ? 'Bekijk PC Onderdelen' : 'Shop PC Parts',
-      link: '/products',
-      image: '/images/banners/laptops.jpg'
+      cta: locale === 'nl' ? 'Bekijk Randapparatuur' : 'Shop Peripherals',
+      link: '/products?pcacc=keyboards',
+      image: '/images/banners/tools.jpg'
     },
     {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',

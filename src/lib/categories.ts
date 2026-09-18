@@ -31,6 +31,8 @@ export const brandCategories: BrandCategory[] = [
       {
         slug: 'iphone', name: 'iPhone', nameEn: 'iPhone',
         models: [
+          { slug: 'iphone-ultra', name: 'iPhone Ultra' },
+          { slug: 'iphone-air-2', name: 'iPhone Air 2' },
           { slug: 'iphone-18-pro-max', name: 'iPhone 18 Pro Max' },
           { slug: 'iphone-18-pro', name: 'iPhone 18 Pro' },
           { slug: 'iphone-18', name: 'iPhone 18' },
@@ -1077,11 +1079,6 @@ export const brandCategories: BrandCategory[] = [
 export function getBrandName(slug: string, locale: string = 'nl'): string {
   const brand = brandCategories.find(b => b.slug === slug);
   if (brand) return locale === 'en' ? brand.nameEn : brand.name;
-  // Check PC parts (pc-slug)
-  if (slug.startsWith('pc-')) {
-    const pc = pcPartsCategories.find(c => c.slug === slug.slice(3));
-    if (pc) return locale === 'en' ? pc.nameEn : pc.name;
-  }
   // Check PC accessories (pca-slug)
   if (slug.startsWith('pca-')) {
     const pca = pcAccessoryCategories.find(c => c.slug === slug.slice(4));
@@ -1110,15 +1107,6 @@ export function getSubcategoryName(brandSlug: string, subSlug: string, locale: s
   if (brand) {
     const sub = brand.subcategories.find(s => s.slug === subSlug);
     if (sub) return locale === 'en' ? sub.nameEn : sub.name;
-    return subSlug;
-  }
-  // Check PC parts subcategories
-  if (brandSlug.startsWith('pc-')) {
-    const pc = pcPartsCategories.find(c => c.slug === brandSlug.slice(3));
-    if (pc) {
-      const sub = pc.subcategories.find(s => s.slug === subSlug);
-      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
-    }
     return subSlug;
   }
   // Check PC accessories subcategories
@@ -1213,14 +1201,14 @@ export function getAllProductCategories(): BrandCategory[] {
 
   return [
     ...brandCategories,
+    // Reparatiegereedschap — subcategorieen volgen later
+    { slug: '_section_rt', name: '── 🛠️ REPAIR TOOLS ──', nameEn: '── 🛠️ REPAIR TOOLS ──', subcategories: [] },
+    { slug: 'repair-tools', name: 'Repair Tools', nameEn: 'Repair Tools', subcategories: [] },
     // Accessoires section header
     { slug: '_section_acc', name: '── 🎧 ACCESSOIRES ──', nameEn: '── 🎧 ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(accessoryCategories, 'acc-'),
-    // PC Onderdelen section header
-    { slug: '_section_pc', name: '── 💻 PC ONDERDELEN ──', nameEn: '── 💻 PC PARTS ──', subcategories: [] },
-    ...convertAccessory(pcPartsCategories, 'pc-'),
-    // PC Accessoires section header
-    { slug: '_section_pca', name: '── 🖱️ PC ACCESSOIRES ──', nameEn: '── 🖱️ PC ACCESSORIES ──', subcategories: [] },
+    // Randapparatuur section header
+    { slug: '_section_pca', name: '── 🖱️ RANDAPPARATUUR ──', nameEn: '── 🖱️ PERIPHERALS ──', subcategories: [] },
     ...convertAccessory(pcAccessoryCategories, 'pca-'),
     // Laptop section header (merk -> model -> onderdeel)
     { slug: '_section_lb', name: '── 💻 LAPTOPS ──', nameEn: '── 💻 LAPTOPS ──', subcategories: [] },
@@ -1413,75 +1401,6 @@ export const screenProtectorBrands: ScreenProtectorBrand[] = [
 ];
 
 // ==================== PC PARTS CATEGORY SYSTEM ====================
-export const pcPartsCategories: AccessoryCategory[] = [
-  {
-    slug: 'motherboards',
-    name: 'Moederborden',
-    nameEn: 'Motherboards',
-    description: 'ATX, Micro-ATX, Mini-ITX moederborden',
-    subcategories: [
-      { slug: 'atx', name: 'ATX', nameEn: 'ATX', description: 'Standaard ATX form factor' },
-      { slug: 'micro-atx', name: 'Micro-ATX', nameEn: 'Micro-ATX', description: 'Compact Micro-ATX' },
-      { slug: 'mini-itx', name: 'Mini-ITX', nameEn: 'Mini-ITX', description: 'Kleine Mini-ITX' },
-    ]
-  },
-  {
-    slug: 'processors',
-    name: 'Processoren (CPU)',
-    nameEn: 'Processors (CPU)',
-    description: 'Intel & AMD processors',
-    subcategories: [
-      { slug: 'intel', name: 'Intel', nameEn: 'Intel', description: 'Intel Core processors' },
-      { slug: 'amd', name: 'AMD', nameEn: 'AMD', description: 'AMD Ryzen processors' },
-    ]
-  },
-  {
-    slug: 'memory-ram',
-    name: 'Geheugen (RAM)',
-    nameEn: 'Memory (RAM)',
-    description: 'DDR4 & DDR5 RAM modules',
-    subcategories: [
-      { slug: 'ddr4', name: 'DDR4', nameEn: 'DDR4', description: 'DDR4 geheugen' },
-      { slug: 'ddr5', name: 'DDR5', nameEn: 'DDR5', description: 'DDR5 geheugen' },
-    ]
-  },
-  {
-    slug: 'graphics-cards',
-    name: 'Grafische Kaarten (GPU)',
-    nameEn: 'Graphics Cards (GPU)',
-    description: 'NVIDIA & AMD videokaarten',
-    subcategories: [
-      { slug: 'nvidia', name: 'NVIDIA', nameEn: 'NVIDIA', description: 'NVIDIA GeForce kaarten' },
-      { slug: 'amd-gpu', name: 'AMD', nameEn: 'AMD', description: 'AMD Radeon kaarten' },
-    ]
-  },
-  {
-    slug: 'power-supplies',
-    name: 'Voedingen (PSU)',
-    nameEn: 'Power Supplies (PSU)',
-    description: 'ATX voedingen voor PC',
-    subcategories: []
-  },
-  {
-    slug: 'cases',
-    name: 'Behuizingen',
-    nameEn: 'PC Cases',
-    description: 'Tower, Mini-ITX, Micro-ATX behuizingen',
-    subcategories: []
-  },
-  {
-    slug: 'monitors',
-    name: 'Monitoren / Beeldschermen',
-    nameEn: 'Monitors / Displays',
-    description: 'Gaming, 4K, Ultrawide monitoren',
-    subcategories: [
-      { slug: 'gaming-monitors', name: 'Gaming Monitoren', nameEn: 'Gaming Monitors', description: '144Hz, 240Hz, 1ms' },
-      { slug: '4k-monitors', name: '4K Monitoren', nameEn: '4K Monitors', description: 'Ultra HD beeldschermen' },
-      { slug: 'ultrawide', name: 'Ultrawide', nameEn: 'Ultrawide', description: '21:9 & 32:9 monitoren' },
-    ]
-  },
-];
-
 // ==================== PC ACCESSORIES CATEGORY SYSTEM ====================
 export const pcAccessoryCategories: AccessoryCategory[] = [
   {

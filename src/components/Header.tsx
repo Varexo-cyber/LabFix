@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid, Smartphone, Package, Monitor, Laptop } from 'lucide-react';
-import { brandCategories, accessoryCategories, screenProtectorBrands, pcPartsCategories, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, accessoryCategories, screenProtectorBrands, pcAccessoryCategories, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 import VatToggle from '@/components/VatToggle';
 
 const menuAccessoryCategories = accessoryCategories.filter(
@@ -73,7 +73,6 @@ export default function Header() {
   const [hoveredAccessoryCat, setHoveredAccessoryCat] = useState<string | null>(null);
   const [hoveredAccessorySub, setHoveredAccessorySub] = useState<string | null>(null);
   const [hoveredScreenProtectorBrand, setHoveredScreenProtectorBrand] = useState<string | null>(null);
-  const [hoveredPcPartsCat, setHoveredPcPartsCat] = useState<string | null>(null);
   const [hoveredPcPartsSub, setHoveredPcPartsSub] = useState<string | null>(null);
   const [hoveredPcAccessoryCat, setHoveredPcAccessoryCat] = useState<string | null>(null);
   const [hoveredPcAccessorySub, setHoveredPcAccessorySub] = useState<string | null>(null);
@@ -185,11 +184,6 @@ export default function Header() {
               catResults.push({ type: locale === 'nl' ? 'Model' : 'Model', label: model.name, sublabel: `${locale === 'nl' ? brand.name : brand.nameEn} - ${locale === 'nl' ? sub.name : sub.nameEn}`, url: `/products?brand=${brand.slug}&sub=${sub.slug}&model=${model.slug}` });
             }
           }
-        }
-      }
-      for (const cat of pcPartsCategories) {
-        if (cat.name.toLowerCase().includes(qLower) || cat.nameEn.toLowerCase().includes(qLower)) {
-          catResults.push({ type: locale === 'nl' ? 'PC Onderdeel' : 'PC Part', label: locale === 'nl' ? cat.name : cat.nameEn, url: `/products?pcpart=${cat.slug}` });
         }
       }
       for (const cat of accessoryCategories) {
@@ -462,11 +456,11 @@ export default function Header() {
                       {locale === 'nl' ? 'Accessoires' : 'Accessories'}
                     </button>
                     <button 
-                      onMouseEnter={() => { setAllProductsSection('pc'); setHoveredPcPartsCat(null); setHoveredPcAccessoryCat(null); }}
+                      onMouseEnter={() => { setAllProductsSection('pc'); setHoveredPcAccessoryCat(null); }}
                       className={`px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${allProductsSection === 'pc' ? 'bg-white text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`}
                     >
                       <Monitor size={16} />
-                      {locale === 'nl' ? 'PC & Onderdelen' : 'PC & Parts'}
+                      {locale === 'nl' ? 'Randapparatuur' : 'Peripherals'}
                     </button>
                     <button 
                       onClick={() => { setOpenDropdown(null); setLaptopModalOpen(true); setLaptopWizardBrand(null); setLaptopWizardModel(null); setLaptopWizardPart(null); }}
@@ -586,15 +580,7 @@ export default function Header() {
                   {allProductsSection === 'pc' && (
                     <div className="h-[500px] flex">
                       <div className="w-[200px] border-r border-gray-100 bg-gray-50">
-                        <div className="p-3 border-b text-xs font-bold text-primary-600 uppercase">{locale === 'nl' ? 'Onderdelen' : 'Parts'}</div>
-                        <div className="py-2">
-                          {pcPartsCategories.map((cat) => (
-                            <div key={cat.slug} onMouseEnter={() => setHoveredPcPartsCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcPartsCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-white'}`}>
-                              {locale === 'en' ? cat.nameEn : cat.name}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="p-3 border-t border-b text-xs font-bold text-primary-600 uppercase">{locale === 'nl' ? 'Accessoires' : 'Accessories'}</div>
+                        <div className="p-3 border-b text-xs font-bold text-primary-600 uppercase">{locale === 'nl' ? 'Randapparatuur' : 'Peripherals'}</div>
                         <div className="py-2">
                           {pcAccessoryCategories.map((cat) => (
                             <div key={cat.slug} onMouseEnter={() => setHoveredPcAccessoryCat(cat.slug)} className={`px-3 py-2 text-sm cursor-pointer ${hoveredPcAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-white'}`}>
@@ -604,22 +590,7 @@ export default function Header() {
                         </div>
                       </div>
                       <div className="flex-1 bg-white overflow-y-auto p-4">
-                        {hoveredPcPartsCat ? (() => {
-                          const cat = pcPartsCategories.find(c => c.slug === hoveredPcPartsCat);
-                          if (!cat) return null;
-                          return (
-                            <>
-                              <div className="text-sm font-bold text-gray-800 mb-3">{locale === 'en' ? cat.nameEn : cat.name}</div>
-                              <div className="grid grid-cols-3 gap-2">
-                                {cat.subcategories?.map((sub) => (
-                                  <Link key={sub.slug} href={`/products?pcpart=${cat.slug}&sub=${sub.slug}`} className="block px-3 py-2 text-sm bg-gray-50 hover:bg-primary-50 hover:text-primary-600 rounded" onClick={() => setOpenDropdown(null)}>
-                                    {locale === 'nl' ? sub.name : sub.nameEn}
-                                  </Link>
-                                ))}
-                              </div>
-                            </>
-                          );
-                        })() : hoveredPcAccessoryCat ? (() => {
+                        {hoveredPcAccessoryCat ? (() => {
                           const cat = pcAccessoryCategories.find(c => c.slug === hoveredPcAccessoryCat);
                           if (!cat) return null;
                           return (
@@ -816,6 +787,14 @@ export default function Header() {
                 </div>
               )}
             </div>
+
+            {/* Repair Tools — subcategorieen volgen later */}
+            <Link
+              href="/products?category=repair-tools"
+              className="px-3 py-3 hover:bg-primary-600 text-sm font-medium"
+            >
+              {locale === 'nl' ? 'Repair Tools' : 'Repair Tools'}
+            </Link>
 
             <div className="flex-1" />
 

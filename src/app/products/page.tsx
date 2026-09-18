@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcPartsCategories, pcAccessoryCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcAccessoryCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale, vatMode } = useApp();
@@ -34,7 +34,6 @@ function ProductsPageContent() {
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [expandedSections, setExpandedSections] = useState({
     brands: true,
-    pcParts: false,
     pcAcc: false,
     accessories: false,
     laptopBrands: false,
@@ -158,9 +157,6 @@ function ProductsPageContent() {
 
     if (accessory && !expandedSectionsRef.current.accessories) {
       setExpandedSections(p => ({ ...p, accessories: true }));
-    }
-    if (pcpart && !expandedSectionsRef.current.pcParts) {
-      setExpandedSections(p => ({ ...p, pcParts: true }));
     }
     if (pcacc && !expandedSectionsRef.current.pcAcc) {
       setExpandedSections(p => ({ ...p, pcAcc: true }));
@@ -494,69 +490,13 @@ function ProductsPageContent() {
                 )}
               </div>
 
-              {/* Section: PC Parts */}
-              <div className="mt-2 border-t pt-2">
-                <button
-                  onClick={() => setExpandedSections(p => ({ ...p, pcParts: !p.pcParts }))}
-                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  {locale === 'nl' ? '� PC Onderdelen' : '� PC Parts'}
-                  <ChevronDown size={14} className={`transition-transform ${expandedSections.pcParts ? 'rotate-180' : ''}`} />
-                </button>
-                {expandedSections.pcParts && (
-                  <div className="space-y-0.5 mt-1">
-                    {pcPartsCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
-                      const catKey = `pc-${cat.slug}`;
-                      const isExpanded = expandedBrands.includes(catKey);
-                      return (
-                        <div key={catKey}>
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(catKey) ? prev : [...prev, catKey]); }}
-                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
-                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                              }`}
-                            >
-                              {locale === 'en' ? cat.nameEn : cat.name}
-                            </button>
-                            {cat.subcategories && cat.subcategories.length > 0 && (
-                              <button
-                                onClick={() => toggleBrandExpand(catKey)}
-                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
-                              >
-                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </button>
-                            )}
-                          </div>
-                          {isExpanded && cat.subcategories && (
-                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
-                                <button
-                                  key={sub.slug}
-                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); }}
-                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {locale === 'en' ? sub.nameEn : sub.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
               {/* Section: PC Accessories */}
               <div className="mt-2 border-t pt-2">
                 <button
                   onClick={() => setExpandedSections(p => ({ ...p, pcAcc: !p.pcAcc }))}
                   className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
                 >
-                  {locale === 'nl' ? '🖱️ PC Accessoires' : '🖱️ PC Accessories'}
+                  {locale === 'nl' ? '🖱️ Randapparatuur' : '🖱️ Peripherals'}
                   <ChevronDown size={14} className={`transition-transform ${expandedSections.pcAcc ? 'rotate-180' : ''}`} />
                 </button>
                 {expandedSections.pcAcc && (
