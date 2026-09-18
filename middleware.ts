@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Onderhoudsmodus staat uit tenzij MAINTENANCE_MODE op 'true' staat. Zet hem in
+// Netlify onder Site settings -> Environment variables; een redeploy zet hem aan
+// of uit, zonder code te wijzigen.
+//
+// Stond hiervoor hardcoded op true. Dat blokkeerde ook Google: crawlers kregen
+// op elke productpagina een redirect naar /onderhoud, waardoor Merchant Center
+// de hele feed afkeurt.
+const UNLOCK_COOKIE = 'maintenance_unlock';
+
 export function middleware(request: NextRequest) {
-  // === MAINTENANCE MODE - HARDOCODED TO TRUE ===
-  const MAINTENANCE_ENABLED = true;
-  const UNLOCK_COOKIE = 'maintenance_unlock';
-  
-  if (!MAINTENANCE_ENABLED) {
+  const maintenanceEnabled = process.env.MAINTENANCE_MODE === 'true';
+
+  if (!maintenanceEnabled) {
     return NextResponse.next();
   }
 
@@ -17,8 +24,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check unlock cookie
-  const unlocked = request.cookies.get(UNLOCK_COOKIE)?.value === '123';
+  // Check unlock cookie — waarde instelbaar via MAINTENANCE_UNLOCK_CODE
+  const unlockCode = process.env.MAINTENANCE_UNLOCK_CODE || '123';
+  const unlocked = request.cookies.get(UNLOCK_COOKIE)?.value === unlockCode;
   if (unlocked) {
     return NextResponse.next();
   }

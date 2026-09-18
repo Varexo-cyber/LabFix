@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { mkdir } from 'fs/promises';
-import path from 'path';
+import { storeImage } from '@/lib/product-images';
+
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,19 +32,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Convert to base64
+    // De bytes gaan de database in en krijgen een echte URL op /api/images/<id>.
+    // Een data:-URL zou hier ook werken in de browser, maar Google Merchant
+    // Center kan die niet ophalen, waardoor het product uit de feed valt.
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString('base64');
     const mimeType = file.type || 'image/jpeg';
-    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('Converted to base64, length:', base64.length);
+    const url = await storeImage(mimeType, base64);
 
-    return NextResponse.json({ 
-      success: true, 
-      url: dataUrl,
-      isBase64: true
+    console.log('Stored image at', url, '- bytes:', buffer.length);
+
+    return NextResponse.json({
+      success: true,
+      url,
+      isBase64: false,
     });
   } catch (error: any) {
     console.error('Upload error:', error);
