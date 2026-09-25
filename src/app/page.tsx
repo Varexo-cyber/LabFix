@@ -90,20 +90,6 @@ export default function HomePage() {
       image: '/images/banners/phones-hero.jpg'
     },
     {
-      badge: locale === 'nl' ? 'Randapparatuur' : 'Peripherals',
-      badgeIcon: '🖱️',
-      title: locale === 'nl' ? 'Randapparatuur voor je Werkplek' : 'Peripherals for your Desk',
-      subtitle: locale === 'nl' ? 'Toetsenborden • Muizen • Muismatten • Headsets • Webcams' : 'Keyboards • Mice • Mousepads • Headsets • Webcams',
-      features: [
-        { label: locale === 'nl' ? 'Getest' : 'Tested', sub: '100%' },
-        { label: locale === 'nl' ? 'Snelle' : 'Fast', sub: locale === 'nl' ? 'Levering' : 'Delivery' },
-        { label: locale === 'nl' ? 'Garantie' : 'Warranty', sub: 'Incl.' }
-      ],
-      cta: locale === 'nl' ? 'Bekijk Randapparatuur' : 'Shop Peripherals',
-      link: '/products?pcacc=keyboards',
-      image: '/images/products/laptop-parts.jpg'
-    },
-    {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
       badgeIcon: '🔧',
       title: locale === 'nl' ? 'Professionele Reparatie Service' : 'Professional Repair Service',

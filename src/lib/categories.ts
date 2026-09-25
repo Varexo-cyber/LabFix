@@ -1079,11 +1079,6 @@ export const brandCategories: BrandCategory[] = [
 export function getBrandName(slug: string, locale: string = 'nl'): string {
   const brand = brandCategories.find(b => b.slug === slug);
   if (brand) return locale === 'en' ? brand.nameEn : brand.name;
-  // Check PC accessories (pca-slug)
-  if (slug.startsWith('pca-')) {
-    const pca = pcAccessoryCategories.find(c => c.slug === slug.slice(4));
-    if (pca) return locale === 'en' ? pca.nameEn : pca.name;
-  }
   // Check laptop brands (laptop-slug)
   if (slug.startsWith('laptop-')) {
     const lb = laptopBrands.find(b => b.slug === slug.slice(7));
@@ -1107,15 +1102,6 @@ export function getSubcategoryName(brandSlug: string, subSlug: string, locale: s
   if (brand) {
     const sub = brand.subcategories.find(s => s.slug === subSlug);
     if (sub) return locale === 'en' ? sub.nameEn : sub.name;
-    return subSlug;
-  }
-  // Check PC accessories subcategories
-  if (brandSlug.startsWith('pca-')) {
-    const pca = pcAccessoryCategories.find(c => c.slug === brandSlug.slice(4));
-    if (pca) {
-      const sub = pca.subcategories.find(s => s.slug === subSlug);
-      if (sub) return locale === 'en' ? sub.nameEn : sub.name;
-    }
     return subSlug;
   }
   // Check laptop brands subcategories
@@ -1207,9 +1193,6 @@ export function getAllProductCategories(): BrandCategory[] {
     // Accessoires section header
     { slug: '_section_acc', name: '── 🎧 ACCESSOIRES ──', nameEn: '── 🎧 ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(accessoryCategories, 'acc-'),
-    // Randapparatuur section header
-    { slug: '_section_pca', name: '── 🖱️ RANDAPPARATUUR ──', nameEn: '── 🖱️ PERIPHERALS ──', subcategories: [] },
-    ...convertAccessory(pcAccessoryCategories, 'pca-'),
     // Laptop section header (merk -> model -> onderdeel)
     { slug: '_section_lb', name: '── 💻 LAPTOPS ──', nameEn: '── 💻 LAPTOPS ──', subcategories: [] },
     ...convertLaptopBrands(),
@@ -1401,122 +1384,6 @@ export const screenProtectorBrands: ScreenProtectorBrand[] = [
 ];
 
 // ==================== PC PARTS CATEGORY SYSTEM ====================
-// ==================== PC ACCESSORIES CATEGORY SYSTEM ====================
-export const pcAccessoryCategories: AccessoryCategory[] = [
-  {
-    slug: 'keyboards',
-    name: 'Toetsenborden',
-    nameEn: 'Keyboards',
-    description: 'Mechanisch, membrane, draadloos',
-    subcategories: [
-      { slug: 'mechanical', name: 'Mechanisch', nameEn: 'Mechanical', description: 'Mechanische switches' },
-      { slug: 'membrane', name: 'Membraan', nameEn: 'Membrane', description: 'Stille membrane toetsenborden' },
-      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth & 2.4GHz' },
-    ]
-  },
-  {
-    slug: 'mice',
-    name: 'Muizen',
-    nameEn: 'Mice',
-    description: 'Bedraad, draadloos, gaming',
-    subcategories: [
-      { slug: 'wired', name: 'Bedraad', nameEn: 'Wired', description: 'USB muizen' },
-      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth & 2.4GHz' },
-      { slug: 'gaming', name: 'Gaming', nameEn: 'Gaming', description: 'Hoge DPI gaming muizen' },
-    ]
-  },
-  {
-    slug: 'mousepads',
-    name: 'Muispaden',
-    nameEn: 'Mousepads',
-    description: 'Gaming & office muispaden',
-    subcategories: []
-  },
-  {
-    slug: 'speakers',
-    name: 'Speakers',
-    nameEn: 'Speakers',
-    description: 'PC speakers & soundbars',
-    subcategories: [
-      { slug: '2.0', name: '2.0 Speakers', nameEn: '2.0 Speakers', description: 'Stereo speakers' },
-      { slug: '2.1', name: '2.1 Speakers', nameEn: '2.1 Speakers', description: 'Met subwoofer' },
-      { slug: '5.1', name: '5.1 Speakers', nameEn: '5.1 Speakers', description: 'Surround sound' },
-    ]
-  },
-  {
-    slug: 'headphones',
-    name: 'Koptelefoons / Headsets',
-    nameEn: 'Headphones / Headsets',
-    description: 'Bedraad, draadloos, gaming headsets',
-    subcategories: [
-      { slug: 'wired', name: 'Bedraad', nameEn: 'Wired', description: '3.5mm & USB headsets' },
-      { slug: 'wireless', name: 'Draadloos', nameEn: 'Wireless', description: 'Bluetooth headsets' },
-      { slug: 'gaming', name: 'Gaming', nameEn: 'Gaming', description: 'Gaming headsets met mic' },
-    ]
-  },
-  {
-    slug: 'external-storage',
-    name: 'Externe Opslag',
-    nameEn: 'External Storage',
-    description: 'Externe harde schijven & USB sticks',
-    subcategories: [
-      { slug: 'external-hdd', name: 'Externe Harde Schijf', nameEn: 'External Hard Drive', description: 'HDD & SSD extern' },
-      { slug: 'usb-sticks', name: 'USB Sticks', nameEn: 'USB Sticks', description: 'USB 2.0, 3.0, 3.1 & USB-C' },
-    ]
-  },
-  {
-    slug: 'webcams',
-    name: "Camera's / Webcams",
-    nameEn: 'Cameras / Webcams',
-    description: 'Webcams voor PC & laptop',
-    subcategories: []
-  },
-  {
-    slug: 'microphones',
-    name: 'Microfoons',
-    nameEn: 'Microphones',
-    description: 'USB & condensator microfoons',
-    subcategories: []
-  },
-  {
-    slug: 'cables',
-    name: 'Kabels',
-    nameEn: 'Cables',
-    description: 'Internet, VGA, HDMI, voedingskabels',
-    subcategories: [
-      { slug: 'ethernet', name: 'Internet / Ethernet', nameEn: 'Internet / Ethernet', description: 'Cat5e, Cat6, Cat6a kabels' },
-      { slug: 'vga', name: 'VGA', nameEn: 'VGA', description: 'VGA monitorkabels' },
-      { slug: 'hdmi', name: 'HDMI', nameEn: 'HDMI', description: 'HDMI 1.4, 2.0, 2.1 kabels' },
-      { slug: 'power', name: 'Voedingskabels', nameEn: 'Power Cables', description: 'PC voedingskabels' },
-    ]
-  },
-  {
-    slug: 'networking',
-    name: 'Netwerkapparatuur',
-    nameEn: 'Networking',
-    description: 'Routers, WiFi, Bluetooth, switches',
-    subcategories: [
-      { slug: 'routers', name: 'Routers', nameEn: 'Routers', description: 'WiFi routers' },
-      { slug: 'wifi-usb', name: 'WiFi USB', nameEn: 'WiFi USB', description: 'USB WiFi adapters' },
-      { slug: 'wifi-extender', name: 'WiFi Extender', nameEn: 'WiFi Extender', description: 'WiFi versterkers & repeaters' },
-      { slug: 'bluetooth', name: 'Bluetooth', nameEn: 'Bluetooth', description: 'Bluetooth adapters & dongles' },
-      { slug: 'network-switch', name: 'Netwerk Switch', nameEn: 'Network Switch', description: 'Ethernet switches' },
-    ]
-  },
-];
-
-// Compatibility mapping: which accessory categories work with which brands/models
-export const accessoryCompatibility = {
-  'apple': ['iphone', 'ipad', 'apple-watch', 'airpods'],
-  'samsung': ['galaxy-s', 'galaxy-a', 'galaxy-z', 'galaxy-tab'],
-  'google': ['pixel'],
-  'huawei': ['huawei-phones', 'huawei-tablets'],
-  'xiaomi': ['xiaomi-phones', 'redmi', 'poco'],
-  'motorola': ['moto-g', 'moto-edge', 'moto-razr'],
-  'oneplus': ['oneplus-phones'],
-  'oppo': ['oppo-phones', 'oppo-find', 'oppo-reno'],
-};
-
 // ==================== LAPTOP BRANDS (for quick search / refurbished) ====================
 export interface LaptopSubCategory {
   slug: string;

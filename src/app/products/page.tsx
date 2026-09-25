@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, pcAccessoryCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale, vatMode } = useApp();
@@ -34,7 +34,6 @@ function ProductsPageContent() {
   const [sidebarSearch, setSidebarSearch] = useState('');
   const [expandedSections, setExpandedSections] = useState({
     brands: true,
-    pcAcc: false,
     accessories: false,
     laptopBrands: false,
     laptopParts: false
@@ -45,7 +44,7 @@ function ProductsPageContent() {
     const sp = searchParams;
     return [
       sp.get('brand'), sp.get('sub'), sp.get('model'), sp.get('category'),
-      sp.get('search'), sp.get('accessory'), sp.get('pcpart'), sp.get('pcacc'),
+      sp.get('search'), sp.get('accessory'),
       sp.get('laptopBrand'), sp.get('laptopModel'), sp.get('laptopPart'), sp.get('accBrand')
     ].join('|');
   }, [searchParams]);
@@ -120,15 +119,13 @@ function ProductsPageContent() {
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
     const accessory = searchParams.get('accessory');
-    const pcpart = searchParams.get('pcpart');
-    const pcacc = searchParams.get('pcacc');
     const laptopBrand = searchParams.get('laptopBrand');
     const laptopModel = searchParams.get('laptopModel');
     const laptopPart = searchParams.get('laptopPart');
     const accessoryBrand = searchParams.get('accBrand');
 
     // Only update state if URL params differ from current state (prevents overwriting sidebar clicks)
-    const targetBrand = cat || brand || (accessory ? `acc-${accessory}` : '') || (pcpart ? `pc-${pcpart}` : '') || (pcacc ? `pca-${pcacc}` : '') || (laptopBrand ? `laptop-${laptopBrand}` : '') || '';
+    const targetBrand = cat || brand || (accessory ? `acc-${accessory}` : '') || (laptopBrand ? `laptop-${laptopBrand}` : '') || '';
     const targetSub = sub || laptopModel || '';
     const targetModel = model || laptopPart || '';
 
@@ -158,9 +155,6 @@ function ProductsPageContent() {
     if (accessory && !expandedSectionsRef.current.accessories) {
       setExpandedSections(p => ({ ...p, accessories: true }));
     }
-    if (pcacc && !expandedSectionsRef.current.pcAcc) {
-      setExpandedSections(p => ({ ...p, pcAcc: true }));
-    }
     if (laptopBrand && !expandedSectionsRef.current.laptopBrands) {
       setExpandedSections(p => ({ ...p, laptopBrands: true }));
     }
@@ -185,7 +179,7 @@ function ProductsPageContent() {
     const url = new URL(window.location.href);
     const params = url.searchParams;
     params.delete('category'); params.delete('sub'); params.delete('model'); params.delete('brand');
-    params.delete('accessory'); params.delete('pcpart'); params.delete('pcacc');
+    params.delete('accessory');
     params.delete('laptopBrand'); params.delete('laptopModel'); params.delete('laptopPart');
     params.delete('accBrand'); params.delete('search'); params.delete('sort'); params.delete('page');
 
@@ -203,12 +197,6 @@ function ProductsPageContent() {
         if (selectedSub) params.set('sub', selectedSub);
         if (selectedAccessoryBrand) params.set('accBrand', selectedAccessoryBrand);
         if (selectedModel) params.set('model', selectedModel);
-      } else if (selectedBrand.startsWith('pc-')) {
-        params.set('pcpart', selectedBrand.slice(3));
-        if (selectedSub) params.set('sub', selectedSub);
-      } else if (selectedBrand.startsWith('pca-')) {
-        params.set('pcacc', selectedBrand.slice(4));
-        if (selectedSub) params.set('sub', selectedSub);
       } else {
         params.set('brand', selectedBrand);
         if (selectedSub) params.set('sub', selectedSub);
@@ -481,62 +469,6 @@ function ProductsPageContent() {
                                   </div>
                                 );
                               })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Section: PC Accessories */}
-              <div className="mt-2 border-t pt-2">
-                <button
-                  onClick={() => setExpandedSections(p => ({ ...p, pcAcc: !p.pcAcc }))}
-                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  {locale === 'nl' ? '🖱️ Randapparatuur' : '🖱️ Peripherals'}
-                  <ChevronDown size={14} className={`transition-transform ${expandedSections.pcAcc ? 'rotate-180' : ''}`} />
-                </button>
-                {expandedSections.pcAcc && (
-                  <div className="space-y-0.5 mt-1">
-                    {pcAccessoryCategories.filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || c.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((cat) => {
-                      const catKey = `pca-${cat.slug}`;
-                      const isExpanded = expandedBrands.includes(catKey);
-                      return (
-                        <div key={catKey}>
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => { setSelectedBrand(catKey); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); setExpandedBrands(prev => prev.includes(catKey) ? prev : [...prev, catKey]); }}
-                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
-                                selectedBrand === catKey ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                              }`}
-                            >
-                              {locale === 'en' ? cat.nameEn : cat.name}
-                            </button>
-                            {cat.subcategories && cat.subcategories.length > 0 && (
-                              <button
-                                onClick={() => toggleBrandExpand(catKey)}
-                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
-                              >
-                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </button>
-                            )}
-                          </div>
-                          {isExpanded && cat.subcategories && (
-                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                              {cat.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((sub) => (
-                                <button
-                                  key={sub.slug}
-                                  onClick={() => { setSelectedBrand(catKey); setSelectedSub(sub.slug); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); }}
-                                  className={`block w-full text-left px-2 py-1 rounded transition-colors text-xs ${
-                                    selectedSub === sub.slug && selectedBrand === catKey ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {locale === 'en' ? sub.nameEn : sub.name}
-                                </button>
-                              ))}
                             </div>
                           )}
                         </div>
