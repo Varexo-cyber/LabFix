@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, Phone, Mail, Wrench, Coins, LayoutGrid, Smartphone, Package, Monitor, Laptop } from 'lucide-react';
-import { brandCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories, standaloneCategories } from '@/lib/categories';
 import VatToggle from '@/components/VatToggle';
 
 interface Brand {
@@ -177,6 +177,11 @@ export default function Header() {
       for (const cat of accessoryCategories) {
         if (cat.name.toLowerCase().includes(qLower) || cat.nameEn.toLowerCase().includes(qLower)) {
           catResults.push({ type: locale === 'nl' ? 'Accessoire' : 'Accessory', label: locale === 'nl' ? cat.name : cat.nameEn, url: `/products?accessory=${cat.slug}` });
+        }
+      }
+      for (const cat of standaloneCategories) {
+        if (cat.name.toLowerCase().includes(qLower) || cat.nameEn.toLowerCase().includes(qLower)) {
+          catResults.push({ type: locale === 'nl' ? 'Categorie' : 'Category', label: locale === 'nl' ? cat.name : cat.nameEn, url: `/products?category=${cat.slug}` });
         }
       }
       for (const cat of laptopBrands) {

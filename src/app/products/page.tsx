@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories, standaloneCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale, vatMode } = useApp();
@@ -388,6 +388,23 @@ function ProductsPageContent() {
                     })}
                   </div>
                 )}
+              </div>
+
+              {/* Section: Repair Tools — losse categorie, nog zonder subcategorieen */}
+              <div className="mt-2 border-t pt-2">
+                {standaloneCategories
+                  .filter(c => !sidebarSearch || c.name.toLowerCase().includes(sidebarSearch.toLowerCase()))
+                  .map((cat) => (
+                    <button
+                      key={cat.slug}
+                      onClick={() => { setSelectedBrand(cat.slug); setSelectedSub(''); setSelectedModel(''); setSelectedAccessoryBrand(''); setSidebarSearch(''); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
+                        selectedBrand === cat.slug ? 'bg-primary-100 text-primary-700' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      🛠️ {locale === 'en' ? cat.nameEn : cat.name}
+                    </button>
+                  ))}
               </div>
 
               {/* Section: Accessories */}

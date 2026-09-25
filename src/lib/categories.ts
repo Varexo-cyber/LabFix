@@ -1079,6 +1079,8 @@ export const brandCategories: BrandCategory[] = [
 export function getBrandName(slug: string, locale: string = 'nl'): string {
   const brand = brandCategories.find(b => b.slug === slug);
   if (brand) return locale === 'en' ? brand.nameEn : brand.name;
+  const standalone = standaloneCategories.find(c => c.slug === slug);
+  if (standalone) return locale === 'en' ? standalone.nameEn : standalone.name;
   // Check laptop brands (laptop-slug)
   if (slug.startsWith('laptop-')) {
     const lb = laptopBrands.find(b => b.slug === slug.slice(7));
@@ -1155,6 +1157,12 @@ export function getAllCategoryOptions(): { value: string; label: string; brand: 
 }
 
 // Helper: Combine ALL category systems into one unified BrandCategory[] format for admin forms
+// Top-level categorieen zonder merk- of subniveau. Staan apart zodat zowel het
+// menu als getBrandName ze kent: anders toont de kruimelpad de ruwe slug.
+export const standaloneCategories: BrandCategory[] = [
+  { slug: 'repair-tools', name: 'Repair Tools', nameEn: 'Repair Tools', subcategories: [] },
+];
+
 export function getAllProductCategories(): BrandCategory[] {
   const convertAccessory = (cats: AccessoryCategory[], prefix: string): BrandCategory[] =>
     cats.map(cat => ({
@@ -1189,7 +1197,7 @@ export function getAllProductCategories(): BrandCategory[] {
     ...brandCategories,
     // Reparatiegereedschap — subcategorieen volgen later
     { slug: '_section_rt', name: '── 🛠️ REPAIR TOOLS ──', nameEn: '── 🛠️ REPAIR TOOLS ──', subcategories: [] },
-    { slug: 'repair-tools', name: 'Repair Tools', nameEn: 'Repair Tools', subcategories: [] },
+    ...standaloneCategories,
     // Accessoires section header
     { slug: '_section_acc', name: '── 🎧 ACCESSOIRES ──', nameEn: '── 🎧 ACCESSORIES ──', subcategories: [] },
     ...convertAccessory(accessoryCategories, 'acc-'),

@@ -241,7 +241,10 @@ function extractModelKeywords(msg: string): string[] {
   // Extract potential model numbers like "A73", "iPhone 15", "15 Pro Max", "Galaxy S24"
   const keywords: string[] = [];
   const patterns = [
-    /\biphone\s*(\d+\s*(pro\s*max|pro|plus|max|mini)?)\b/gi,
+    /\biphone\s*(\d+e?\s*(pro\s*max|pro|plus|max|mini)?)\b/gi,
+    // iPhone Air en iPhone Ultra hebben geen modelnummer, dus de cijferpatronen
+    // hierboven vinden ze niet.
+    /\biphone\s*(air|ultra)\s*(\d+)?\b/gi,
     /\b(galaxy\s*s?\s*(\d+\s*(fe|plus|ultra)?))\b/gi,
     /\b(a\s*(\d+)\s*(5g)?)\b/gi,  // Samsung A73 5G
     /\bipad\s*(\w+)\b/gi,
