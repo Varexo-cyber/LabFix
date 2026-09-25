@@ -917,6 +917,39 @@ export default function Header() {
               )}
             </div>
 
+            {/* Randapparatuur — ontbrak nog in het mobiele menu */}
+            <div className="border-b">
+              <button onClick={() => setMobileOpenBrand(mobileOpenBrand === '__pca' ? null : '__pca')} className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between font-semibold text-sm">
+                <span>{locale === 'nl' ? 'Randapparatuur' : 'Peripherals'}</span>
+                <ChevronDown size={16} className={`transition-transform ${mobileOpenBrand === '__pca' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileOpenBrand === '__pca' && (
+                <div className="bg-gray-50">
+                  {pcAccessoryCategories.map((cat) => (
+                    <div key={cat.slug}>
+                      <Link href={`/products?pcacc=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600" onClick={() => setMobileMenuOpen(false)}>
+                        {locale === 'en' ? cat.nameEn : cat.name}
+                      </Link>
+                      {cat.subcategories.map((sub) => (
+                        <Link key={sub.slug} href={`/products?pcacc=${cat.slug}&sub=${sub.slug}`} className="block px-8 py-1.5 hover:bg-gray-100 text-xs text-gray-600" onClick={() => setMobileMenuOpen(false)}>
+                          {locale === 'en' ? sub.nameEn : sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Repair Tools — subcategorieen volgen later, dus een directe link */}
+            <Link
+              href="/products?category=repair-tools"
+              className="block px-4 py-3 hover:bg-gray-50 border-b font-semibold text-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {locale === 'nl' ? 'Repair Tools' : 'Repair Tools'}
+            </Link>
+
             <Link href="/about" className="block px-4 py-3 hover:bg-gray-50 border-t text-sm" onClick={() => setMobileMenuOpen(false)}>{t('nav.about')}</Link>
             <Link href="/contact" className="block px-4 py-3 hover:bg-gray-50 border-t text-sm" onClick={() => setMobileMenuOpen(false)}>{t('nav.contact')}</Link>
           </div>
