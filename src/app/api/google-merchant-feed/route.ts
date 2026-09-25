@@ -2,10 +2,12 @@ import { getDb } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+// Nooit cachen: de feed moet altijd de huidige prijzen en producten uit de
+// database laten zien. Met een cache erop zag je na een prijswijziging nog tot
+// een uur de oude bedragen, wat niet te onderscheiden is van een kapotte feed.
+// Google haalt hem maar een paar keer per dag op, dus dit kost vrijwel niets.
 export const dynamic = 'force-dynamic';
-// Google haalt de feed hooguit een paar keer per dag op; een uur cache scheelt
-// een volledige tabelscan bij elke crawl.
-export const revalidate = 3600;
+export const revalidate = 0;
 
 const BASE_URL = (process.env.NEXT_PUBLIC_BASE_URL || 'https://labfix.nl').replace(/\/$/, '');
 
@@ -84,6 +86,7 @@ export async function GET() {
     <title>LabFix</title>
     <link>${xmlEscape(BASE_URL)}</link>
     <description>Telefoon-, tablet- en laptoponderdelen van LabFix</description>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items.join('\n')}
   </channel>
 </rss>`;
@@ -91,7 +94,9 @@ ${items.join('\n')}
     return new NextResponse(xml, {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        'X-Product-Count': String(items.length),
+        'X-Products-Scanned': String((rows as any[]).length),
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
       },
     });
   } catch (error: any) {
