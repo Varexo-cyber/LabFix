@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveCategoryPath } from '@/lib/categories';
+import { resolveStock } from '@/lib/ms-stock';
 
 export const runtime = 'nodejs';
 
@@ -102,8 +103,9 @@ export async function POST(request: NextRequest) {
         const originalPrice = parseFloat(product.price) || 0;
         const markupMultiplier = 1 + (priceMarkup / 100);
         const price = Math.round(originalPrice * markupMultiplier * 100) / 100;
-        const stockQty = parseInt(product.stock_qty) || 0;
-        const inStock = stockQty > 0 || product.is_in_stock === true;
+        // Zelfde uitleg van de voorraadvelden als de synchronisatie gebruikt,
+        // zodat een verse import en een latere sync niet kunnen verschillen.
+        const { inStock, qty: stockQty } = resolveStock(product);
         const image = product.image_url || '';
         const rawCategory = product.targetCategory || targetCategory || 'onderdelen';
         const entityId = product.entity_id || '';
