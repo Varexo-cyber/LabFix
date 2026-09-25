@@ -8,17 +8,6 @@ import { ShoppingCart, Menu, X, Search, User, Globe, ChevronDown, ChevronRight, 
 import { brandCategories, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories } from '@/lib/categories';
 import VatToggle from '@/components/VatToggle';
 
-const menuAccessoryCategories = accessoryCategories.filter(
-  (category) => ![
-    'batteries-power',
-    'photography',
-    'protection-care',
-    'storage-memory',
-    'gaming',
-    'smart-gadgets',
-  ].includes(category.slug)
-);
-
 interface Brand {
   id: number;
   slug: string;
@@ -536,7 +525,7 @@ export default function Header() {
                     <div className="h-[500px] flex">
                       <div className="w-[280px] border-r border-gray-100 overflow-y-auto">
                         <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Accessoire Categorieën' : 'Accessory Categories'}</div>
-                        {menuAccessoryCategories.map((cat) => (
+                        {accessoryCategories.map((cat) => (
                           <div key={cat.slug} onMouseEnter={() => setHoveredAccessoryCat(cat.slug)}>
                             <Link href={`/products?accessory=${cat.slug}`} className={`block px-3 py-2 text-sm transition-colors ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`} onClick={() => setOpenDropdown(null)}>
                               {locale === 'nl' ? cat.name : cat.nameEn}
@@ -546,7 +535,7 @@ export default function Header() {
                       </div>
                       <div className="flex-1 bg-gray-50 overflow-y-auto p-4">
                         {hoveredAccessoryCat && (() => {
-                          const cat = menuAccessoryCategories.find(c => c.slug === hoveredAccessoryCat);
+                          const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
                           if (!cat) return null;
                           return (
                             <>
@@ -686,7 +675,7 @@ export default function Header() {
                 <div className={`absolute top-full left-0 bg-white text-gray-800 rounded-b-lg shadow-xl z-50 border-t-2 border-accent-500 flex h-[500px] ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[720px]' : 'w-[560px]'}`}>
                   <div className={`border-r border-gray-100 overflow-y-auto ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[180px]' : 'w-[200px]'}`}>
                     <div className="p-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">{locale === 'nl' ? 'Categorieën' : 'Categories'}</div>
-                    {menuAccessoryCategories.map((cat) => (
+                    {accessoryCategories.map((cat) => (
                       <div key={cat.slug} onMouseEnter={() => { setHoveredAccessoryCat(cat.slug); setHoveredScreenProtectorBrand(null); }} className={`px-3 py-2 text-sm cursor-pointer ${hoveredAccessoryCat === cat.slug ? 'bg-primary-50 text-primary-600' : 'hover:bg-gray-50'}`}>
                         {locale === 'nl' ? cat.name : cat.nameEn}
                       </div>
@@ -695,7 +684,7 @@ export default function Header() {
                   {/* Kolom 2: Subcategorieën (normaal) of Merken (voor screen protectors) */}
                   <div className={`border-r border-gray-100 overflow-y-auto ${hoveredAccessoryCat === 'screen-protectors' ? 'w-[180px]' : 'flex-1'}`}>
                     {hoveredAccessoryCat && (() => {
-                      const cat = menuAccessoryCategories.find(c => c.slug === hoveredAccessoryCat);
+                      const cat = accessoryCategories.find(c => c.slug === hoveredAccessoryCat);
                       if (!cat) return null;
                       if (cat.slug === 'screen-protectors') {
                         return (
@@ -725,7 +714,7 @@ export default function Header() {
                   {hoveredAccessoryCat === 'screen-protectors' && (
                     <div className="flex-1 overflow-y-auto">
                       {hoveredAccessorySub && (() => {
-                        const sub = menuAccessoryCategories.find(c => c.slug === 'screen-protectors')?.subcategories.find(s => s.slug === hoveredAccessorySub);
+                        const sub = accessoryCategories.find(c => c.slug === 'screen-protectors')?.subcategories.find(s => s.slug === hoveredAccessorySub);
                         if (!sub) return null;
                         return (
                           <>
@@ -844,7 +833,7 @@ export default function Header() {
               </button>
               {mobileOpenBrand === '__acc' && (
                 <div className="bg-gray-50">
-                  {menuAccessoryCategories.map((cat) => (
+                  {accessoryCategories.map((cat) => (
                     <div key={cat.slug}>
                       <Link href={`/products?accessory=${cat.slug}`} className="block px-6 py-2 hover:bg-gray-100 text-sm font-medium text-primary-600" onClick={() => setMobileMenuOpen(false)}>
                         {locale === 'en' ? cat.nameEn : cat.name}
