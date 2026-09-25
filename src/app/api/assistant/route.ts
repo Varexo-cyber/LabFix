@@ -244,7 +244,7 @@ function extractModelKeywords(msg: string): string[] {
     /\biphone\s*(\d+e?\s*(pro\s*max|pro|plus|max|mini)?)\b/gi,
     // iPhone Air en iPhone Ultra hebben geen modelnummer, dus de cijferpatronen
     // hierboven vinden ze niet.
-    /\biphone\s*(air|ultra)\s*(\d+)?\b/gi,
+    /\biphone\s*(air|ultra|duo)\s*(\d+)?\b/gi,
     /\b(galaxy\s*s?\s*(\d+\s*(fe|plus|ultra)?))\b/gi,
     /\b(a\s*(\d+)\s*(5g)?)\b/gi,  // Samsung A73 5G
     /\bipad\s*(\w+)\b/gi,

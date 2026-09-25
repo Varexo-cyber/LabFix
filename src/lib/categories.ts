@@ -31,6 +31,7 @@ export const brandCategories: BrandCategory[] = [
       {
         slug: 'iphone', name: 'iPhone', nameEn: 'iPhone',
         models: [
+          { slug: 'iphone-duo', name: 'iPhone Duo' },
           { slug: 'iphone-ultra', name: 'iPhone Ultra' },
           { slug: 'iphone-air-2', name: 'iPhone Air 2' },
           { slug: 'iphone-18-pro-max', name: 'iPhone 18 Pro Max' },
