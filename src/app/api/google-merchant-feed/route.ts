@@ -85,7 +85,7 @@ export async function GET() {
   <channel>
     <title>LabFix</title>
     <link>${xmlEscape(BASE_URL)}</link>
-    <description>Telefoon-, tablet- en laptoponderdelen van LabFix</description>
+    <description>Telefoon-, tablet- en MacBook-onderdelen van LabFix</description>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items.join('\n')}
   </channel>

@@ -293,8 +293,8 @@ function generateSmartResponse(
           : `We have ${product}s for almost all popular brands: Apple, Samsung, Google, Huawei, Xiaomi, Motorola, and many others. Both original quality and premium compatible options. Every product is checked for functionality before shipping.`;
       } else {
         response = nl
-          ? `LabFix levert premium reparatieonderdelen voor smartphones, tablets en laptops. Ons assortiment omvat: schermen (LCD/OLED), batterijen, camera\'s, back covers, charging ports, knoppen en meer. We hebben onderdelen voor 100+ merken en 1000+ modellen. Alle producten zijn getest en hebben garantie.`
-          : `LabFix supplies premium repair parts for smartphones, tablets and laptops. Our range includes: screens (LCD/OLED), batteries, cameras, back covers, charging ports, buttons and more. We have parts for 100+ brands and 1000+ models. All products are tested and have warranty.`;
+          ? `LabFix levert premium reparatieonderdelen voor smartphones, tablets en MacBooks. Ons assortiment omvat: schermen (LCD/OLED), batterijen, camera\'s, back covers, charging ports, knoppen en meer. We hebben onderdelen voor 100+ merken en 1000+ modellen. Alle producten zijn getest en hebben garantie.`
+          : `LabFix supplies premium repair parts for smartphones, tablets and MacBooks. Our range includes: screens (LCD/OLED), batteries, cameras, back covers, charging ports, buttons and more. We have parts for 100+ brands and 1000+ models. All products are tested and have warranty.`;
       }
       followUp = nl ? 'Wat is het verschil tussen LCD en OLED?' : 'What is the difference between LCD and OLED?';
       break;
@@ -680,8 +680,8 @@ export default function HelpWidget() {
                     </p>
                     <div className="flex flex-wrap gap-1.5 justify-center mt-3 px-2">
                       {(nl
-                        ? ['Wat is LabFix?', 'Hoe verzenden jullie?', 'iPhone scherm zoeken', 'Laptop onderdelen']
-                        : ['What is LabFix?', 'Shipping options?', 'iPhone screen search', 'Laptop parts']
+                        ? ['Wat is LabFix?', 'Hoe verzenden jullie?', 'iPhone scherm zoeken', 'MacBook onderdelen']
+                        : ['What is LabFix?', 'Shipping options?', 'iPhone screen search', 'MacBook parts']
                       ).map((q) => (
                         <button
                           key={q}

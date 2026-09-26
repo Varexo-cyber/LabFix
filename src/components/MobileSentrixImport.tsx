@@ -23,7 +23,7 @@ interface MSProduct {
   description: string;
 }
 
-// Build flat list of ALL categories: brands (3-level) + accessories + PC parts + PC accessories + laptop parts
+// Build flat list of ALL categories: brands (3-level) + repair tools + accessories
 function buildCategoryOptions(): { value: string; label: string; depth: number; isHeader: boolean }[] {
   const options: { value: string; label: string; depth: number; isHeader: boolean }[] = [];
   for (const brand of getAllProductCategories()) {

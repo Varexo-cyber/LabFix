@@ -13,7 +13,7 @@ const KNOWLEDGE = {
     phone: '+31 6 5113 1133',
     email: 'info@labfix.nl',
     address: 'Den Haag, Nederland',
-    description: 'LabFix is een Nederlandse B2B groothandel gespecialiseerd in reparatieonderdelen voor smartphones, tablets en laptops.',
+    description: 'LabFix is een Nederlandse B2B groothandel gespecialiseerd in reparatieonderdelen voor smartphones, tablets en MacBooks.',
   },
   services: {
     repair: {
@@ -380,7 +380,8 @@ function extractEntities(msg: string): ExtractedEntities {
   const modelKeywords = extractModelKeywords(msg);
 
   // Detect laptop-specific queries
-  const isLaptop = /\b(laptop|notebook|dell|hp\s|lenovo|asus|acer|msi|macbook|thinkpad|inspiron|xps|latitude|vostro|g15|g16|alienware|surface)\b/i.test(msg);
+  // Alleen nog Apple-laptops: de losse laptopmerken zijn uit het assortiment.
+  const isLaptop = /\b(macbook)\b/i.test(msg);
   const isPhone = /\b(iphone|samsung|galaxy|xiaomi|redmi|pixel|huawei|oneplus|oppo|motorola|sony|nokia|lg)\b/i.test(msg);
 
   // Extract specific model (e.g., "iPhone 14", "Galaxy S24")
@@ -603,11 +604,11 @@ async function smartProductSearch(
 
     // Strategy 3: Category-based search for laptop/phone parts
     if (isLaptop) {
-      const laptopCat = brand ? `laptop-${brand}` : 'laptop';
+      const laptopCat = 'apple/macbook-pro';
       const qLaptop = await sql`
         SELECT id, name, name_en, price, image, category, subcategory, brand, model, sku, in_stock
         FROM products
-        WHERE category ILIKE ${`%laptop%`} OR category = ${laptopCat}
+        WHERE category ILIKE ${`%macbook%`} OR category = ${laptopCat}
         LIMIT 8
       `;
       allResults.push(...qLaptop);
@@ -690,8 +691,8 @@ async function smartProductSearch(
     }
 
     // Penalty for wrong category (e.g. phone query matching laptop part)
-    if (isPhone && p.category?.includes('laptop')) score -= 20;
-    if (isLaptop && !p.category?.includes('laptop')) score -= 10;
+    if (isPhone && p.category?.includes('macbook')) score -= 20;
+    if (isLaptop && !p.category?.includes('macbook')) score -= 10;
 
     scored.push({
       id: p.id,
@@ -901,7 +902,7 @@ export async function POST(request: NextRequest) {
           // Missing info - ask follow-up questions
           if (!detectedBrand && !detectedModel) {
             response.text = 'Ik begrijp dat je een onderdeel zoekt! Om je beter te helpen, heb ik wat meer info nodig:\n\nWelk merk en model heb je? Bijvoorbeeld: iPhone 14, Samsung Galaxy S24, of Dell XPS 13.';
-            response.suggestions = ['iPhone', 'Samsung Galaxy', 'iPad', 'Dell laptop', 'HP laptop'];
+            response.suggestions = ['iPhone', 'Samsung Galaxy', 'iPad', 'MacBook'];
             response.updatedContext.searchStep = 'ask_brand_model';
           } else if (detectedBrand && !detectedModel) {
             response.text = `Top, je zoekt iets voor ${detectedBrand.charAt(0).toUpperCase() + detectedBrand.slice(1)}! Welk model heb je?\n\nBijvoorbeeld: iPhone 14 Pro, Galaxy S24 Ultra, of XPS 15.`;
@@ -917,7 +918,7 @@ export async function POST(request: NextRequest) {
             // Have both model and type but no results
             response.text = `Ik heb helaas geen exacte matches gevonden voor ${detectedModel} ${detectedType}.\n\nDat kan betekenen dat dit onderdeel tijdelijk niet op voorraad is, of dat we het onder een andere naam hebben staan.\n\nProbeer het eens met de zoekbalk bovenaan de productpagina, of vraag me iets anders!`;
             response.action = { type: 'link', url: '/products', label: 'Zelf zoeken op productpagina' };
-            response.suggestions = ['iPhone onderdelen', 'Samsung onderdelen', 'Laptop onderdelen', 'Contact opnemen'];
+            response.suggestions = ['iPhone onderdelen', 'Samsung onderdelen', 'MacBook onderdelen', 'Contact opnemen'];
             response.updatedContext.searchStep = 'no_results_final';
           }
         } else {
@@ -985,7 +986,7 @@ export async function POST(request: NextRequest) {
     // ── AVAILABILITY ─────────────────────────────────────────────
     else if (intent === 'availability') {
       response.text = 'Onze voorraad wordt real-time bijgewerkt. Producten met "Op voorraad" zijn direct leverbaar.\n\nPopulaire onderdelen zoals iPhone en Samsung schermen/batterijen hebben we altijd op voorraad. Zeldzamere modellen soms binnen 2-3 dagen leverbaar vanuit ons centrale magazijn.';
-      response.suggestions = ['iPhone onderdelen', 'Samsung onderdelen', 'Laptop onderdelen'];
+      response.suggestions = ['iPhone onderdelen', 'Samsung onderdelen', 'MacBook onderdelen'];
       response.updatedContext.step = 'availability_info';
     }
 
@@ -1013,7 +1014,7 @@ export async function POST(request: NextRequest) {
 
     // ── ABOUT ───────────────────────────────────────────────────
     else if (intent === 'about') {
-      response.text = `LabFix - Jouw partner in reparatie 🛠️\n\nWij zijn een Nederlandse B2B groothandel gespecialiseerd in reparatieonderdelen voor smartphones, tablets en laptops.\n\nWaarom LabFix?\n✅ Ruimste assortiment (100+ merken, 50.000+ producten)\n✅ Strikte kwaliteitscontrole (elk product getest)\n✅ Snelle levering (1-3 dagen EU)\n✅ Deskundige support\n✅ Scherpe B2B prijzen\n\nBedrijfsgegevens:\nKvK: ${KNOWLEDGE.company.kvk}\nBTW: ${KNOWLEDGE.company.btw}\nBank: ${KNOWLEDGE.company.bank}`;
+      response.text = `LabFix - Jouw partner in reparatie 🛠️\n\nWij zijn een Nederlandse B2B groothandel gespecialiseerd in reparatieonderdelen voor smartphones, tablets en MacBooks.\n\nWaarom LabFix?\n✅ Ruimste assortiment (100+ merken, 50.000+ producten)\n✅ Strikte kwaliteitscontrole (elk product getest)\n✅ Snelle levering (1-3 dagen EU)\n✅ Deskundige support\n✅ Scherpe B2B prijzen\n\nBedrijfsgegevens:\nKvK: ${KNOWLEDGE.company.kvk}\nBTW: ${KNOWLEDGE.company.btw}\nBank: ${KNOWLEDGE.company.bank}`;
       response.suggestions = ['Producten bekijken', 'Reparatie aanvragen', 'Contact opnemen'];
       response.updatedContext.step = 'about_info';
     }

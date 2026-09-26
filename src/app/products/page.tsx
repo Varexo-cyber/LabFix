@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchProductsPaginated, Product } from '@/lib/store';
 import { Filter, SlidersHorizontal, ChevronDown, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { brandCategories, getBrandName, getSubcategoryName, getModelName, accessoryCategories, screenProtectorBrands, laptopBrands, laptopPartsCategories, standaloneCategories } from '@/lib/categories';
+import { brandCategories, getBrandName, getSubcategoryName, getModelName, accessoryCategories, screenProtectorBrands, standaloneCategories } from '@/lib/categories';
 
 function ProductsPageContent() {
   const { t, locale, vatMode } = useApp();
@@ -35,8 +35,6 @@ function ProductsPageContent() {
   const [expandedSections, setExpandedSections] = useState({
     brands: true,
     accessories: false,
-    laptopBrands: false,
-    laptopParts: false
   });
 
   // Stable key that only changes when actual param values change (not object reference)
@@ -45,7 +43,7 @@ function ProductsPageContent() {
     return [
       sp.get('brand'), sp.get('sub'), sp.get('model'), sp.get('category'),
       sp.get('search'), sp.get('accessory'),
-      sp.get('laptopBrand'), sp.get('laptopModel'), sp.get('laptopPart'), sp.get('accBrand')
+      sp.get('accBrand')
     ].join('|');
   }, [searchParams]);
 
@@ -119,15 +117,12 @@ function ProductsPageContent() {
     const cat = searchParams.get('category');
     const search = searchParams.get('search');
     const accessory = searchParams.get('accessory');
-    const laptopBrand = searchParams.get('laptopBrand');
-    const laptopModel = searchParams.get('laptopModel');
-    const laptopPart = searchParams.get('laptopPart');
     const accessoryBrand = searchParams.get('accBrand');
 
     // Only update state if URL params differ from current state (prevents overwriting sidebar clicks)
-    const targetBrand = cat || brand || (accessory ? `acc-${accessory}` : '') || (laptopBrand ? `laptop-${laptopBrand}` : '') || '';
-    const targetSub = sub || laptopModel || '';
-    const targetModel = model || laptopPart || '';
+    const targetBrand = cat || brand || (accessory ? `acc-${accessory}` : '') || '';
+    const targetSub = sub || '';
+    const targetModel = model || '';
 
     if (targetBrand && targetBrand !== selectedBrand) {
       setSelectedBrand(targetBrand);
@@ -155,9 +150,6 @@ function ProductsPageContent() {
     if (accessory && !expandedSectionsRef.current.accessories) {
       setExpandedSections(p => ({ ...p, accessories: true }));
     }
-    if (laptopBrand && !expandedSectionsRef.current.laptopBrands) {
-      setExpandedSections(p => ({ ...p, laptopBrands: true }));
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlParamsKey]);
 
@@ -180,7 +172,6 @@ function ProductsPageContent() {
     const params = url.searchParams;
     params.delete('category'); params.delete('sub'); params.delete('model'); params.delete('brand');
     params.delete('accessory');
-    params.delete('laptopBrand'); params.delete('laptopModel'); params.delete('laptopPart');
     params.delete('accBrand'); params.delete('search'); params.delete('sort'); params.delete('page');
 
     if (searchQuery) params.set('search', searchQuery);
@@ -188,11 +179,7 @@ function ProductsPageContent() {
     if (currentPage > 1) params.set('page', currentPage.toString());
 
     if (selectedBrand) {
-      if (selectedBrand.startsWith('laptop-')) {
-        params.set('laptopBrand', selectedBrand.slice(7));
-        if (selectedSub) params.set('laptopModel', selectedSub);
-        if (selectedModel) params.set('laptopPart', selectedModel);
-      } else if (selectedBrand.startsWith('acc-')) {
+      if (selectedBrand.startsWith('acc-')) {
         params.set('accessory', selectedBrand.slice(4));
         if (selectedSub) params.set('sub', selectedSub);
         if (selectedAccessoryBrand) params.set('accBrand', selectedAccessoryBrand);
@@ -479,104 +466,6 @@ function ProductsPageContent() {
                                             }`}
                                           >
                                             {spBrand.name}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Section: Laptops (Merk -> Model -> Onderdeel) */}
-              <div className="mt-2 border-t pt-2">
-                <button
-                  onClick={() => setExpandedSections(p => ({ ...p, laptopBrands: !p.laptopBrands }))}
-                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-gray-500 uppercase hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  {locale === 'nl' ? '💻 Laptops' : '💻 Laptops'}
-                  <ChevronDown size={14} className={`transition-transform ${expandedSections.laptopBrands ? 'rotate-180' : ''}`} />
-                </button>
-                {expandedSections.laptopBrands && (
-                  <div className="max-h-[280px] overflow-y-auto space-y-0.5 mt-1">
-                    {laptopBrands.filter(b => !sidebarSearch || b.name.toLowerCase().includes(sidebarSearch.toLowerCase()) || b.subcategories?.some(s => s.name.toLowerCase().includes(sidebarSearch.toLowerCase()))).map((brand) => {
-                      const brandKey = `laptop-${brand.slug}`;
-                      const isExpanded = expandedBrands.includes(brandKey);
-                      return (
-                        <div key={brandKey}>
-                          <div className="flex items-center">
-                            <button
-                              onClick={() => {
-                                setSelectedBrand(brandKey);
-                                setSelectedSub('');
-                                setSelectedModel('');
-                                setSelectedAccessoryBrand('');
-                                setSidebarSearch('');
-                                setExpandedBrands(prev => prev.includes(brandKey) ? prev : [...prev, brandKey]);
-                              }}
-                              className={`flex-1 text-left px-3 py-1.5 rounded-l transition-colors text-sm ${
-                                selectedBrand === brandKey && !selectedSub ? 'bg-primary-100 text-primary-700 font-medium' : 'hover:bg-gray-50'
-                              }`}
-                            >
-                              {brand.name}
-                            </button>
-                            {brand.subcategories && brand.subcategories.length > 0 && (
-                              <button
-                                onClick={() => toggleBrandExpand(brandKey)}
-                                className="px-2 py-1.5 hover:bg-gray-100 rounded-r transition-colors"
-                              >
-                                <ChevronDown size={12} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </button>
-                            )}
-                          </div>
-                          {isExpanded && brand.subcategories && (
-                            <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
-                              {brand.subcategories.filter(s => !sidebarSearch || s.name.toLowerCase().includes(sidebarSearch.toLowerCase())).map((model) => {
-                                const modelKey = `${brandKey}/${model.slug}`;
-                                const isModelExpanded = expandedSubs.includes(modelKey);
-                                return (
-                                  <div key={model.slug}>
-                                    <div className="flex items-center">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedBrand(brandKey);
-                                          setSelectedSub(model.slug);
-                                          setSelectedModel('');
-                                          setSelectedAccessoryBrand('');
-                                          setSidebarSearch('');
-                                          setExpandedSubs(prev => prev.includes(modelKey) ? prev : [...prev, modelKey]);
-                                        }}
-                                        className={`flex-1 text-left px-2 py-1 rounded-l transition-colors text-xs ${
-                                          selectedBrand === brandKey && selectedSub === model.slug && !selectedModel ? 'bg-primary-500 text-white' : 'hover:bg-gray-100 text-gray-600'
-                                        }`}
-                                      >
-                                        {model.name}
-                                      </button>
-                                      <button
-                                        onClick={() => toggleSubExpand(modelKey)}
-                                        className="px-1.5 py-1 hover:bg-gray-100 rounded-r transition-colors"
-                                      >
-                                        <ChevronDown size={10} className={`transition-transform text-gray-400 ${isModelExpanded ? 'rotate-180' : ''}`} />
-                                      </button>
-                                    </div>
-                                    {isModelExpanded && (
-                                      <div className="ml-2 border-l border-gray-100 pl-2 space-y-0.5">
-                                        {laptopPartsCategories.map((part) => (
-                                          <button
-                                            key={part.slug}
-                                            onClick={() => { setSelectedBrand(brandKey); setSelectedSub(model.slug); setSelectedModel(part.slug); setSidebarSearch(''); }}
-                                            className={`block w-full text-left px-2 py-0.5 rounded transition-colors text-[11px] ${
-                                              selectedBrand === brandKey && selectedSub === model.slug && selectedModel === part.slug ? 'bg-primary-500 text-white' : 'hover:bg-gray-50 text-gray-500'
-                                            }`}
-                                          >
-                                            {locale === 'en' ? part.nameEn : part.name}
                                           </button>
                                         ))}
                                       </div>

@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, LogOut, Save, X, Eye, Package, ShoppingCart, Lock
 import ImageSlideshow from '@/components/ImageSlideshow';
 import MobileSentrixImport from '@/components/MobileSentrixImport';
 import Link from 'next/link';
-import { brandCategories, getAllCategoryOptions, getAllProductCategories, laptopPartsCategories, screenProtectorBrands } from '@/lib/categories';
+import { brandCategories, getAllCategoryOptions, getAllProductCategories, screenProtectorBrands } from '@/lib/categories';
 import { normalizeImageUrl } from '@/lib/utils';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
@@ -256,19 +256,12 @@ export default function AdminPage() {
   };
 
   const handleSave = async () => {
-    const baseCat = formData.category.split('/')[0] || formData.category;
-    const isLaptop = baseCat.startsWith('laptop-') || baseCat.startsWith('lp-');
-
-    // SKU is optional for laptop products/parts; required for everything else
-    if (!formData.name || !formData.price || (!isLaptop && !formData.sku)) {
+    if (!formData.name || !formData.price || !formData.sku) {
       showToast('Vul naam, prijs en SKU in', 'error');
       return;
     }
 
-    // Auto-generate a SKU for laptop products when left empty
-    const finalSku = formData.sku || (isLaptop
-      ? `LF-${baseCat.toUpperCase()}-${(formData.subcategory || 'GEN').toUpperCase()}-${Date.now().toString().slice(-5)}`.replace(/[^A-Z0-9-]/g, '')
-      : formData.sku);
+    const finalSku = formData.sku;
 
     // Auto-set main image from images array if not set
     const saveData = {
@@ -800,15 +793,14 @@ export default function AdminPage() {
                   </div>
                   {(() => {
                     const baseCat = formData.category.split('/')[0] || formData.category;
-                    const isLaptopBrand = baseCat.startsWith('laptop-');
                     return (
                       <div>
-                        <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Model *' : 'Productlijn *'}</label>
+                        <label className="block text-sm font-semibold mb-1">Productlijn *</label>
                         <select 
                           value={formData.subcategory || ''} 
                           onChange={(e) => setFormData({ ...formData, subcategory: e.target.value, brand: '', model: '' })}
                           className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
-                          <option value="">{isLaptopBrand ? '-- Kies model --' : '-- Kies productlijn --'}</option>
+                          <option value="">-- Kies productlijn --</option>
                           {(productCategories.find(b => b.slug === baseCat)?.subcategories || []).map((sub: any) => (
                             <option key={sub.slug} value={sub.slug}>{sub.name}</option>
                           ))}
@@ -839,21 +831,16 @@ export default function AdminPage() {
                   <div>
                     {(() => {
                       const baseCat = formData.category.split('/')[0] || formData.category;
-                      const isLaptopBrand = baseCat.startsWith('laptop-');
                       const isScreenProtector = baseCat === 'acc-screen-protectors';
                       return (
                         <>
-                          <label className="block text-sm font-semibold mb-1">{isLaptopBrand ? 'Onderdeel' : 'Model'}</label>
+                          <label className="block text-sm font-semibold mb-1">Model</label>
                           <select 
                             value={formData.model || ''} 
                             onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500">
                             <option value="">-- Optioneel --</option>
-                            {isLaptopBrand
-                              ? laptopPartsCategories.map((part) => (
-                                  <option key={part.slug} value={part.slug}>{part.name}</option>
-                                ))
-                              : isScreenProtector
+                            {isScreenProtector
                                 ? (() => {
                                     const spBrand = screenProtectorBrands.find(b => b.slug === formData.brand);
                                     if (!spBrand) return <option value="" disabled>Kies eerst een merk</option>;
@@ -877,17 +864,11 @@ export default function AdminPage() {
                       );
                     })()}
                   </div>
-                  {(() => {
-                    const baseCat = formData.category.split('/')[0] || formData.category;
-                    const isLaptop = baseCat.startsWith('laptop-') || baseCat.startsWith('lp-');
-                    return (
-                      <div>
-                        <label className="block text-sm font-semibold mb-1">SKU {isLaptop ? '(optioneel)' : '*'}</label>
-                        <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                          className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder={isLaptop ? 'Automatisch indien leeg' : 'LF-IP15P-OLED-001'} />
-                      </div>
-                    );
-                  })()}
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">SKU *</label>
+                    <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                      className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500" placeholder="LF-IP15P-OLED-001" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Product Foto's</label>

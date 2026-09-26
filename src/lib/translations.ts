@@ -119,7 +119,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
     // About
     'about.title': 'Over LabFix',
-    'about.text': 'LabFix is een bedrijf gespecialiseerd in de levering van reparatieonderdelen voor smartphones, tablets en laptops. Gevestigd in Nederland en geregistreerd bij de KVK, leveren wij aan professionele reparateurs door heel Europa.',
+    'about.text': 'LabFix is een bedrijf gespecialiseerd in de levering van reparatieonderdelen voor smartphones, tablets en MacBooks. Gevestigd in Nederland en geregistreerd bij de KVK, leveren wij aan professionele reparateurs door heel Europa.',
 
     // Auth
     'auth.login': 'Inloggen',
@@ -295,7 +295,7 @@ export const translations: Record<Locale, Record<string, string>> = {
 
     // About
     'about.title': 'About LabFix',
-    'about.text': 'LabFix is a company specializing in the supply of repair parts for smartphones, tablets and laptops. Based in the Netherlands and registered with the Chamber of Commerce, we deliver to professional repairers across Europe.',
+    'about.text': 'LabFix is a company specializing in the supply of repair parts for smartphones, tablets and MacBooks. Based in the Netherlands and registered with the Chamber of Commerce, we deliver to professional repairers across Europe.',
 
     // Auth
     'auth.login': 'Login',

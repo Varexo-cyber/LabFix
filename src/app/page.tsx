@@ -8,7 +8,7 @@ import ScrollReveal from '@/components/ScrollReveal';
 import { fetchProductsPaginated, Product, fetchNews, NewsArticle } from '@/lib/store';
 import {
   Truck, Shield, CreditCard, ArrowRight, Smartphone, Wrench,
-  Package, ChevronRight, Newspaper, Laptop, Monitor, Award, Clock,
+  Package, ChevronRight, Newspaper, Monitor, Award, Clock,
   CheckCircle, Star, Zap, HeartHandshake, BadgeCheck, Sparkles,
   ShieldCheck, Headphones
 } from 'lucide-react';
@@ -34,14 +34,6 @@ export default function HomePage() {
       setProducts(Array.from(byId.values()));
     });
     fetchNews().then(articles => setNewsArticles(articles.filter(a => a.published)));
-  }, []);
-
-  // Auto-rotate banner
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % 3);
-    }, 5000);
-    return () => clearInterval(timer);
   }, []);
 
   const featuredProducts = products.filter((p) => p.featured);
@@ -90,6 +82,16 @@ export default function HomePage() {
       image: '/images/banners/phones-hero.jpg'
     },
     {
+      badge: locale === 'nl' ? 'MacBook & iPad' : 'MacBook & iPad',
+      badgeIcon: '',
+      title: locale === 'nl' ? 'Originele MacBook & iPad Onderdelen' : 'Genuine MacBook & iPad Parts',
+      subtitle: locale === 'nl' ? 'Premium Quality • Snelle Levering • LabFix.nl' : 'Premium Quality • Fast Delivery • LabFix.nl',
+      features: [],
+      cta: locale === 'nl' ? 'Bekijk Onderdelen' : 'Shop Parts',
+      link: '/products?brand=apple&sub=macbook-pro',
+      image: '/images/banners/apple-macbook-ipad.jpg'
+    },
+    {
       badge: locale === 'nl' ? 'Reparatie Service' : 'Repair Service',
       badgeIcon: '🔧',
       title: locale === 'nl' ? 'Professionele Reparatie Service' : 'Professional Repair Service',
@@ -104,6 +106,16 @@ export default function HomePage() {
       image: '/images/banners/tools.jpg'
     }
   ];
+
+  // Auto-rotate banner. Het aantal komt uit de lijst zelf: dat stond hardcoded
+  // op 3, waardoor de teller bij minder slides naar een niet-bestaande slide
+  // wees en de hele carrousel wegviel tot een leeg wit vak.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   return (
     <div className="bg-gray-50">
@@ -122,7 +134,7 @@ export default function HomePage() {
                   {/* Left Content */}
                   <div className="p-5 md:p-12 lg:p-16 flex flex-col justify-center order-2 md:order-1">
                     <div className="inline-flex items-center gap-2 text-gray-600 text-sm font-medium mb-4">
-                      <span className="text-lg">{slide.badgeIcon}</span>
+                      {slide.badgeIcon && <span className="text-lg">{slide.badgeIcon}</span>}
                       <span className="uppercase tracking-wider">{slide.badge}</span>
                     </div>
                     <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 leading-tight">
@@ -132,15 +144,17 @@ export default function HomePage() {
                       {slide.subtitle}
                     </p>
 
-                    {/* Features */}
-                    <div className="flex flex-wrap gap-4 md:gap-6 mb-6 md:mb-8">
-                      {slide.features.map((feature, i) => (
-                        <div key={i} className="text-center">
-                          <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
-                          <p className="text-xs text-gray-500">{feature.sub}</p>
-                        </div>
-                      ))}
-                    </div>
+                    {/* Features — niet elke slide heeft ze */}
+                    {slide.features.length > 0 && (
+                      <div className="flex flex-wrap gap-4 md:gap-6 mb-6 md:mb-8">
+                        {slide.features.map((feature, i) => (
+                          <div key={i} className="text-center">
+                            <p className="font-semibold text-gray-900 text-sm">{feature.label}</p>
+                            <p className="text-xs text-gray-500">{feature.sub}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <Link
                       href={slide.link}
@@ -207,8 +221,8 @@ export default function HomePage() {
           </h2>
           <p className="text-gray-500 max-w-2xl mx-auto">
             {locale === 'nl' 
-              ? 'Vind de onderdelen die u nodig heeft voor alle grote merken smartphones, tablets en laptops.' 
-              : 'Find the parts you need for all major brands of smartphones, tablets and laptops.'}
+              ? 'Vind de onderdelen die u nodig heeft voor alle grote merken smartphones en tablets.' 
+              : 'Find the parts you need for all major brands of smartphones and tablets.'}
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-4">
