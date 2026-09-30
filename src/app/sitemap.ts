@@ -88,15 +88,35 @@ const staticPages: MetadataRoute.Sitemap = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = [...staticPages];
 
-  // Fetch all active products from DB for dynamic product URLs
+  // Productpagina's uit de database.
+  //
+  // Dit ging fout: de query filterde op products.status, maar die kolom bestaat
+  // niet in databases die door /api/init-db zijn aangemaakt. De query gooide dan
+  // "column status does not exist", de catch hieronder slikte dat, en de sitemap
+  // bevatte stilletjes alleen de vaste pagina's. Google zag daardoor geen enkele
+  // productpagina. Daarom eerst met status proberen en anders zonder, en het
+  // filteren in JavaScript doen.
   try {
     const sql = getDb();
-    const products = await sql`
-      SELECT id, name, updated_at, created_at
-      FROM products
-      WHERE status = 'active' OR status IS NULL
-      ORDER BY created_at DESC
-    `;
+    let products: any[];
+    try {
+      products = await sql`
+        SELECT id, updated_at, created_at, status
+        FROM products
+        ORDER BY created_at DESC
+        LIMIT 45000
+      `;
+    } catch {
+      products = await sql`
+        SELECT id, updated_at, created_at
+        FROM products
+        ORDER BY created_at DESC
+        LIMIT 45000
+      `;
+    }
+
+    // Zonder status-kolom telt elk product als actief.
+    products = products.filter((p: any) => !p.status || p.status === 'active');
 
     for (const p of products) {
       entries.push({

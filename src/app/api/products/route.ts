@@ -116,6 +116,10 @@ async function runSchemaSetup(sql: any) {
   try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS model TEXT DEFAULT ''`; } catch {}
   // VAT-applied flag: marks whether 21% BTW has already been added to the stored price (idempotent bulk action)
   try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS vat_applied BOOLEAN DEFAULT false`; } catch {}
+  // Ontbrak in tabellen die door /api/init-db zijn aangemaakt, waardoor de
+  // sitemap-query op status stukliep en er geen productpagina's in de sitemap
+  // terechtkwamen.
+  try { await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active'`; } catch {}
   // Indexes for fast filtering
   try { await sql`CREATE INDEX IF NOT EXISTS idx_products_category ON products (category)`; } catch {}
   try { await sql`CREATE INDEX IF NOT EXISTS idx_products_subcategory ON products (subcategory)`; } catch {}
