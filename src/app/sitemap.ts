@@ -74,18 +74,9 @@ const staticPages: MetadataRoute.Sitemap = [
     changeFrequency: 'yearly',
     priority: 0.2,
   },
-  {
-    url: `${BASE_URL}/account/register`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.3,
-  },
-  {
-    url: `${BASE_URL}/account/login`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.3,
-  },
+  // Inloggen en registreren staan bewust NIET in de sitemap: robots.txt
+  // verbiedt /account/* al, dus Google kreeg hier twee tegenstrijdige
+  // signalen en meldde ze als gevonden maar niet gecrawld.
   {
     url: `${BASE_URL}/nieuws`,
     lastModified: new Date(),
